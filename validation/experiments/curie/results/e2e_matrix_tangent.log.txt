@@ -1,0 +1,3 @@
+6 {'file': 'mtx_STIF7.mtx', 'Kmtx_vs_Kel_maxrel': 4.183858986801421e-15, 'Kmtx_delta_vs_probe_dRF_rel': 1.2658037972469494, 'Kel_delta_vs_probe_dRF_rel': 1.2658037972469403, 'probe_linearity_rel_diff': 0.0033169038628333885}
+13 {'file': 'mtx_STIF15.mtx', 'Kmtx_vs_Kel_maxrel': 4.183858986801421e-15, 'Kmtx_delta_vs_probe_dRF_rel': 5.1724340164820345e-14, 'Kel_delta_vs_probe_dRF_rel': 5.420558157494088e-14, 'probe_linearity_rel_diff': 4.195206630342265e-13}
+18 {'file': 'mtx_STIF21.mtx', 'Kmtx_vs_Kel_maxrel': 4.183858986801421e-15, 'Kmtx_delta_vs_probe_dRF_rel': 1.1267280842305645, 'Kel_delta_vs_probe_dRF_rel': 1.1267280842305565, 'probe_linearity_rel_diff': 0.0034521447659456406}

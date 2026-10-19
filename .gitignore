@@ -1,0 +1,40 @@
+# Build trees
+build*/
+out/
+cmake-build-*/
+.vs/
+
+# Abaqus job artifacts (never commit proprietary/heavy results)
+*.odb
+*.odb_f
+*.sim
+*.prt
+*.res
+*.mdl
+*.stt
+*.023
+*.lck
+*.abq
+*.pac
+*.sel
+*.fil
+*.ipm
+*.log
+*.msg
+*.sta
+*.com
+*.dat
+*.mtx
+abaqus.rpy*
+abaqus_acis.log
+
+# ABSS scratch / projects
+.abss_scratch/
+*.abssproj.d/
+
+# Local bundle inputs
+ABSS_Claude_Council_Bundle.zip
+
+# Regenerable Council experiment work folders
+validation/experiments/curie/work/
+dist/

@@ -1,0 +1,5 @@
+file(GLOB _cli CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+if(_cli)
+  add_executable(abss-cli ${_cli})
+  target_link_libraries(abss-cli PRIVATE abss_sensitivity)
+endif()

@@ -1,0 +1,32 @@
+{
+  "HYPO": {
+    "nominal_max_abs_S": 5.64179378108588,
+    "oneshot_max_abs_RF_cons_minus_nominal": 0.21653688415271066,
+    "oneshot_max_abs_RF_free": 1.3290818567477287,
+    "oneshot_max_abs_S_minus_nominal": 0.23482610649036006,
+    "oneshot_rel_RF_free": 0.8306761604673304,
+    "pressure_resultant_scale": 1.6,
+    "replay_max_abs_RF_free": 2.738037949145955e-09,
+    "replay_max_abs_S_minus_nominal": 1.3383738561856262e-13,
+    "replay_rel_RF_free": 1.7112737182162219e-09,
+    "tip_displacement": [
+      -1.2695254604202177,
+      -7.337859336153299
+    ]
+  },
+  "NEOH": {
+    "nominal_max_abs_S": 5.690813291690517,
+    "oneshot_max_abs_RF_cons_minus_nominal": 0.0,
+    "oneshot_max_abs_RF_free": 2.2900909467382657e-11,
+    "oneshot_max_abs_S_minus_nominal": 1.9357952740772788e-13,
+    "oneshot_rel_RF_free": 1.4313068417114161e-11,
+    "pressure_resultant_scale": 1.6,
+    "replay_max_abs_RF_free": 2.2995723381047384e-11,
+    "replay_max_abs_S_minus_nominal": 1.238384395030323e-13,
+    "replay_rel_RF_free": 1.4372327113154615e-11,
+    "tip_displacement": [
+      -1.270924642603713,
+      -7.337149313584622
+    ]
+  }
+}

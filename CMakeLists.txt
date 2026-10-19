@@ -1,0 +1,63 @@
+cmake_minimum_required(VERSION 3.24)
+project(ABSS VERSION 0.1.0 LANGUAGES C CXX
+        DESCRIPTION "Abaqus Black-Box Sensitivity Studio")
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "" FORCE)
+endif()
+
+option(ABSS_BUILD_GUI "Build the Qt6/VTK desktop application" ON)
+option(ABSS_WITH_KOKKOS "Use Kokkos for parallel numeric kernels" ON)
+option(ABSS_WITH_SUITESPARSE "Use SuiteSparse (UMFPACK/CHOLMOD) direct solvers" ON)
+option(ABSS_BUILD_TESTS "Build the test suite" ON)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
+if(MSVC)
+  add_compile_options(/W4 /permissive- /utf-8)
+else()
+  add_compile_options(-Wall -Wextra -Wno-unused-parameter)
+endif()
+
+find_package(Eigen3 REQUIRED NO_MODULE)
+find_package(nlohmann_json 3 REQUIRED)
+
+set(ABSS_HAVE_KOKKOS OFF)
+if(ABSS_WITH_KOKKOS)
+  find_package(Kokkos CONFIG)
+  if(Kokkos_FOUND)
+    set(ABSS_HAVE_KOKKOS ON)
+    message(STATUS "ABSS: Kokkos ${Kokkos_VERSION} devices: ${Kokkos_DEVICES}")
+  else()
+    message(WARNING "ABSS: Kokkos not found; using serial CPU fallback kernels")
+  endif()
+endif()
+
+set(ABSS_HAVE_SUITESPARSE OFF)
+if(ABSS_WITH_SUITESPARSE)
+  find_package(UMFPACK CONFIG QUIET)
+  if(UMFPACK_FOUND)
+    set(ABSS_HAVE_SUITESPARSE ON)
+    message(STATUS "ABSS: SuiteSparse UMFPACK ${UMFPACK_VERSION} found")
+  endif()
+endif()
+
+include_directories(${CMAKE_SOURCE_DIR}/include)
+
+add_subdirectory(src)
+if(ABSS_BUILD_GUI)
+  add_subdirectory(apps)
+endif()
+add_subdirectory(apps/cli)
+
+if(ABSS_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
+

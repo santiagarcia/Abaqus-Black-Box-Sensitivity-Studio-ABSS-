@@ -1,0 +1,43 @@
+*HEADING
+ABSS example: one C3D8 element with a user material (UMAT, 2 PROPS, 1 SDV)
+** Needs a compiled UMAT at run time, e.g.  abaqus job=umat_props user=my_umat.for  (or .obj).
+** ABSS exposes PROPS[1], PROPS[2] by position only; their meaning is defined by the subroutine.
+*NODE, NSET=ALLN
+1, 0., 0., 0.
+2, 1., 0., 0.
+3, 1., 1., 0.
+4, 0., 1., 0.
+5, 0., 0., 1.
+6, 1., 0., 1.
+7, 1., 1., 1.
+8, 0., 1., 1.
+*ELEMENT, TYPE=C3D8, ELSET=CUBE
+1, 1, 2, 3, 4, 5, 6, 7, 8
+*NSET, NSET=X0
+1, 4, 5, 8
+*NSET, NSET=Y0
+1, 2, 5, 6
+*NSET, NSET=Z0
+1, 2, 3, 4
+*NSET, NSET=X1
+2, 3, 6, 7
+*SOLID SECTION, ELSET=CUBE, MATERIAL=UMAT_MAT
+*MATERIAL, NAME=UMAT_MAT
+*USER MATERIAL, CONSTANTS=2
+210000., 0.3
+*DEPVAR
+1
+*STEP, NAME=PULL
+*STATIC
+0.25, 1., 1e-05, 0.25
+*BOUNDARY
+X0, 1, 1
+Y0, 2, 2
+Z0, 3, 3
+X1, 1, 1, 0.001
+*OUTPUT, FIELD
+*NODE OUTPUT
+U, RF
+*ELEMENT OUTPUT
+S, E, SDV
+*END STEP

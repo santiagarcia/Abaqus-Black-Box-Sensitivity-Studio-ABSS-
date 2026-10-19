@@ -1,0 +1,7 @@
+##### S13: Constrained dofs: exact perturbed BC inside the probe vs spec item 4 (probe at nominal u_C, K_FC s_C on RHS).
+python 3.12.14, numpy 2.5.4, mpmath 1.4.1
+  A_linear_2dof_bc           U0   order-1 e1 (central): | h=1e-02 exact-BC 2.3e-14 K_FC-form 1.7e-16 | h=1e-04 exact-BC 3.0e-12 K_FC-form 1.7e-16 | h=1e-06 exact-BC 3.0e-10 K_FC-form 1.7e-16
+  A_linear_2dof_bc           k1   order-1 e1 (central): | h=1e-02 exact-BC 5.1e-15 K_FC-form 5.1e-15 | h=1e-04 exact-BC 3.8e-13 K_FC-form 3.8e-13 | h=1e-06 exact-BC 6.7e-11 K_FC-form 6.7e-11
+  B_visco_hardening_chain    U0   order-1 e1 (central): | h=1e-02 exact-BC 2.5e-06 K_FC-form 2.2e-14 | h=1e-04 exact-BC 2.4e-10 K_FC-form 2.9e-12 | h=1e-06 exact-BC 6.5e-10 K_FC-form 1.8e-10
+  B_visco_hardening_chain    k1   order-1 e1 (central): | h=1e-02 exact-BC 7.0e-14 K_FC-form 7.0e-14 | h=1e-04 exact-BC 2.8e-12 K_FC-form 2.8e-12 | h=1e-06 exact-BC 2.9e-10 K_FC-form 2.9e-10
+  B_visco_hardening_chain    tau  order-1 e1 (central): | h=1e-02 exact-BC 2.6e-05 K_FC-form 2.6e-05 | h=1e-04 exact-BC 2.6e-09 K_FC-form 2.6e-09 | h=1e-06 exact-BC 4.3e-10 K_FC-form 4.3e-10

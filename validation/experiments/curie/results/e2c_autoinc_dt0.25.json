@@ -1,0 +1,37 @@
+{
+  "forced_grid_max_abs_time_diff": 0.0,
+  "forced_grid_n_steps": 4,
+  "grid_identical_p1e-1": true,
+  "grid_identical_p1e-2": true,
+  "grid_identical_p1e-3": true,
+  "grids": {
+    "nom": [
+      0.25,
+      0.5,
+      0.75,
+      1.0
+    ],
+    "p1e-1": [
+      0.25,
+      0.5,
+      0.75,
+      1.0
+    ],
+    "p1e-2": [
+      0.25,
+      0.5,
+      0.75,
+      1.0
+    ],
+    "p1e-3": [
+      0.25,
+      0.5,
+      0.75,
+      1.0
+    ]
+  },
+  "replay_auto_max_abs_dPEEQ": 6.938893903907228e-18,
+  "replay_auto_max_abs_dS": 2.8421709430404007e-13,
+  "replay_auto_n_increments": 4,
+  "replay_auto_time_grid_max_abs_diff": 0.0
+}

@@ -1,0 +1,13 @@
+K oracle-FD vs analytic max rel 3.6443522125779025e-15
+E pseudo-load rel_h 0.01 rel err vs analytic 2.6658172514690327e-14
+E pseudo-load rel_h 0.0001 rel err vs analytic 1.8576470875449067e-12
+E pseudo-load rel_h 1e-06 rel err vs analytic 1.9769386371652427e-10
+E central FD rel_h 0.01 {'rel_diff_oracle_vs_cfd': 0.00010000000131464355, 'rel_diff_cfd_vs_analytic': 0.00010001000098510856}
+E central FD rel_h 0.001 {'rel_diff_oracle_vs_cfd': 1.0000015530282337e-06, 'rel_diff_cfd_vs_analytic': 1.0000012232660366e-06}
+E central FD rel_h 0.0001 {'rel_diff_oracle_vs_cfd': 9.99995887417266e-09, 'rel_diff_cfd_vs_analytic': 9.998629209185225e-09}
+b: oracle vs analytic 7.105427357601002e-15 vs CFD 8.548717289613757e-15
+predictor {'rel_h': 0.1, 'pred_resid_free_maxabs': 5.0000000000122995, 'zeroth_order_resid_free_maxabs': 50.00000000000031}
+predictor {'rel_h': 0.03, 'pred_resid_free_maxabs': 0.4500000000033353, 'zeroth_order_resid_free_maxabs': 15.000000000000341}
+predictor {'rel_h': 0.01, 'pred_resid_free_maxabs': 0.050000000001055867, 'zeroth_order_resid_free_maxabs': 5.000000000000284}
+predictor {'rel_h': 0.003, 'pred_resid_free_maxabs': 0.004500000000057014, 'zeroth_order_resid_free_maxabs': 1.500000000000206}
+predictor {'rel_h': 0.001, 'pred_resid_free_maxabs': 0.0004999999997536975, 'zeroth_order_resid_free_maxabs': 0.5000000000002629}

@@ -1,0 +1,22 @@
+# Toolchain for Windows builds with an MSYS2 UCRT64 tree (Qt6, VTK, Eigen, SuiteSparse from pacman).
+# Usage: cmake -DCMAKE_TOOLCHAIN_FILE=cmake/msys2-ucrt64.cmake -DABSS_MSYS2_ROOT=C:/msys64 ...
+if(NOT ABSS_MSYS2_ROOT)
+  if(DEFINED ENV{ABSS_MSYS2_ROOT})
+    set(ABSS_MSYS2_ROOT "$ENV{ABSS_MSYS2_ROOT}")
+  else()
+    set(ABSS_MSYS2_ROOT "$ENV{USERPROFILE}/toolchains/msys64")
+  endif()
+endif()
+file(TO_CMAKE_PATH "${ABSS_MSYS2_ROOT}" ABSS_MSYS2_ROOT)
+set(_ucrt "${ABSS_MSYS2_ROOT}/ucrt64")
+set(CMAKE_C_COMPILER "${_ucrt}/bin/gcc.exe" CACHE FILEPATH "")
+set(CMAKE_CXX_COMPILER "${_ucrt}/bin/g++.exe" CACHE FILEPATH "")
+set(CMAKE_MAKE_PROGRAM "${_ucrt}/bin/ninja.exe" CACHE FILEPATH "")
+list(PREPEND CMAKE_PREFIX_PATH "${_ucrt}")
+# Standalone Kokkos with the OpenMP backend (Trilinos' bundled Kokkos is Serial-only).
+if(ABSS_KOKKOS_ROOT)
+  list(PREPEND CMAKE_PREFIX_PATH "${ABSS_KOKKOS_ROOT}")
+elseif(EXISTS "$ENV{USERPROFILE}/toolchains/kokkos-openmp")
+  file(TO_CMAKE_PATH "$ENV{USERPROFILE}/toolchains/kokkos-openmp" _kk)
+  list(PREPEND CMAKE_PREFIX_PATH "${_kk}")
+endif()

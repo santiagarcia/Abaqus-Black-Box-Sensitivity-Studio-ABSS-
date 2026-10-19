@@ -1,0 +1,3 @@
+inc 1 {'inc': 1, 'r_nom_free_maxabs': 4.198241754238552e-11, 'p_free_maxabs': 0.0005206704806806073, 'K_sym_rel': 7.351581069190433e-05, 'commit_resid_free_maxabs': 1.756809311359575e-07, 'zeroth_resid_free_maxabs': 0.001041340919378797} jobs 14
+inc 2 {'inc': 2, 'r_nom_free_maxabs': 1.963602613841431e-09, 'p_free_maxabs': 0.0004130219438227556, 'K_sym_rel': 5.9247914733062554e-05, 'commit_resid_free_maxabs': 1.4159972749894223e-07, 'zeroth_resid_free_maxabs': 0.0008260435784883668} jobs 28
+epsK1e-5 rel err vs CFD per inc ['5.19e-04', '5.44e-04']

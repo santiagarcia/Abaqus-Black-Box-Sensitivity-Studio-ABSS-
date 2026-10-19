@@ -1,0 +1,35 @@
+*HEADING
+ABSS example: single 2-node truss (T2D2) under an axial end load
+** Analytic reference: u = F L / (E A) = 1000 * 100 / (200000 * 10) = 0.05 at node 2, DOF 1
+**   du/dE = -F L / (E^2 A) = -2.5e-7,  du/dF = L / (E A) = 5e-5,  d2u/dE2 = 2 F L / (E^3 A) = 2.5e-12
+*NODE, NSET=ALLN
+1, 0., 0.
+2, 100., 0.
+*NSET, NSET=FIXED
+1
+*NSET, NSET=TIP
+2
+*ELEMENT, TYPE=T2D2, ELSET=BAR
+1, 1, 2
+** Truss section: the data value is the cross-sectional area A
+*SOLID SECTION, ELSET=BAR, MATERIAL=STEEL
+10.
+*MATERIAL, NAME=STEEL
+*ELASTIC
+200000., 0.3
+*STEP, NAME=LOAD
+*STATIC
+1., 1., 1e-05, 1.
+*BOUNDARY
+FIXED, PINNED
+TIP, 2, 2
+*CLOAD
+TIP, 1, 1000.
+*NODE PRINT, NSET=TIP
+U
+*OUTPUT, FIELD
+*NODE OUTPUT
+U, RF
+*ELEMENT OUTPUT
+S, E
+*END STEP

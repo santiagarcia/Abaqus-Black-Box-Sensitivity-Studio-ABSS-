@@ -1,0 +1,80 @@
+*HEADING
+ABSS example: 2x2x2 C3D8 block (part/assembly/instance form) with spatially varying top loads
+** The instance is translated by (100, 0, 0); the bottom face is clamped.
+*PART, NAME=BLOCK
+*NODE
+1, 0., 0., 0.
+2, 5., 0., 0.
+3, 10., 0., 0.
+4, 0., 5., 0.
+5, 5., 5., 0.
+6, 10., 5., 0.
+7, 0., 10., 0.
+8, 5., 10., 0.
+9, 10., 10., 0.
+10, 0., 0., 5.
+11, 5., 0., 5.
+12, 10., 0., 5.
+13, 0., 5., 5.
+14, 5., 5., 5.
+15, 10., 5., 5.
+16, 0., 10., 5.
+17, 5., 10., 5.
+18, 10., 10., 5.
+19, 0., 0., 10.
+20, 5., 0., 10.
+21, 10., 0., 10.
+22, 0., 5., 10.
+23, 5., 5., 10.
+24, 10., 5., 10.
+25, 0., 10., 10.
+26, 5., 10., 10.
+27, 10., 10., 10.
+*ELEMENT, TYPE=C3D8, ELSET=SOLID
+1, 1, 2, 5, 4, 10, 11, 14, 13
+2, 2, 3, 6, 5, 11, 12, 15, 14
+3, 4, 5, 8, 7, 13, 14, 17, 16
+4, 5, 6, 9, 8, 14, 15, 18, 17
+5, 10, 11, 14, 13, 19, 20, 23, 22
+6, 11, 12, 15, 14, 20, 21, 24, 23
+7, 13, 14, 17, 16, 22, 23, 26, 25
+8, 14, 15, 18, 17, 23, 24, 27, 26
+*NSET, NSET=BOTTOM, GENERATE
+1, 9, 1
+*NSET, NSET=TOP, GENERATE
+19, 27, 1
+*SOLID SECTION, ELSET=SOLID, MATERIAL=ALU
+*END PART
+*ASSEMBLY, NAME=ASSEMBLY
+*INSTANCE, NAME=BLOCK-1, PART=BLOCK
+100., 0., 0.
+*END INSTANCE
+*NSET, NSET=CLAMP, INSTANCE=BLOCK-1
+BOTTOM
+*END ASSEMBLY
+*MATERIAL, NAME=ALU
+*ELASTIC
+70000., 0.33
+*DENSITY
+2.7e-09
+*STEP, NAME=PRESS, NLGEOM=NO
+*STATIC
+1., 1., 1e-05, 1.
+*BOUNDARY
+CLAMP, ENCASTRE
+*CLOAD
+BLOCK-1.19, 3, -10.
+BLOCK-1.20, 3, -15.
+BLOCK-1.21, 3, -20.
+BLOCK-1.22, 3, -10.
+BLOCK-1.23, 3, -15.
+BLOCK-1.24, 3, -20.
+BLOCK-1.25, 3, -10.
+BLOCK-1.26, 3, -15.
+BLOCK-1.27, 3, -20.
+*OUTPUT, FIELD
+*NODE OUTPUT
+U, RF
+*ELEMENT OUTPUT
+S, E
+*END STEP

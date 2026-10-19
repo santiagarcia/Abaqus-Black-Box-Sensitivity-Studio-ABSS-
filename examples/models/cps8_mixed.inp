@@ -1,0 +1,50 @@
+*HEADING
+ABSS example: mixed quadratic plane-stress mesh (one CPS8 quad + two CPS6 triangles, conforming)
+** Right edge carries consistent quadratic-edge nodal forces 1/6, 4/6, 1/6 of 600.
+*NODE
+1, 0., 0.
+2, 10., 0.
+3, 20., 0.
+4, 0., 10.
+5, 10., 10.
+6, 20., 10.
+7, 5., 0.
+8, 15., 0.
+9, 0., 5.
+10, 10., 5.
+11, 20., 5.
+12, 5., 10.
+13, 15., 10.
+14, 15., 5.
+*ELEMENT, TYPE=CPS8, ELSET=QUADS
+1, 1, 2, 5, 4, 7, 10, 12, 9
+*ELEMENT, TYPE=CPS6, ELSET=TRIS
+2, 2, 3, 6, 8, 11, 14
+3, 2, 6, 5, 14, 13, 10
+*ELSET, ELSET=ALL
+QUADS, TRIS
+*NSET, NSET=LEFT
+1, 9, 4
+*NSET, NSET=ORIGIN
+1
+*SOLID SECTION, ELSET=ALL, MATERIAL=ALU
+1.
+*MATERIAL, NAME=ALU
+*ELASTIC
+70000., 0.33
+*STEP, NAME=PULL
+*STATIC
+1., 1., 1e-05, 1.
+*BOUNDARY
+LEFT, 1, 1
+ORIGIN, 2, 2
+*CLOAD
+3, 1, 100.
+11, 1, 400.
+6, 1, 100.
+*OUTPUT, FIELD
+*NODE OUTPUT
+U, RF
+*ELEMENT OUTPUT
+S, E
+*END STEP

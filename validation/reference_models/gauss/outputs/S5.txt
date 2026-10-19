@@ -1,0 +1,30 @@
+##### S5: Stencil comparison (offsets/branches), orders 1-3.
+python 3.12.14, numpy 2.5.4, mpmath 1.4.1
+
+=== B_visco_hardening_chain / k1: best error over h sweep (argmin h) and error at h=1e-3, 1e-5
+  central        | k=1: min 7.0e-14@1e-02 e(1e-3)=2.7e-13 e(1e-5)=1.4e-11 runs/inc=4 br=2 | k=2: min 1.5e-13@1e-01 e(1e-3)=1.2e-09 e(1e-5)=4.1e-05 runs/inc=6 br=2 | k=3: min 4.4e-06@1e-03 e(1e-3)=4.4e-06 e(1e-5)=4.0e+00 runs/inc=12 br=4
+  central4       | k=1: min 6.5e-14@1e-02 e(1e-3)=3.1e-13 e(1e-5)=1.7e-11 runs/inc=8 br=4 | k=2: min 1.8e-13@1e-01 e(1e-3)=1.4e-09 e(1e-5)=5.5e-05 runs/inc=12 br=4 | k=3: min 3.6e-06@1e-03 e(1e-3)=3.6e-06 e(1e-5)=2.9e+00 runs/inc=16 br=4
+  forward        | k=1: min 8.8e-14@1e-01 e(1e-3)=6.5e-13 e(1e-5)=5.5e-11 runs/inc=2 br=1 | k=2: min 2.2e-05@1e-04 e(1e-3)=2.2e-04 e(1e-5)=5.2e-05 runs/inc=5 br=2 | k=3: min 4.5e-03@1e-03 e(1e-3)=4.5e-03 e(1e-5)=1.1e+01 runs/inc=9 br=3
+  forward_baked  | k=1: min 8.8e-14@1e-01 e(1e-3)=6.5e-13 e(1e-5)=5.5e-11 runs/inc=2 br=1 | k=2: min 3.7e-02@1e-01 e(1e-3)=4.3e-02 e(1e-5)=4.3e-02 runs/inc=3 br=1 | k=3: min 2.9e-01@1e-04 e(1e-3)=2.9e-01 e(1e-5)=2.4e+01 runs/inc=4 br=1
+  central_baked  | k=1: min 7.0e-14@1e-02 e(1e-3)=2.7e-13 e(1e-5)=1.4e-11 runs/inc=4 br=2 | k=2: min 1.5e-13@1e-01 e(1e-3)=1.2e-09 e(1e-5)=4.1e-05 runs/inc=6 br=2 | k=3: min 4.7e-02@1e-01 e(1e-3)=4.9e-02 e(1e-5)=6.4e+00 runs/inc=8 br=2
+
+=== B_visco_hardening_chain / tau: best error over h sweep (argmin h) and error at h=1e-3, 1e-5
+  central        | k=1: min 4.1e-11@1e-05 e(1e-3)=2.6e-07 e(1e-5)=4.1e-11 runs/inc=4 br=2 | k=2: min 1.2e-07@1e-04 e(1e-3)=1.3e-07 e(1e-5)=2.2e-05 runs/inc=6 br=2 | k=3: min 1.6e-06@1e-03 e(1e-3)=1.6e-06 e(1e-5)=9.1e-01 runs/inc=12 br=4
+  central4       | k=1: min 3.2e-13@1e-03 e(1e-3)=3.2e-13 e(1e-5)=6.2e-11 runs/inc=8 br=4 | k=2: min 2.2e-09@1e-03 e(1e-3)=2.2e-09 e(1e-5)=2.5e-05 runs/inc=12 br=4 | k=3: min 1.2e-06@1e-03 e(1e-3)=1.2e-06 e(1e-5)=1.0e+00 runs/inc=16 br=4
+  forward        | k=1: min 5.0e-08@1e-08 e(1e-3)=8.2e-04 e(1e-5)=8.2e-06 runs/inc=2 br=1 | k=2: min 2.9e-05@1e-05 e(1e-3)=1.2e-03 e(1e-5)=2.9e-05 runs/inc=5 br=2 | k=3: min 2.2e-03@1e-03 e(1e-3)=2.2e-03 e(1e-5)=3.9e+00 runs/inc=9 br=3
+  forward_baked  | k=1: min 5.0e-08@1e-08 e(1e-3)=8.2e-04 e(1e-5)=8.2e-06 runs/inc=2 br=1 | k=2: min 8.9e-01@1e-07 e(1e-3)=9.1e-01 e(1e-5)=9.1e-01 runs/inc=3 br=1 | k=3: min 9.7e-01@1e-03 e(1e-3)=9.7e-01 e(1e-5)=6.3e+00 runs/inc=4 br=1
+  central_baked  | k=1: min 4.1e-11@1e-05 e(1e-3)=2.6e-07 e(1e-5)=4.1e-11 runs/inc=4 br=2 | k=2: min 1.2e-07@1e-04 e(1e-3)=1.3e-07 e(1e-5)=2.2e-05 runs/inc=6 br=2 | k=3: min 6.6e-01@1e-01 e(1e-3)=6.6e-01 e(1e-5)=2.6e+00 runs/inc=8 br=2
+
+=== C_elastoplastic_bar / E: best error over h sweep (argmin h) and error at h=1e-3, 1e-5
+  central        | k=1: min 1.7e-10@1e-05 e(1e-3)=8.3e-07 e(1e-5)=1.7e-10 runs/inc=4 br=2 | k=2: min 1.6e-07@1e-04 e(1e-3)=9.0e-07 e(1e-5)=9.7e-06 runs/inc=6 br=2 | k=3: min 4.3e-06@1e-03 e(1e-3)=4.3e-06 e(1e-5)=3.5e-01 runs/inc=12 br=4
+  central4       | k=1: min 3.5e-12@1e-03 e(1e-3)=3.5e-12 e(1e-5)=1.3e-10 runs/inc=8 br=4 | k=2: min 1.9e-09@1e-03 e(1e-3)=1.9e-09 e(1e-5)=1.4e-05 runs/inc=12 br=4 | k=3: min 4.3e-06@1e-03 e(1e-3)=4.3e-06 e(1e-5)=6.7e-01 runs/inc=16 br=4
+  forward        | k=1: min 8.4e-08@1e-07 e(1e-3)=9.1e-04 e(1e-5)=9.1e-06 runs/inc=2 br=1 | k=2: min 5.0e-05@1e-05 e(1e-3)=2.8e-03 e(1e-5)=5.0e-05 runs/inc=5 br=2 | k=3: min 2.4e-03@1e-04 e(1e-3)=5.8e-03 e(1e-5)=7.6e-01 runs/inc=9 br=3
+  forward_baked  | k=1: min 8.4e-08@1e-07 e(1e-3)=9.1e-04 e(1e-5)=9.1e-06 runs/inc=2 br=1 | k=2: min 9.1e-01@1e-06 e(1e-3)=9.1e-01 e(1e-5)=9.1e-01 runs/inc=3 br=1 | k=3: min 9.9e-01@1e-03 e(1e-3)=9.9e-01 e(1e-5)=1.0e+00 runs/inc=4 br=1
+  central_baked  | k=1: min 1.7e-10@1e-05 e(1e-3)=8.3e-07 e(1e-5)=1.7e-10 runs/inc=4 br=2 | k=2: min 1.6e-07@1e-04 e(1e-3)=9.0e-07 e(1e-5)=9.7e-06 runs/inc=6 br=2 | k=3: min 8.3e-01@1e-02 e(1e-3)=8.3e-01 e(1e-5)=1.3e+00 runs/inc=8 br=2
+
+=== C_elastoplastic_bar / H: best error over h sweep (argmin h) and error at h=1e-3, 1e-5
+  central        | k=1: min 5.7e-11@1e-05 e(1e-3)=1.6e-08 e(1e-5)=5.7e-11 runs/inc=4 br=2 | k=2: min 2.3e-08@1e-03 e(1e-3)=2.3e-08 e(1e-5)=7.7e-06 runs/inc=6 br=2 | k=3: min 1.4e-07@1e-03 e(1e-3)=1.4e-07 e(1e-5)=2.7e-01 runs/inc=12 br=4
+  central4       | k=1: min 3.2e-13@1e-03 e(1e-3)=3.2e-13 e(1e-5)=1.3e-10 runs/inc=8 br=4 | k=2: min 1.7e-11@1e-02 e(1e-3)=1.2e-09 e(1e-5)=8.0e-06 runs/inc=12 br=4 | k=3: min 3.3e-07@1e-03 e(1e-3)=3.3e-07 e(1e-5)=4.7e-01 runs/inc=16 br=4
+  forward        | k=1: min 1.7e-08@1e-07 e(1e-3)=1.7e-04 e(1e-5)=1.7e-06 runs/inc=2 br=1 | k=2: min 1.1e-05@1e-05 e(1e-3)=6.0e-04 e(1e-5)=1.1e-05 runs/inc=5 br=2 | k=3: min 4.5e-04@1e-04 e(1e-3)=1.4e-03 e(1e-5)=7.3e-01 runs/inc=9 br=3
+  forward_baked  | k=1: min 1.7e-08@1e-07 e(1e-3)=1.7e-04 e(1e-5)=1.7e-06 runs/inc=2 br=1 | k=2: min 1.0e+00@1e-04 e(1e-3)=1.0e+00 e(1e-5)=1.0e+00 runs/inc=3 br=1 | k=3: min 1.0e+00@1e-02 e(1e-3)=1.0e+00 e(1e-5)=1.1e+00 runs/inc=4 br=1
+  central_baked  | k=1: min 5.7e-11@1e-05 e(1e-3)=1.6e-08 e(1e-5)=5.7e-11 runs/inc=4 br=2 | k=2: min 2.3e-08@1e-03 e(1e-3)=2.3e-08 e(1e-5)=7.7e-06 runs/inc=6 br=2 | k=3: min 1.0e+00@1e-03 e(1e-3)=1.0e+00 e(1e-5)=1.1e+00 runs/inc=8 br=2

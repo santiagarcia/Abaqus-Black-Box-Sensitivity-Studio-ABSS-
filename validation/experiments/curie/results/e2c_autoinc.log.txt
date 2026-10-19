@@ -1,0 +1,7 @@
+nom 15 increments
+p1e-3 15 increments
+p1e-2 15 increments
+p1e-1 15 increments
+grids identical: True True
+replay of auto run: max dS 1.9895196601282805e-12 max dPEEQ 1.734723475976807e-17
+forced grid time diff 0.0

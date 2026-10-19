@@ -1,0 +1,28 @@
+{
+  "13": {
+    "Kel_delta_vs_probe_dRF_rel": 5.420558157494088e-14,
+    "Kmtx_delta_vs_probe_dRF_rel": 5.1724340164820345e-14,
+    "Kmtx_vs_Kel_maxrel": 4.183858986801421e-15,
+    "file": "mtx_STIF15.mtx",
+    "probe_linearity_rel_diff": 4.195206630342265e-13
+  },
+  "18": {
+    "Kel_delta_vs_probe_dRF_rel": 1.1267280842305565,
+    "Kmtx_delta_vs_probe_dRF_rel": 1.1267280842305645,
+    "Kmtx_vs_Kel_maxrel": 4.183858986801421e-15,
+    "file": "mtx_STIF21.mtx",
+    "probe_linearity_rel_diff": 0.0034521447659456406
+  },
+  "6": {
+    "Kel_delta_vs_probe_dRF_rel": 1.2658037972469403,
+    "Kmtx_delta_vs_probe_dRF_rel": 1.2658037972469494,
+    "Kmtx_vs_Kel_maxrel": 4.183858986801421e-15,
+    "file": "mtx_STIF7.mtx",
+    "probe_linearity_rel_diff": 0.0033169038628333885
+  },
+  "step_numbers": {
+    "6": 7,
+    "13": 15,
+    "18": 21
+  }
+}

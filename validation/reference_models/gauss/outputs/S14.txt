@@ -1,0 +1,10 @@
+##### S14: Predictor-residual slope for K=3: limited by the order-1 stencil accuracy (central O(h^2) vs central4 O(h^4)).
+python 3.12.14, numpy 2.5.4, mpmath 1.4.1
+  B_visco_hardening_chain    k1   central   predres(h=1e-1,1e-2,1e-3) = 5.63e-06 1.41e-09 9.58e-13  log-slopes 3.60 3.17
+  B_visco_hardening_chain    k1   central4  predres(h=1e-1,1e-2,1e-3) = 5.73e-06 5.15e-10 2.33e-13  log-slopes 4.05 3.34
+  B_visco_hardening_chain    tau  central   predres(h=1e-1,1e-2,1e-3) = 2.70e-05 2.10e-08 2.04e-11  log-slopes 3.11 3.01
+  B_visco_hardening_chain    tau  central4  predres(h=1e-1,1e-2,1e-3) = 1.00e-05 9.81e-10 2.25e-13  log-slopes 4.01 3.64
+  C_elastoplastic_bar        E    central   predres(h=1e-1,1e-2,1e-3) = 5.54e-02 3.09e-07 1.51e-10  log-slopes 5.25 3.31
+  C_elastoplastic_bar        E    central4  predres(h=1e-1,1e-2,1e-3) = 4.75e-02 2.42e-07 2.42e-11  log-slopes 5.29 4.00
+  C_elastoplastic_bar        H    central   predres(h=1e-1,1e-2,1e-3) = 1.67e-01 6.17e-06 6.14e-09  log-slopes 4.43 3.00
+  C_elastoplastic_bar        H    central4  predres(h=1e-1,1e-2,1e-3) = 1.52e-01 1.40e-03 4.46e-12  log-slopes 2.03 8.50

@@ -1,0 +1,164 @@
+﻿model [DataRecords] n=1
+  -  : Model
+    meshes [DataRecords] n=1
+      -  : Mesh
+        dofCollection [Collections] n=1
+          -  : DofCollection
+        elementCollection [Collections] n=1
+          -  : ElementCollection
+        nodeCollection [Collections] n=1
+          -  : NodeCollection
+        elementsMeshToLabelsMeshMap [DataRecords] n=1
+          -  : CMemberMap
+        labelsMesh [DataRecords] n=1
+          -  : Mesh
+            elementCollection [Collections] n=1
+              -  : ElementCollection
+            nodeCollection [Collections] n=1
+              -  : NodeCollection
+        nodesMeshToLabelsMeshMap [DataRecords] n=1
+          -  : CMemberMap
+    analysisMesh [DataRecords] n=1
+      -  : Mesh
+        dofCollection [Collections] n=1
+          -  : DofCollection
+        elementCollection [Collections] n=1
+          -  : ElementCollection
+        nodalDofTypes [DSets] n=1
+          -  : NodeDofTypeGrid
+        nodeCollection [Collections] n=1
+          -  : NodeCollection
+    caseCollection [Collections] n=1
+      -  : CaseCollection
+    regionCollection [Collections] n=1
+      -  : RegionCollection
+    regionVolumeWholeModel [DataRecords] n=1
+      -  : RegionVolumeWholeModel
+    dofsAnalysisMeshToFlatMeshMap [DataRecords] n=1
+      -  : CMemberMap
+    elementsAnalysisMeshToFlatMeshMap [DataRecords] n=1
+      -  : CMemberMap
+    nodesAnalysisMeshToFlatMeshMap [DataRecords] n=1
+      -  : CMemberMap
+    loadCases [DataRecords] n=1
+      - _stepLoads : Case
+    systems [DataRecords] n=4
+      -  : GenericSystem
+        userMatrices [Distributions] n=2
+          -  : DofDofGrid
+          -  : DofDofGrid
+      -  : GenericSystem
+        userMatrices [Distributions] n=1
+          -  : DofDofGrid
+      -  : GenericSystem
+        userMatrices [Distributions] n=1
+          -  : DofDofGrid
+globalCollections [DataRecords] n=1
+  -  : GlobalCollections
+    cellCollection [Collections] n=1
+      -  : CellCollection
+    complexNumberPartCollection [Collections] n=1
+      -  : ComplexNumberPartCollection
+    componentCollection [Collections] n=1
+      -  : ComponentCollection
+    connectionTypeCollection [Collections] n=1
+      -  : ConnectionTypeCollection
+    connectorBehaviorCollection [Collections] n=1
+      -  : ConnectorBehaviorCollection
+    dofTypeCollection [Collections] n=1
+      -  : DofTypeCollection
+    edgeCollection [Collections] n=1
+      -  : EdgeCollection
+    faceCollection [Collections] n=1
+      -  : FaceCollection
+    genericCollection [Collections] n=1
+      -  : GenericCollection
+    integrationStationCollection [Collections] n=1
+      -  : IntegrationStationCollection
+    invariantCollection [Collections] n=1
+      -  : InvariantCollection
+    layerPointCollection [Collections] n=1
+      -  : LayerPointCollection
+    limitTypeCollection [Collections] n=1
+      -  : LimitTypeCollection
+    materialCollection [Collections] n=1
+      -  : MaterialCollection
+    pointCollection [Collections] n=1
+      -  : PointCollection
+    propertyFieldVariableTypeCollection [Collections] n=1
+      -  : PropertyFieldVariableTypeCollection
+    propertyTableCollection [Collections] n=1
+      -  : PropertyTableCollection
+    propertyTableRowCollection [Collections] n=1
+      -  : PropertyTableRowCollection
+    quadratureCollection [Collections] n=1
+      -  : QuadratureCollection
+    sectionLayerCollection [Collections] n=1
+      -  : SectionLayerCollection
+    sectionPointCollection [Collections] n=1
+      -  : SectionPointCollection
+    temperaturePointCollection [Collections] n=1
+      -  : TemperaturePointCollection
+    userSubroutineCollection [Collections] n=1
+      -  : UserSubroutineCollection
+    userSubroutineParameterCollection [Collections] n=1
+      -  : UserSubroutineParameterCollection
+    distributingCouplingMethodCollection [Collections] n=1
+      -  : DistributingCouplingMethodCollection
+    distributingWeightingMethodCollection [Collections] n=1
+      -  : DistributingWeightingMethodCollection
+    elementSpecCollection [Collections] n=1
+      -  : ElementSpecCollection
+    distributingRotCouplingMethodCollection [Collections] n=1
+      -  : DistributingRotCouplingMethodCollection
+elementSpecs [DataRecords] n=1354
+  - AC1D2 : ElementSpec
+  - AC1D3 : ElementSpec
+  - AC2D3 : ElementSpec
+fieldTypeLib [DataRecords] n=1
+  -  : FieldTypeLib
+    fieldTypes [DataRecords] n=1560
+      - T : FieldTypePrimary
+      - TE : FieldTypePrimary
+      - MASS : FieldTypePrimary
+symbolsLib [DataRecords] n=1
+  -  : SymbolsLib
+    component [DataRecords] n=38
+      -  : Component
+      -  : Component
+      -  : Component
+    connectionType [DataRecords] n=31
+      -  : ConnectionType
+      -  : ConnectionType
+      -  : ConnectionType
+    complexNumberParts [DataRecords] n=5
+      -  : ComplexNumberPart
+      -  : ComplexNumberPart
+      -  : ComplexNumberPart
+    distributingWeightingMethods [DataRecords] n=4
+      -  : DistributingWeightingMethod
+      -  : DistributingWeightingMethod
+      -  : DistributingWeightingMethod
+    dofTypes [DataRecords] n=30
+      -  : DofType
+      -  : DofType
+      -  : DofType
+    invariants [DataRecords] n=12
+      -  : Invariant
+      -  : Invariant
+      -  : Invariant
+    limitTypes [DataRecords] n=2
+      -  : LimitType
+      -  : LimitType
+    distributingCouplingMethods [DataRecords] n=2
+      -  : DistributingCouplingMethod
+      -  : DistributingCouplingMethod
+    distributingRotCouplingMethods [DataRecords] n=2
+      -  : DistributingCouplingMethod
+      -  : DistributingCouplingMethod
+physicalDimensionLib [DataRecords] n=1
+  -  : PhysicalDimensionLib
+    physicalDimensions [DataRecords] n=141
+      - DIMENSIONLESS : PhysicalDimension
+      - L : PhysicalDimension
+      - M : PhysicalDimension

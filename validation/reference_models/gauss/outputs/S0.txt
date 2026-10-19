@@ -1,0 +1,5 @@
+##### S0: Tangent gate: K_i v vs frozen-history oracle directional derivative; cond(K).
+python 3.12.14, numpy 2.5.4, mpmath 1.4.1
+A_linear_2dof_bc           max_i rel|K e_j - FD_frozen| = 5.26e-10   max_i cond2(K_FF) = 5.828e+00   Newton iters/inc (first 8) = [1, 1, 1, 1, 1]
+B_visco_hardening_chain    max_i rel|K e_j - FD_frozen| = 1.17e-09   max_i cond2(K_FF) = 1.892e+01   Newton iters/inc (first 8) = [5, 5, 4, 4, 4, 4, 4, 4]
+C_elastoplastic_bar        max_i rel|K e_j - FD_frozen| = 9.91e-09   max_i cond2(K_FF) = 1.598e+01   Newton iters/inc (first 8) = [1, 1, 1, 1, 1, 1, 1, 1]

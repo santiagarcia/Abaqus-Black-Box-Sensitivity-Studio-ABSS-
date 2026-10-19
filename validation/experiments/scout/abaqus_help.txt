@@ -1,0 +1,440 @@
+﻿In the following execution procedures, "abaqus" refers to the command
+ used to run Abaqus.
+ 
+  Obtaining information
+ 
+  abaqus  {help | information={environment | local | memory | release |
+            support | system | all} [job=job-name] | whereami}
+ 
+ 
+  Abaqus/Standard and Abaqus/Explicit execution
+  
+  abaqus     job=job-name  
+             [analysis | datacheck | parametercheck | continue | 
+               convert={select | odb | state | all} | recover | 
+               syntaxcheck | information={environment | local | 
+               memory | release | support | system | all}]
+             [input=input-file] 
+             [user={source-file | object-file}]
+             [uniquelibs]
+             [oldjob=oldjob-name] 
+             [fil={append | new}]
+             [globalmodel={results file-name | 
+               ODB output database file-name | SIM database file-name}] 
+             [cpus=number-of-cpus] 
+             [parallel={domain | loop}] 
+             [domains=number-of-domains]
+             [dynamic_load_balancing = {on | off}]
+             [mp_mode={mpi | threads}]
+             [threads_per_mpi_process=number of threads per mpi process]
+             [standard_parallel={all | solver}]
+             [gpus=number-of-gpgpus]
+             [memory=memory-size] 
+             [interactive | background | queue[=queue-name] [after=time]]
+             [double={explicit | both | off | constraint}]
+             [scratch=scratch-dir] 
+             [output_precision={single | full}]
+             [resultsformat={odb | sim | both}]
+             [port=co-simulation port-number] 
+             [host=co-simulation hostname]
+             [csedirector=Co-Simulation Engine director host:port-number]
+             [timeout=co-simulation timeout value in seconds]
+             [unconnected_regions={yes | no}]
+             [noFlexBody]
+             [license_type={token | credit}]
+             [ssd_split=number-of-frequency-partitions]
+ 			[ssd_partition=frequency-partition-number] 
+ 
+ 
+  SIMULIA Co-Simulation Engine director execution
+ 
+  abaqus cse  job=cosim-job-name configure=configuration file-name
+              listenerport=listener port-number
+              [datacheck] [interactive]
+ 			 [license_type={ token | credit } 
+ 
+ 
+  Abaqus/Standard, Abaqus/Explicit, and FMU co-simulation execution
+ 
+  abaqus cosimulation  cosimjob=cosim-job-name 
+          configure=co-simulation configuration file name  
+          job=comma-separated list of Abaqus job names 
+          [cpus={number-of-cpus | comma-separated list of number-of-cpus
+            for the Abaqus jobs}]
+          [cpuratio=comma-separated list of weight factors specifying 
+            cpu allocation to Abaqus child analyses]
+          [interactive | background | queue[=queue-name] [after=time]]
+          [timeout=co-simulation timeout value in seconds]
+          [listenerport=co-simulation director listener socket 
+            port number]
+          [portpool=colon-separated pair of socket port numbers]
+ 		 [license_type={ token | credit } 
+          [input=comma-separated list of Abaqus job input-file names] 
+          [user=comma-separated list of {source-file | object-file} names
+            for the Abaqus jobs]
+          [globalmodel=comma-separated list of {results file | 
+            ODB output database file | SIM database file} names]
+          [memory=comma-separated list of memory-sizes for the Abaqus 
+            jobs]
+          [oldjob=comma-separated list of oldjob-names for the Abaqus
+            jobs] 
+          [double=comma-separated list of double precision executable 
+            settings for the Abaqus jobs]
+          [scratch=comma-separated list of scratch-dir names for the 
+            Abaqus jobs]
+          [output_precision=comma-separated list of {single | full} for
+            the Abaqus jobs]
+          [fmu=comma-separated list of functional mockup unit files]
+          [fmuinstance=comma-separated list of functional mockup
+            instance names]
+ 
+ 
+  SIMULIA Co-Simulation Engine FMU execution
+ 
+  abaqus fmu  csedirector=CSE director hosts:port-number
+              fmu=fmu-file-name
+              instance=co-simulation-instance-name
+              [interactive] [timeout=timeout value in seconds]              
+ 
+ 
+  Abaqus/CAE execution
+ 
+  abaqus cae  [database=database-file] [replay=replay-file]
+              [recover=journal-file] [startup=startup-file] 
+              [script=script-file] [noGUI[=noGUI-file]] [noenvstartup]
+              [noSavedOptions] [noSavedGuiPrefs] [noStartupDialog] 
+              [custom=script-file] [guiTester[=GUI-script]] 
+              [guiRecord] [guiNoRecord]
+ 
+ 
+  Abaqus/Viewer execution
+ 
+  abaqus viewer  [database=database-file] [replay=replay-file]
+                 [startup=startup-file] [script=script-file] 
+                 [noGUI[=noGUI-file]] [noenvstartup] 
+                 [noSavedOptions] [noSavedGuiPrefs] [noStartupDialog] 
+                 [custom=script-file] [guiTester[=GUI-script]] 
+                 [guiRecord] [guiNoRecord]
+ 
+ 
+  Optimization execution
+ 
+  abaqus optimization  task=parameter file 
+                       job=results folder
+                       [cpus=number-of-cpus]
+                       [gpus=number-of-gpgpus]
+                       [memory=memory-size]
+                       [interactive]
+                       [globalmodel={results file-name | 
+                         ODB output database file-name | SIM database file-name}]
+                       [scratch=scratch-dir] 
+ 
+ 
+  Python execution
+ 
+  abaqus python  [python_file_name]
+                 [sim=sim_file_name]
+ 				[log=log_file_name]
+ 
+  
+  Parametric studies
+ 
+  abaqus script  [=script-file] [startup=startup file-name]
+                 [noenvstartup]
+ 
+ 
+  Abaqus documentation
+  
+  abaqus doc
+ 
+ 
+  Licensing utilities
+ 
+  abaqus licensing  [lmstat | lmdiag | lmpath | lmtools | dslsstat | 
+                      reporttool]
+ 
+ 
+  ASCII translation of results (.fil) files
+  
+  abaqus ascfil  job=job-name  [input=input-file]
+ 
+ 
+  Joining results (.fil) files
+ 
+  abaqus append  job=job-name oldjob=oldjob-name input=input-file
+   
+ 
+  Querying the keyword/problem database
+ 
+  abaqus findkeyword  [job=job-name] [maximum=maximum-output] keyword data lines
+ 
+ 
+  Fetching sample input files
+ 
+  abaqus fetch  job=job-name [input=input-file]
+ 
+ 
+  Making user-defined executables and subroutines
+ 
+  abaqus make  {job=job-name | library=source-file}
+               [user={source-file | object-file}]
+               [directory=library-dir]
+               [object_type={fortran | c | cpp}]
+               [uniquelibs]
+ 
+ 
+ Analysis Database Redistributor
+ 
+ abaqus redistadb  oldjob=oldjob-name  
+                   [newjob=newjob-name]
+                   [input=input-file-name]
+                   [step=step-number]
+                   [increment=increment-number]
+                   [outdir=outdir-name]
+                   [copyfiles=yes] 
+                   [list=yes] 
+                   [help-yes]
+ 				  
+ 
+  Output database upgrade utility
+  
+  abaqus upgrade  job=job-name  
+                  [odb=old-odb-file-name] 
+ 
+ 
+  SIM database utilities
+ 
+  abaqus sim_version  {convert=old-sim-file-name | 
+                        query=sim-file-name | -current}
+                      [out=new-sim-file-name] 
+                      [level=release-level]
+                      [help] 
+ 
+ 
+ Translating ODB output database files to SIM format
+ 
+  abaqus odb2sim  odb=odb-file-name sim=SIM-database-file-name
+                  [log=log-file-name] [o2sdebug]
+ 
+ 
+  Generating output database reports
+ 
+  abaqus odbreport  [job=job-name] [odb=output-database-file]
+          [mode={HTML | CSV}] [all] [mesh] [sets] [results]
+          [step={step-name | _LAST_}]
+          [frame={number | load-case-name | description | _LAST_}]
+          [framevalue={time | mode | frequency}] 
+          [field=[field-variable]] [components] [invariants]
+          [orientation] [histregion=region-name]
+          [history=[history-variable]] 
+          [instance={instance-name | _NONE_}]
+          [blocked] [extrema] 
+ 
+ 
+  Joining output database (.odb) files from restarted analyses
+ 
+  abaqus restartjoin  originalodb=odb-file-name
+                      restartodb=odb-file-name
+                      [copyoriginal] [history] [compressresult]
+ 
+ 
+  Combining output from substructures
+ 
+  abaqus substructurecombine  baseodb=odb-file-name
+                              copyodb=odb-file-name
+                              [all] [step=step-name]
+                              [frame=frame-number] 
+                              [variable=variable-key]
+ 
+ 
+  Recovering results from a substructure
+ 
+  abaqus substructurerecover  job=job-name
+                              substructure=substructure-name
+                              [input=input-file-name]
+                              [format={OP4 | INP4 | MDF | ASC | SIM}]
+                              [eigenproblem]
+                              [minframevalue=value]
+                              [maxframevalue=value]
+                              [resultsformat={ODB | SIM | BOTH}]
+                              [output=variables-list]
+                              [nset=node-set-names]
+                              [elset=element-set-names] 
+  
+ 
+  Combining data from multiple output databases 
+ 
+  abaqus odbcombine  job=job-name
+                     [input=configuration-file-name]
+                     [verbose=level]
+ 
+ 
+  Network output database file connector
+ 
+  abaqus networkDBConnector  port={serverPortNumber | auto_assigned} 
+                             [timeout=time out value in seconds]
+                             [host=hostname]
+                             [stop]
+                             [ping]
+                           
+ 
+  Mapping thermal and magnetic loads
+ 
+  abaqus emloads  job=target-odb-name
+                  input=subsequent analysis input-file-name
+                  sourceodb=time-harmonic eddy current analysis 
+                    odb-file-name
+ 
+ 
+  Element matrix assembly utility
+ 
+  abaqus mtxasm  job=name-of-assembled-mtx-sim-doc
+                 [oldjob=name-of-element-mtx-sim-doc]
+                 [text]
+ 
+ 
+  Translating Nastran data to Abaqus files
+ 
+  abaqus fromnastran  job=job-name [input=input-file] 
+                                   [wtmass_fixup={OFF | ON}]
+                                   [loadcases={OFF | ON}]
+                                   [pbar_zero_reset=[small_real_number]]
+                                   [surface_based_coupling={OFF | ON}]
+                                   [beam_offset_coupling={OFF | ON}]
+                                   [beam_orientation_vector={OFF | ON}]
+                                   [cbar=2-node-beam-element (B31 B33 ...)]
+                                   [cquad4=4-node-shell-element (S4R S4 S4R5 ...)]
+                                   [chexa=8-node-brick-element (C3D8I C3D8R ...)]
+                                   [ctetra=10-node-tetrahedron-element (C3D10 C3D10M ...)]
+                                   [cpyram=5-node-pyramid-element (C3D5 ...)]
+                                   [cshear={UEL | SHEAR4}]
+                                   [plotel={OFF | ON}]
+                                   [cdh_weld={OFF | RIGID | COMPLIANT}]
+                                   [dmig2sim={GENERIC | SUBSTRUCTURE}]
+                                   [op2file1=op2-filename-1]
+                                   [op2file2=op2-filename-2]
+                                   [op2target={INPUT | GENERIC | SUBSTRUCTURE}]
+ 
+ 
+  Translating Abaqus files to Nastran bulk data files
+ 
+  abaqus tonastran  job=job-name [input=input-file] 
+                                 [bdf_format={DOUBLE | FREE}]
+                                 [sim2dmig]
+                                 [complex={YES | NO}]
+ 
+ 
+  Translating ANSYS input files to partial Abaqus input files
+ 
+  abaqus fromansys  job=job-name [input=input-file] 
+ 
+ 
+  Translating PAM-CRASH input files to partial Abaqus input files
+ 
+  abaqus frompamcrash  job=job-name 
+                       input=input-file
+                       [pLinkConnectors={OFF | ON}]
+                       [splitAirbagElements={OFF | ON}]
+                       [autoKJoinStops={OFF | ON}]
+ 
+ 
+  Translating RADIOSS input files to partial Abaqus input files
+ 
+  abaqus fromradioss   job=job-name
+                       input=input-file
+                       [splitAirbagElements={OFF | ON}]
+                       [readAbaqusDat=data-file]
+                       [userDefaultMass=real-number]
+                       [userDefaultInertia=real-number]
+                       [userHistoryTime=real-number]
+ 
+ 
+  Translating Abaqus output database files to Nastran Output2
+  results files
+ 
+  abaqus toOutput2  job=job-name [odb=odb-name]
+                                 [step=step-number]
+                                 [increment=increment-number]
+                                 [slim] [quad4corner]
+                                 [quad4stress_bisector]
+  
+ 
+  Translating LS-DYNA data files to Abaqus input files
+ 
+  abaqus fromdyna  job=job-name  input=dyna-input-file
+                                 [splitFile={OFF | ON}]
+ 
+                              
+  Exchanging Abaqus data with ZAERO
+ 
+  abaqus tozaero  job=job-name [unvfile=unv-file-name]
+                               [odbfile=odb-file-name]
+                               [mtxfile=mtx-file-name]
+                               [step=step-number]
+                               [mode={text | binary}]
+ 
+ 
+  Translating an Abaqus substructure to an MSC.ADAMS flexible body
+ 
+  abaqus adams  job=job-name [substructure_sim=filename]
+                             [length=length-units-name]
+                             [mass=mass-units-name]
+                             [time=time-units-name]
+                             [force=force-units-name]
+                             [adams_mnf_block_16={I | Q}]
+ 
+ 
+  Translating an Abaqus substructure to a Simpack flexible body
+ 
+  abaqus tosimpack  job=job-name [substructure_sim=filename]
+                                 [length=length-units-name]
+                                 [mass=mass-units-name]
+                                 [time=time-units-name]
+ 
+ 
+  Translating a Simpack flexible body to Abaqus matrix data
+ 
+  abaqus fromsimpack  job=job-name [fbi=fbi-filename]
+ 
+ 
+  Translating an Abaqus substructure to an EXCITE flexible body
+ 
+  abaqus toexcite  job=job-name [hide_mesh={OFF | ON}]
+                                [recovery_matrix={OFF | ON | MERGE}]
+                                [substructure_sim=filename]
+ 
+ 
+  Translating Moldflow data to Abaqus input files
+ 
+  abaqus moldflow  job=job-name [input=input-name]
+                                [midplane | 3D]
+                                [element_order={1 | 2}]
+                                [initial_stress={on | off}]
+                                [material=traditional]
+                                [orientation=traditional]
+ 
+ 
+  Encrypting and decrypting Abaqus input data
+ 
+  abaqus {encrypt | decrypt}  input=input-file-name
+                              output=output-file-name
+                              password=password
+                              [license=feature_list] 
+                              [siteid=site-id_list]
+                              [include_only]
+                              [expiration=expiration_date]
+ 
+ 
+  Job execution control
+ 
+  abaqus {suspend | resume | terminate}  
+         {job=job-name | host=hostname port=port-number}
+ 
+ 
+  Hardware system verification process
+ 
+  abaqus sysVerify  [cpus=number-of-cpus]
+                    [interactive | background | queue[=queue-name]] 
+ 
+ 
+ 

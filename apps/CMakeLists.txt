@@ -1,0 +1,8 @@
+# Desktop application. (apps/cli is added separately by the root CMakeLists.txt; do not add it here.)
+set(_abss_app_srcs abss/main.cpp)
+if(WIN32)
+  enable_language(RC)
+  list(APPEND _abss_app_srcs abss/abss.rc)
+endif()
+add_executable(abss WIN32 ${_abss_app_srcs})
+target_link_libraries(abss PRIVATE abss_gui)

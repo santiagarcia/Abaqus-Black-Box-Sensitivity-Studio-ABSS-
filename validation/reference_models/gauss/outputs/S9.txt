@@ -1,0 +1,24 @@
+##### S9: Cutbacks: perturbed full rerun on a different time grid.
+python 3.12.14, numpy 2.5.4, mpmath 1.4.1
+
+=== B_visco_hardening_chain / k1: full-rerun central FD order 1 when the a+h run cut back once (inc 5 split)
+   h_rel  | same grid e1 | +h run cut back e1 | recursion (nominal grid by construction) e1
+    1e-01 |  9.69e-04    |  1.23e-02          |  8.66e-14
+    1e-02 |  9.74e-06    |  1.24e-01          |  7.03e-14
+    1e-03 |  9.74e-08    |  1.24e+00          |  2.72e-13
+    1e-04 |  9.75e-10    |  1.24e+01          |  2.78e-12
+    1e-05 |  8.93e-11    |  1.24e+02          |  1.36e-11
+    1e-06 |  1.22e-09    |  1.24e+03          |  2.85e-10
+    1e-07 |  1.42e-08    |  1.24e+04          |  2.54e-09
+    1e-08 |  9.87e-08    |  1.24e+05          |  2.65e-08
+
+=== C_elastoplastic_bar / E: full-rerun central FD order 1 when the a+h run cut back once (inc 5 split)
+   h_rel  | same grid e1 | +h run cut back e1 | recursion (nominal grid by construction) e1
+    1e-01 |  1.01e-02    |  1.01e-02          |  1.02e-01
+    1e-02 |  1.00e-04    |  1.00e-04          |  8.34e-05
+    1e-03 |  1.00e-06    |  1.00e-06          |  8.34e-07
+    1e-04 |  1.00e-08    |  1.00e-08          |  8.34e-09
+    1e-05 |  1.18e-10    |  1.16e-10          |  1.66e-10
+    1e-06 |  7.18e-10    |  7.18e-10          |  8.15e-10
+    1e-07 |  5.83e-09    |  5.83e-09          |  8.42e-09
+    1e-08 |  5.70e-08    |  5.70e-08          |  9.21e-08

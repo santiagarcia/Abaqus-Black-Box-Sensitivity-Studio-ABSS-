@@ -1,0 +1,30 @@
+*HEADING
+ABSS example: 2-node user element (UEL) with 2 real and 1 integer properties
+** Needs a compiled UEL at run time, e.g.  abaqus job=uel_props user=my_uel.for  (or .obj).
+** Intended meaning in a truss-like UEL: PROPS(1) = E, PROPS(2) = A, JPROPS(1) = option flag;
+** ABSS itself only knows them as PROPS[1], PROPS[2], JPROPS[1].
+*NODE
+1, 0., 0.
+2, 100., 0.
+*USER ELEMENT, TYPE=U1, NODES=2, COORDINATES=2, PROPERTIES=2, I PROPERTIES=1, VARIABLES=1
+1, 2
+*ELEMENT, TYPE=U1, ELSET=UTRUSS
+1, 1, 2
+*UEL PROPERTY, ELSET=UTRUSS
+200000., 10., 1
+*NSET, NSET=FIXED
+1
+*NSET, NSET=TIP
+2
+*STEP, NAME=LOAD
+*STATIC
+1., 1., 1e-05, 1.
+*BOUNDARY
+FIXED, 1, 2
+TIP, 2, 2
+*CLOAD
+TIP, 1, 1000.
+*OUTPUT, FIELD
+*NODE OUTPUT
+U, RF
+*END STEP

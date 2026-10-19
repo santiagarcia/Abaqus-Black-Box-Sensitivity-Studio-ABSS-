@@ -1,0 +1,50 @@
+*HEADING
+ABSS example: CPS4 plane-stress patch (2x2 elements, distorted interior node)
+** Loads: prescribed edge displacement, concentrated force and a surface traction (negative pressure).
+*NODE
+1, 0., 0.
+2, 10., 0.
+3, 20., 0.
+4, 0., 10.
+5, 11., 9.
+6, 20., 10.
+7, 0., 20.
+8, 10., 20.
+9, 20., 20.
+*ELEMENT, TYPE=CPS4, ELSET=PLATE
+1, 1, 2, 5, 4
+2, 2, 3, 6, 5
+3, 4, 5, 8, 7
+4, 5, 6, 9, 8
+*NSET, NSET=LEFT, GENERATE
+1, 7, 3
+*NSET, NSET=RIGHT, GENERATE
+3, 9, 3
+*NSET, NSET=CORNER
+1
+*ELSET, ELSET=TOPEL
+3, 4
+*SURFACE, NAME=TOPSURF, TYPE=ELEMENT
+TOPEL, S3
+*SOLID SECTION, ELSET=PLATE, MATERIAL=MAT
+0.5
+*MATERIAL, NAME=MAT
+*ELASTIC
+200000., 0.3
+*STEP, NAME=LOAD
+*STATIC
+1., 1., 1e-05, 1.
+*BOUNDARY
+LEFT, XSYMM
+CORNER, 2, 2
+RIGHT, 1, 1, 0.01
+*CLOAD
+9, 2, 50.
+*DSLOAD
+TOPSURF, P, -5.
+*OUTPUT, FIELD
+*NODE OUTPUT
+U, RF, CF
+*ELEMENT OUTPUT
+S, E
+*END STEP

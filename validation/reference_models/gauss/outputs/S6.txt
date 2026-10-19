@@ -1,0 +1,11 @@
+##### S6: History ablation: own branch per offset vs frozen nominal history vs one shared branch.
+python 3.12.14, numpy 2.5.4, mpmath 1.4.1
+history_mode: branch = each stencil offset m*h carries its own complete history (proposed);
+              frozen = probes use the nominal history (no history propagation);
+              shared = all offsets use the +h (largest offset) branch history
+  B_visco_hardening_chain    tau   | branch: e1=2.8e-09 e2=1.2e-07 | frozen: e1=4.8e-01 e2=5.3e-01 | shared: e1=4.8e-01 e2=5.3e+03   (h=1e-4, central K=2)
+  B_visco_hardening_chain    k1    | branch: e1=2.8e-12 e2=4.0e-07 | frozen: e1=2.2e-01 e2=2.4e-01 | shared: e1=2.2e-01 e2=5.5e+03   (h=1e-4, central K=2)
+  B_visco_hardening_chain    U0    | branch: e1=2.5e-10 e2=1.3e-08 | frozen: e1=2.3e-10 e2=1.3e-08 | shared: e1=2.3e-10 e2=1.5e-08   (h=1e-4, central K=2)
+  C_elastoplastic_bar        E     | branch: e1=8.3e-09 e2=1.6e-07 | frozen: e1=8.3e-09 e2=1.2e-07 | shared: e1=8.3e-09 e2=1.6e-05   (h=1e-4, central K=2)
+  C_elastoplastic_bar        sigy  | branch: e1=2.0e-12 e2=1.0e-07 | frozen: e1=1.0e+00 e2=1.8e-07 | shared: e1=1.0e+00 e2=4.7e+04   (h=1e-4, central K=2)
+  C_elastoplastic_bar        A2    | branch: e1=9.1e-09 e2=3.7e-08 | frozen: e1=9.1e-01 e2=9.1e-01 | shared: e1=9.1e-01 e2=9.1e+03   (h=1e-4, central K=2)
