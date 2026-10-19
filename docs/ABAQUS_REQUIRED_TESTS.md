@@ -17,19 +17,22 @@ $cli = ".\build\bin\abss-cli.exe"
 | A3 | Truss with full-rerun validation, order 2 | `& $cli run examples\models\truss.inp --params "mat:STEEL:elastic:E,load:LOAD:cload:TIP:1,geom:TIP:X" --order 2 --jobs 4 --validate --out truss.abss` | **pass** (6/6 Validated, 449 s) |
 | A4 | CPS4 J2 plasticity, 20 increments (load, then unload), order 1, every increment vs reruns | `& $cli run examples\models\j2_plastic.inp --params "mat:STEEL:elastic:E,mat:STEEL:plastic:sigma_y:1,bc:LOAD:RIGHT:1-1" --order 1 --jobs 6 --validate --out j2.abss` | **pass** (5.0e-4 / 3.2e-4 / 1.6e-5; 89 min) |
 | A5 | Abaqus mechanism experiments (oracle sign, restart replay, tangent output, precision) | `validation/experiments/scout/*`, `validation/experiments/curie/*` (commands in those reports) | see the council reports |
+| A6 | UMAT and UEL, each as source, `.obj` only and library only, order 1, against analytic values | `.\build\bin\test_abaqus.exe -tc="UMAT*,UEL*"` (needs ifort/ifx + MSVC) | **pass** (112 assertions, 1518 s; VALIDATION_RESULTS §3.5) |
 
-## B. Pending: need an Abaqus-compatible Fortran compiler (Intel oneAPI ifx/ifort + MSVC on Windows)
+## B. User subroutines: still to run
 
-Verify that `abaqus verify -user_std` passes first.
+The user-subroutine runs need Intel Fortran (ifort or ifx) and the MSVC linker; the ABSS installer can install both.
+A6 already covers the order-1 analytic checks for all three delivery forms.
 
 | ID | What | Command | Pass criterion |
 |---|---|---|---|
-| B1 | Opaque UMAT, compiled from source | `& $cli run examples\models\umat_props.inp --params "umat:UMAT_MAT:props:1" --order 2 --jobs 4 --validate --user examples\subroutines\umat_elastic.f` | order 1–2 Validated. Analytic for the uniaxial bar: `dU1/dPROPS1 = −u/E` |
-| B2 | Opaque **precompiled** UMAT | `abaqus make library=examples\subroutines\umat_elastic.f`, then pass the `.obj`/`.dll` as the user subroutine and repeat B1 | identical results to B1; ABSS never reads the source |
-| B3 | UEL with `*UEL PROPERTY` | `& $cli run examples\models\uel_props.inp --user examples\subroutines\uel_truss.f --order 1 --validate --params uel:UTRUSS:props:1,uel:UTRUSS:props:2` | `du/dPROPS1 = −2.5e-7`, `du/dPROPS2 = −5e-3` (same as the T2D2 truss); RF semantics gate (residual equals −RF at held DOFs for the UEL) |
+| B1 | Opaque UMAT, order 2, with full-rerun validation | `& $cli run examples\models\umat_props.inp --params "umat:UMAT_MAT:props:1" --order 2 --jobs 4 --validate --user examples\subroutines\umat_elastic.f` | order 1–2 Validated |
+| B2 | Opaque **precompiled** UMAT through the CLI | `& $cli usersub examples\subroutines\umat_elastic.f --out umatlib`, then repeat B1 with `--user umatlib` | identical results to B1; ABSS never reads the source |
+| B3 | UEL with `*UEL PROPERTY`, with validation | `& $cli run examples\models\uel_props.inp --user examples\subroutines\uel_truss.f --order 1 --validate --params uel:UTRUSS:props:1,uel:UTRUSS:props:2` | `du/dPROPS1 = −2.5e-7`, `du/dPROPS2 = −5e-3` (analytic part passed in A6); Validated against reruns |
 | B4 | UEL JPROPS | same deck | JPROPS shown as not differentiable (info only) |
 
-The `--user` value is passed to Abaqus as `user=` for every nominal, probe, commit and rerun job.
+ABSS builds the library once and points every nominal, probe, commit and rerun job at it through `usub_lib_dir`
+(a job-directory `abaqus_v6.env`).
 
 ## C. Pending: mechanisms that are implemented or refused, but not yet validated
 

@@ -403,7 +403,8 @@ CostEstimate Controller::estimate(const RunSettings& s) const {
     if (c.validationAnalyses > 0)
         c.lines << QString("Validation: %1 complete re-analyses (each covers every increment)").arg(c.validationAnalyses);
     if (!inp) c.lines << QString("Result size: about %1").arg(QLocale().formattedDataSize(static_cast<qint64>(c.storageBytes)));
-    c.lines << (inp ? "Runs on: Abaqus (licence-limited, one job at a time)" : "Runs on: synthetic demo model (no Abaqus needed)");
+    c.lines << (inp ? QString("Runs on: Abaqus, up to %1 job(s) at a time (licence permitting)").arg(std::max(1, s.concurrentJobs))
+                    : QString("Runs on: synthetic demo model (no Abaqus needed)"));
     if (s.maxOrder >= 3) c.warnings << "Third order is experimental: results are marked Experimental everywhere they appear.";
     if (s.maxOrder >= 2) c.warnings << "Each extra order adds two branch analyses per parameter.";
     if (s.maxOrder > 0 && P == 0) c.warnings << "Select at least one parameter, or choose order 0 (nominal only).";
@@ -465,6 +466,8 @@ RunOutcome Controller::executeRun(Source src, DemoModel demo, const QString& inp
             cfg.abaqusCommand = inst.command;
             cfg.scratchDir = scratchDirectory().toStdString();
             if (model) cfg.parameters = model->parameters;
+            cfg.userSubroutine = s.userSubroutine;
+            cfg.maxConcurrentJobs = std::max(1, s.concurrentJobs);
             cfg.log = ctl.log;
             cfg.cancel = &ctl.cancel;
             oracle = makeAbaqusOracle(cfg);
@@ -483,6 +486,7 @@ RunOutcome Controller::executeRun(Source src, DemoModel demo, const QString& inp
             req.parameters = s.parameters;
             req.maxOrder = s.maxOrder;
             req.tangentCheck = s.tangentCheck;
+            req.parallelBranches = src == Source::Inp && s.concurrentJobs > 1;
             if (s.relativeStep > 0)
                 for (int p : s.parameters) {
                     const double a = std::abs(store->parameters.at(static_cast<size_t>(p)).nominal);

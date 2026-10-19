@@ -81,13 +81,9 @@ AbaqusInstallation detectAbaqus(const std::string& overrideCommand) {
         inst.message = "Found " + inst.command + " but it did not report a version (exit code " +
                        std::to_string(res.exitCode) + ").";
     }
-    // User subroutines on Windows need Intel oneAPI Fortran + MSVC; on Linux ifort/ifx or gfortran per site config.
-    const auto has = [](const char* exe) { return detail::which(exe).has_value(); };
-#ifdef _WIN32
-    inst.userSubroutinesCompilable = (has("ifort.exe") || has("ifx.exe")) && has("link.exe");
-#else
-    inst.userSubroutinesCompilable = has("ifort") || has("ifx") || has("gfortran");
-#endif
+    // Building user subroutines needs Intel Fortran + the Microsoft linker (prebuilt standardU.dll needs neither).
+    const auto tc = detectCompilerToolchain();
+    inst.userSubroutinesCompilable = tc.msvc && tc.intelFortran;
     return inst;
 }
 

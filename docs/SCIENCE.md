@@ -176,7 +176,7 @@ field, against the central FD of full re-equilibrated reruns at `a ± m h`.
 - Not supported: constraints (MPC/TIE/coupling/equations), contact, nonlinear MPCs, dynamics, multiphysics,
   RIKS.
 - Changing constrained-DOF sets between steps is not supported.
-- UMAT/UEL are opaque: only exposed PROPS are differentiable. They are untested on this machine (no Intel Fortran).
+- UMAT/UEL are opaque: only exposed PROPS are differentiable. They are validated at order 1 on small elastic examples (VALIDATION_RESULTS §3.5).
 - The derivative is that of the algorithm on the frozen grid. Cutbacks in perturbed reruns make validation
   impossible, and the run reports that rather than producing results.
 - Bifurcation and limit points (singular `K_FF`) are not handled beyond solver failure messages.

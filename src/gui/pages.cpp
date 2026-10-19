@@ -19,6 +19,7 @@
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QFile>
+#include <QFileDialog>
 #include <QFileInfo>
 #include <QFormLayout>
 #include <QGridLayout>
@@ -36,6 +37,7 @@
 #include <QScrollArea>
 #include <QSettings>
 #include <QShortcut>
+#include <QSpinBox>
 #include <QSplitter>
 #include <QStandardPaths>
 #include <QStorageInfo>
@@ -885,6 +887,54 @@ SetupPage::SetupPage(Controller* c, QWidget* parent) : QWidget(parent), controll
     cv->addWidget(validate_);
     v->addWidget(checks);
 
+    auto* abq = new QGroupBox("Abaqus");
+    abaqusBox_ = abq;
+    auto* abf = new QFormLayout(abq);
+    auto* subRow = new QHBoxLayout;
+    userSub_ = new QLineEdit;
+    userSub_->setPlaceholderText("Not needed for this model");
+    userSub_->setToolTip("UMAT/UEL used by this input file. A precompiled object or library (.obj/.o/.dll/.lib) is passed "
+                         "to Abaqus as-is; Fortran/C source (.f/.for/.f90/.c/.cpp) is compiled by Abaqus, which needs a "
+                         "configured Intel oneAPI Fortran + Visual Studio. ABSS never reads or uploads the subroutine.");
+    auto* browse = new QPushButton("File…");
+    browse->setToolTip("Fortran/C source, object file (.obj), or a prebuilt standardU.dll");
+    auto* browseDir = new QPushButton("Folder…");
+    browseDir->setToolTip("A folder containing a prebuilt standardU.dll (no source and no compiler needed)");
+    subRow->addWidget(userSub_, 1);
+    subRow->addWidget(browse);
+    subRow->addWidget(browseDir);
+    abf->addRow("User subroutine", subRow);
+    userSubNote_ = secondary({});
+    userSubNote_->setWordWrap(true);
+    abf->addRow(userSubNote_);
+    jobs_ = new QSpinBox;
+    jobs_->setRange(1, 16);
+    jobs_->setValue(std::clamp(QSettings().value("abaqusJobs", 2).toInt(), 1, 16));
+    jobs_->setToolTip("How many Abaqus jobs ABSS may run at the same time. Each job takes licence tokens; a job that "
+                      "cannot get a licence fails, so keep this within your licence.");
+    abf->addRow("Simultaneous Abaqus jobs", jobs_);
+    v->addWidget(abq);
+    connect(browse, &QPushButton::clicked, this, [this]() {
+        const QString f = QFileDialog::getOpenFileName(
+            this, "Choose the user subroutine (UMAT/UEL)", QFileInfo(controller_->inpPath()).absolutePath(),
+            "User subroutines (*.obj *.o *.dll *.lib *.f *.for *.f90 *.c *.cpp);;All files (*)");
+        if (!f.isEmpty()) userSub_->setText(QDir::toNativeSeparators(f));
+    });
+    connect(browseDir, &QPushButton::clicked, this, [this]() {
+        const QString d = QFileDialog::getExistingDirectory(this, "Folder containing a prebuilt standardU.dll",
+                                                            QFileInfo(controller_->inpPath()).absolutePath());
+        if (!d.isEmpty()) userSub_->setText(QDir::toNativeSeparators(d));
+    });
+    connect(userSub_, &QLineEdit::textChanged, this, [this]() {
+        updateCost();
+        emit settingsChanged();
+    });
+    connect(jobs_, &QSpinBox::valueChanged, this, [this](int n) {
+        QSettings().setValue("abaqusJobs", n);
+        updateCost();
+        emit settingsChanged();
+    });
+
     auto* advToggle = new QToolButton;
     advToggle->setText("▸ Advanced settings");
     advToggle->setCheckable(true);
@@ -982,6 +1032,28 @@ void SetupPage::reload() {
     outputs_.clear();
     if (!m) return;
     const bool inp = controller_->source() == Controller::Source::Inp;
+    abaqusBox_->setVisible(inp);
+    const auto* deck = controller_->deck();
+    const bool needsSub = inp && deck && (deck->usesUserMaterial() || deck->usesUserElement());
+    userSub_->setEnabled(needsSub);
+    userSub_->setPlaceholderText(needsSub ? "Required: this model uses a user subroutine" : "Not needed for this model");
+    if (!needsSub) userSub_->clear();
+    QString tcText;
+    if (needsSub) {
+        const auto tc = detectCompilerToolchain();
+        tcText = tc.msvc && tc.intelFortran
+                     ? QString("Compilers on this computer: Microsoft C++ + Intel %1, so source and .obj files work too.")
+                           .arg(qs(tc.fortranCompiler))
+                     : QString("No Fortran compiler/linker on this computer: choose a prebuilt standardU.dll (or its "
+                               "folder), or run scripts\\setup_dependencies.ps1 -UserSubroutines to install them.");
+    }
+    userSubNote_->setText(
+        needsSub ? QString("This input file uses a %1. Abaqus can only run it with the compiled subroutine. A prebuilt "
+                           "standardU.dll (or the folder containing it) needs no source code and no compiler; source "
+                           "(.f/.for/.c) or an .obj file is built once into such a library. %2")
+                       .arg(deck->usesUserElement() ? "user element (UEL)" : "user material (UMAT)", tcText)
+                 : QString());
+    userSubNote_->setVisible(needsSub);
     validate_->setChecked(!inp);
     validate_->setText(inp ? "Validate against full re-analyses (each is a complete Abaqus analysis)" : "Validate against full re-analyses");
     if (m->fields.empty()) {
@@ -1039,6 +1111,8 @@ RunSettings SetupPage::settings() const {
     for (auto* b : outputs_)
         if (b->isChecked()) s.outputs.push_back(b->property("field").toString().toStdString());
     s.abaqusCommand = QSettings().value("abaqusCommand").toString().toStdString();
+    s.userSubroutine = userSub_->text().trimmed().toStdString();
+    s.concurrentJobs = jobs_->value();
     return s;
 }
 
@@ -1060,6 +1134,15 @@ QString SetupPage::firstProblem() const {
     if (!controller_->model()) return "Open an input file or a demo first.";
     if (controller_->source() == Controller::Source::Project)
         return "These results were opened from a file. Open the model's input file or a demo to compute new results.";
+    if (controller_->source() == Controller::Source::Inp) {
+        const auto* deck = controller_->deck();
+        if (deck && (deck->usesUserMaterial() || deck->usesUserElement())) {
+            const QString f = userSub_->text().trimmed();
+            if (f.isEmpty())
+                return "This model uses a user subroutine (UMAT/UEL). Choose it under Abaqus ▸ User subroutine.";
+            if (!QFileInfo::exists(f)) return "The chosen user subroutine file does not exist: " + f;
+        }
+    }
     return {};
 }
 
@@ -1238,10 +1321,27 @@ void RunPage::onFinished(bool ok, bool cancelled, const QString& message, const 
     } else if (message.contains("not found", Qt::CaseInsensitive) && message.contains("Abaqus", Qt::CaseInsensitive)) {
         error_->showError("Abaqus is needed to run this model", message,
                           {"Locate abaqus.bat on the Start page", "Try the demo models (no Abaqus needed)"}, detail);
-    } else {
-        error_->showError("The run could not be completed", message,
-                          {"Show details below and check the log", "Try a smaller step size (Set up ▸ Advanced settings)"},
+    } else if (message.contains("user subroutine", Qt::CaseInsensitive)) {
+        error_->showError("This model needs its user subroutine", message,
+                          {"Choose the UMAT/UEL file under Set up ▸ Abaqus ▸ User subroutine",
+                           "A precompiled .obj/.dll needs no Fortran compiler; source files need Intel oneAPI Fortran + "
+                           "Visual Studio configured for Abaqus",
+                           "The demo models run without Abaqus or subroutines"},
                           detail);
+    } else if (message.contains("not supported", Qt::CaseInsensitive) || message.contains("not replayed", Qt::CaseInsensitive) ||
+               message.contains("needs a flat input", Qt::CaseInsensitive)) {
+        error_->showError("This model uses a feature ABSS cannot differentiate yet", message,
+                          {"See docs/KNOWN_LIMITATIONS.md for the supported Abaqus features",
+                           "Parameters and the mesh can still be inspected on the Parameters page"},
+                          detail);
+    } else if (message.contains("did not complete", Qt::CaseInsensitive) || message.contains("Abaqus job", Qt::CaseInsensitive)) {
+        error_->showError("An Abaqus job failed", message,
+                          {"Show details below: the Abaqus error message is included",
+                           "The job's .dat/.msg files are in the scratch folder named in the log",
+                           "If it is a licence error, lower Set up ▸ Abaqus ▸ Simultaneous Abaqus jobs"},
+                          detail);
+    } else {
+        error_->showError("The run could not be completed", message, {"Show details below and check the log"}, detail);
     }
 }
 

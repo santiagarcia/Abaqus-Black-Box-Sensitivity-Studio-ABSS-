@@ -9,6 +9,10 @@
 
 #include <vector>
 
+class QLineEdit;
+class QSpinBox;
+class QLabel;
+
 class QButtonGroup;
 class QCheckBox;
 class QComboBox;
@@ -147,6 +151,10 @@ private:
     std::vector<QCheckBox*> outputs_;
     QLabel* outputsNote_;
     QCheckBox* validate_;
+    QWidget* abaqusBox_ = nullptr;
+    QLineEdit* userSub_ = nullptr;
+    QSpinBox* jobs_ = nullptr;
+    QLabel* userSubNote_ = nullptr;
     QCheckBox* tangent_;
     QDoubleSpinBox* step_;
     QWidget* advanced_;

@@ -24,7 +24,12 @@ hidden behind fabricated output.
 - **Shells and rotations.** Rotational DOFs are prescribed as Abaqus UR values. Whether a prescribed UR under NLGEOM
   equals a total rotation vector is unverified (H-UR), so shell results are Unverified until test C3 passes.
 - **User subroutines.** UMAT/UEL subroutines are treated as opaque; only `PROPS[k]` are differentiable, and
-  `JPROPS`/`*DEPVAR` are info-only. Neither was run on the development machine (no Intel Fortran).
+  `JPROPS`/`*DEPVAR` are info-only. Validated on Abaqus 2024 only for small elastic examples (a UMAT cube and a UEL
+  truss, order 1). A UMAT with plasticity, a UEL with internal DOFs, and orders ≥ 2 with user subroutines have not
+  been run. Building from source or `.obj` needs Intel Fortran (ifort or ifx) and the MSVC linker. The direct build
+  (used when Abaqus lacks its user-subroutine development files) was tested with ifx 2025.1 and Abaqus 2024 only.
+  `/iface:cref` sets the export names, so a C/C++ subroutine must use lowercase unmangled names (`extern "C" void
+  umat(...)`). A prebuilt `standardU.dll` must match the Abaqus release that loads it.
 - **Cost.** Every probe and commit is an Abaqus job (about 13 s of start-up each on the development PC). One
   increment at order K with P parameters needs about `2 + P·2M·(K+1)` jobs (plus tangent checks and Krylov
   operator applications), run up to `--jobs N` at a time. Large models with many increments are expensive; the app

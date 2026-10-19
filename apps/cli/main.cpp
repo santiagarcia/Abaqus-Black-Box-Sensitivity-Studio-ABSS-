@@ -35,6 +35,9 @@ void usage() {
   abss-cli run <model.inp> --params id1,id2 [--order K] [--rel-step h] [--jobs N] [--user file.f|.obj] [--scratch dir]
                 [--out file.abss] [--validate] [--keep] [--no-tangent-check]
       Real Abaqus sensitivity run (requires Abaqus + licence).
+  abss-cli usersub <file.f|file.obj|standardU.dll|folder> [--out dir]
+      Prepare a UMAT/UEL library once (build from source/.obj with `abaqus make`, or accept a prebuilt
+      standardU.dll) and report the compiler toolchain. Prebuilt libraries need no compiler.
   abss-cli bench [--n N]
       Measured benchmarks: Kokkos vs serial kernels, factorization reuse across RHS.
   abss-cli show <file.abss>
@@ -151,7 +154,7 @@ int cmdAbaqusInfo(int argc, char** argv) {
     auto o = parseOpts(argc, argv, 2);
     auto inst = detectAbaqus();
     std::cout << inst.message << "\n";
-    std::cout << "User subroutines compilable here: " << (inst.userSubroutinesCompilable ? "yes" : "no") << "\n";
+    std::cout << "User subroutines: " << detectCompilerToolchain().message << "\n";
     if (o.count("check-licence")) {
         checkAbaqusLicense(inst, o["check-licence"]);
         std::cout << inst.message << "\n";
@@ -215,6 +218,22 @@ int cmdRun(int argc, char** argv) {
         saveProject(o["out"], store, meta);
         std::cout << "Saved " << o["out"] << "\n";
     }
+    return 0;
+}
+
+int cmdUsersub(int argc, char** argv) {
+    if (argc < 3) return usage(), 2;
+    auto o = parseOpts(argc, argv, 3);
+    auto inst = detectAbaqus();
+    if (!inst.found) {
+        std::cerr << inst.message << "\n";
+        return 1;
+    }
+    const auto tc = detectCompilerToolchain();
+    std::cout << "Toolchain: " << tc.message << "\n";
+    const std::string out = o.count("out") ? o["out"] : (std::filesystem::temp_directory_path() / "abss_usersub").string();
+    const auto lib = prepareUserSubroutine(inst.command, argv[2], out, [](const std::string& s) { std::cout << "  " << s << "\n"; });
+    std::cout << "Library folder: " << lib.libraryDir << " (" << lib.kind << (lib.builtHere ? ", built now" : "") << ")\n";
     return 0;
 }
 
@@ -338,6 +357,7 @@ int main(int argc, char** argv) {
         if (cmd == "run") return cmdRun(argc, argv);
         if (cmd == "bench") return cmdBench(argc, argv);
         if (cmd == "show") return cmdShow(argc, argv);
+        if (cmd == "usersub") return cmdUsersub(argc, argv);
         usage();
         return 2;
     } catch (const std::exception& e) {

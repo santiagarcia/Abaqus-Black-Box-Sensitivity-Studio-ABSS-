@@ -26,13 +26,24 @@ Everything runs locally. Nothing is uploaded anywhere.
 | **Real Abaqus 2024**: CPS4 J2 plasticity, 20 increments with load/unload; E, σ_y, prescribed displacement, order 1 | **Validated**: every increment and every field against full Abaqus reruns (5.0e-4, 3.2e-4, 1.6e-5). Abaqus's elastic tangent was detected at all 11 plastic increments and corrected with GMRES | VALIDATION_RESULTS §3.3 |
 | Real Abaqus order 2 beyond the elastic truss | not yet run (cost: about 3× the order-1 jobs) | ABAQUS_REQUIRED_TESTS |
 | Order 3 | **Experimental** (exact on the analytic truss; not validated on real Abaqus) | |
-| UMAT / UEL (opaque PROPS) | Implemented (`--user`); **not run** (no Intel Fortran on the development machine) | [ABAQUS_REQUIRED_TESTS](docs/ABAQUS_REQUIRED_TESTS.md) B1–B4 |
+| **Real Abaqus 2024**: UMAT and UEL with opaque `PROPS`, each given as Fortran source, as an `.obj` only, and as a prebuilt library only (no source, no object) | **Validated** (order 1): analytic `dU/dPROPS` to 1e-6 relative for all six runs; the three forms agree to 1e-10 | `test_abaqus_usersub.cpp`, VALIDATION_RESULTS §3.5 |
 | MPC/TIE/coupling, contact, dynamics, RIKS, parts/instances in the Abaqus backend | **Refused with a message** | [KNOWN_LIMITATIONS](docs/KNOWN_LIMITATIONS.md) |
 
 Every result in the app carries its own evidence badge: **Validated**, **Experimental**, **Unverified**, **Failed**
 or **Synthetic**. The badge comes with notes, including suspect increments flagged by the non-smoothness detector.
 
-## Installation (Windows, as used for development)
+## Installation (Windows)
+
+**Installer.** Run `ABSS-Setup-<version>.exe`, which `scripts\package.ps1` builds into `dist\`. It asks for
+administrator rights once. Its components page offers the optional *User-subroutine compilers (UMAT/UEL)*. If you tick
+that component and accept the vendor licences, the installer detects Microsoft C++ Build Tools and Intel Fortran
+(oneAPI `ifx`). Any that are missing are downloaded and installed silently; the Intel installer is checked against
+its published SHA-256 and the Microsoft one by its signature. You can rerun this check later with
+`tools\toolchain.ps1 -Install` from the install folder.
+
+**From source, automatically:** `powershell -ExecutionPolicy Bypass -File scripts\setup_dependencies.ps1
+[-UserSubroutines]`. This finds or downloads MSYS2, its packages and Kokkos, optionally the compilers, then builds and
+tests ABSS. The manual steps it automates are:
 
 1. **MSYS2 UCRT64** (user-local install, no admin needed):
    ```powershell
@@ -104,8 +115,17 @@ GUI: **File → Open** an `.inp`, select parameters, then Run. CLI:
 - **Inputs.** Requirements in this version: a flat deck (no parts/instances) with `*STATIC` steps and
   `*BOUNDARY`/`*CLOAD`/`*DLOAD`/`*DSLOAD` loading. The original INP is never modified; edited copies live in the
   scratch folder.
-- **User subroutines.** For a UMAT/UEL model, pass `--user my_umat.f` (or `.obj`). PROPS are differentiated as opaque
-  indexed constants.
+- **User subroutines.** For a UMAT/UEL model, pass `--user` (GUI: Set up ▸ Abaqus ▸ User subroutine) with one of:
+  - Fortran or C source (`.f`, `.for`, `.f90`, `.c`, `.cpp`);
+  - an object file (`.obj`), without its source;
+  - a folder containing a prebuilt `standardU.dll`, or the DLL itself. No compiler is needed for this.
+
+  ABSS builds the library once per run and gives it to every Abaqus job through `usub_lib_dir`. If the Abaqus
+  installation has its user-subroutine development files, ABSS uses `abaqus make` (configured for `ifx` when
+  `ifort` is absent). Otherwise it builds `standardU.dll` directly: it compiles with the Abaqus flags, then links
+  your routines together with thunks that forward every other entry point to Abaqus's stub library. The built folder
+  (`standardU.dll` + `abss_abqstub.dll`) can be reused without the source: `abss-cli usersub my_umat.f --out lib`.
+  PROPS are differentiated as opaque indexed constants.
 - **Cost.** Every probe and commit is a short Abaqus job (about 13 s of start-up on the development PC). `--jobs N`
   runs N at once (licence permitting). See SCIENCE.md §8 for the job anatomy.
 

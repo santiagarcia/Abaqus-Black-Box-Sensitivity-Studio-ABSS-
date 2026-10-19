@@ -177,6 +177,7 @@ public:
     std::string strainKey_ = "E";
     bool hasLoads_[3] = {false, false, false};  // CLOAD, DLOAD, DSLOAD
     std::vector<std::string> elsetLines_;
+    std::string usubDir_;  ///< folder with standardU.dll loaded by every job (usub_lib_dir); empty = no user subroutine
     std::unique_ptr<std::counting_semaphore<64>> jobs_;
     mutable std::mutex logMutex_;
     std::atomic<int> branchCounter_{0};
@@ -211,6 +212,13 @@ AbaqusOracle::AbaqusOracle(AbaqusRunConfig cfg) : cfg_(std::move(cfg)) {
             throw std::runtime_error("This model uses a user subroutine (UMAT/UEL). Provide the compiled object/library "
                                      "(or source with a working Abaqus compiler) in the run settings.");
     abq::LoadEvaluator check(*deck_);  // throws on unsupported load/BC features
+    if (!cfg_.userSubroutine.empty()) {
+        // Build (or accept a prebuilt) standardU.dll ONCE; every job then loads it without compiling.
+        const auto lib = prepareUserSubroutine(cfg_.abaqusCommand, cfg_.userSubroutine,
+                                               (fs::path(cfg_.scratchDir) / "usub_lib").string(),
+                                               [this](const std::string& s) { log(s); });
+        usubDir_ = lib.libraryDir;
+    }
     jobs_ = std::make_unique<std::counting_semaphore<64>>(std::clamp(cfg_.maxConcurrentJobs, 1, 64));
     // Whole-model element set for *ELEMENT MATRIX OUTPUT.
     std::string line;
@@ -286,7 +294,15 @@ abq::FilIncrement AbaqusOracle::runJob(const fs::path& dir, const std::string& j
                                        bool expectSingle, double expectTotal, std::vector<abq::FilIncrement>* all) {
     std::vector<std::string> args = {"job=" + job, "interactive", "ask_delete=OFF", "cpus=" + std::to_string(cfg_.cpus)};
     if (!oldjob.empty()) args.push_back("oldjob=" + oldjob);
-    if (!cfg_.userSubroutine.empty()) args.push_back("user=" + cfg_.userSubroutine);
+    if (!usubDir_.empty()) {
+        // Job-directory environment file: load the prebuilt user-subroutine library (no per-job compilation).
+        const fs::path envFile = dir / "abaqus_v6.env";
+        std::error_code ec;
+        if (!fs::exists(envFile, ec)) {
+            std::lock_guard<std::mutex> lk(logMutex_);
+            if (!fs::exists(envFile, ec)) writeText(envFile, "usub_lib_dir = r\"" + usubDir_ + "\"\n");
+        }
+    }
     jobs_->acquire();
     detail::ProcessResult res;
     try {

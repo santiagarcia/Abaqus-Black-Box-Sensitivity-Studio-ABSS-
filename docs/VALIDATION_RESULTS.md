@@ -163,6 +163,27 @@ mechanism ABSS implements.
 | E4: NLGEOM neo-Hookean with follower pressure, one-shot oracle | residual 2.3e-11. Hypoelastic `*ELASTIC` needs history replay: 83% error one-shot, 2.7e-9 with replay |
 | **E5: end-to-end first-order plastic sensitivity**, 2×2 J2 plate, 10 plastic increments, 140 Abaqus jobs, tangent from oracle FD columns | **6.0e-5 to 1.1e-4 at every increment** against converged central FD of complete re-solves; the error falls linearly with the tangent FD step |
 
+### 3.5 User subroutines: UMAT and UEL, source / object-only / library-only (`test_abaqus_usersub.cpp`)
+Environment: Abaqus 2024 **without** its user-subroutine development files (`aba_param.inc` and the import
+libraries are absent, so `abaqus make` cannot work), Intel ifx 2025.1.1, and MSVC 14.44 link. ABSS used its direct
+build. Each subroutine was compiled once from `examples/subroutines/*.f`. Two further folders were then staged: one
+holding only the `.obj`, and one holding only the built DLLs, with no source and no object. Each form was then run
+through the full ABSS pipeline (nominal job, probes, commits, order 1, 4 concurrent jobs).
+
+| Model | Parameter | Analytic | Forms | Result |
+|---|---|---|---|---|
+| UMAT, unit cube, uniaxial ε = 1e-3, 4 increments | dU2(node 3)/dPROPS2 (ν) | −1e-3 | source, obj, library | pass, rel. 1e-6 |
+| | dU2/dPROPS1 (E) | 0 | all three | pass, \|·\| < 1e-12 |
+| | dRF1(node 3)/dPROPS1 | 2.5e-4 | all three | pass, rel. 1e-5 |
+| | tangent check (frame 0) | — | all three | < 1e-6 |
+| | full dU/dν field: obj and library vs. source | — | | agree to 1e-10 |
+| UEL truss (`*UEL PROPERTY`) | du(node 2)/dPROPS1 (E) | −2.5e-7 | source, obj, library | pass, rel. 1e-6 |
+| | du/dPROPS2 (A) | −5e-3 | all three | pass, rel. 1e-6 |
+
+Doctest reported 2 test cases, 112 assertions, 0 failures, after 1518 s (wall clock). The first attempt failed in the
+UEL case before any Abaqus job ran. The cause was a second compiler-environment load in the same process (vcvars64
+on an already-extended PATH). The fix is to load the environment once per process.
+
 ## 4. Performance (measured with `abss-cli bench --n 400`, 24 threads)
 | Kernel | Serial | Kokkos OpenMP | Speedup |
 |---|---|---|---|

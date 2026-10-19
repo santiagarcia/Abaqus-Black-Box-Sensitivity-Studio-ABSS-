@@ -39,6 +39,7 @@ add_library(abss_oracle STATIC
   oracle/abaqus_process.cpp
   oracle/abaqus_files.cpp
   oracle/abaqus_loads.cpp
+  oracle/abaqus_usersub.cpp
   oracle/abaqus_oracle.cpp
 )
 target_link_libraries(abss_oracle PUBLIC abss_core abss_inp abss_linalg)

@@ -53,6 +53,8 @@ struct RunSettings {
     double relativeStep = 0.0;     ///< 0 = each parameter's default
     std::vector<std::string> outputs;  ///< field names to keep (empty = all)
     std::string abaqusCommand;     ///< user override for the Abaqus launcher (empty = auto-detect)
+    std::string userSubroutine;    ///< UMAT/UEL object, library or source passed to Abaqus as user= (empty = none)
+    int concurrentJobs = 2;        ///< simultaneous Abaqus jobs (licence permitting)
 };
 
 struct CostEstimate {

@@ -57,3 +57,18 @@ if (Test-Path $zip) { Remove-Item $zip }
 Compress-Archive -Path $out -DestinationPath $zip
 Write-Output "Packaged $($seen.Count) DLLs into $out"
 Write-Output "Archive: $zip"
+
+# Windows installer (NSIS): one administrator prompt, components page, optional user-subroutine compilers.
+$makensis = Join-Path $ucrt "makensis.exe"
+if (-not (Test-Path $makensis)) {
+    Write-Output "Installing NSIS (makensis) into MSYS2..."
+    & (Join-Path $Msys2Root "usr\bin\bash.exe") -lc "pacman -S --noconfirm --needed mingw-w64-ucrt-x86_64-nsis"
+}
+$version = (Select-String -Path (Join-Path $root "CMakeLists.txt") -Pattern "project\(ABSS VERSION ([0-9.]+)").Matches[0].Groups[1].Value
+$setup = Join-Path $root "$OutDir\ABSS-Setup-$version.exe"
+Push-Location (Join-Path $root "packaging")
+& $makensis /V2 "/DDISTDIR=$out" "/DOUTFILE=$setup" "/DVERSION=$version" abss.nsi
+$rc = $LASTEXITCODE
+Pop-Location
+if ($rc -ne 0) { throw "makensis failed ($rc)" }
+Write-Output "Installer: $setup"
