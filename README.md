@@ -27,19 +27,31 @@ Everything runs locally. Nothing is uploaded anywhere.
 | Real Abaqus order 2 beyond the elastic truss | not yet run (cost: about 3× the order-1 jobs) | ABAQUS_REQUIRED_TESTS |
 | Order 3 | **Experimental** (exact on the analytic truss; not validated on real Abaqus) | |
 | **Real Abaqus 2024**: UMAT and UEL with opaque `PROPS`, each given as Fortran source, as an `.obj` only, and as a prebuilt library only (no source, no object) | **Validated** (order 1): analytic `dU/dPROPS` to 1e-6 relative for all six runs; the three forms agree to 1e-10 | `test_abaqus_usersub.cpp`, VALIDATION_RESULTS §3.5 |
-| MPC/TIE/coupling, contact, dynamics, RIKS, parts/instances in the Abaqus backend | **Refused with a message** | [KNOWN_LIMITATIONS](docs/KNOWN_LIMITATIONS.md) |
+| **Real Abaqus 2024**: part/assembly/instance decks (rotated instances, label gaps), steps and assemblies in `*INCLUDE` files | **Validated** (5.5e-7 on the instance and include models) | VALIDATION_RESULTS §3.6 |
+| **Real Abaqus 2024**: material bridge for compiled materials Abaqus cannot load (Linux `.so` under WSL, or a `.dll` with its own interface) | **Validated** with a Windows test library (1.5e-6); the Linux/WSL path awaits WSL on the test machine | §3.6 |
+| **Real Abaqus 2024**: implicit `*DYNAMIC` (HHT), NLGEOM; derivatives w.r.t. E and density | **Validated** (8e-9, 9e-9) | §3.6 |
+| **Real Abaqus 2024, verification package**: TIE + coupling, large-rotation shell, contact, released BCs, thermal stress with step temperatures, `*VISCO` creep, follower pressure, implicit dynamics, UMAT, UEL, bridge, assemblies, includes, plasticity | **16 models, 39 derivatives, all Validated** (worst 4.3e-4, most 1e-7..1e-10) | VALIDATION_RESULTS §3.7, `dist\ABSS-Verification` |
+| *EQUATION, *MPC, distributing coupling, rigid bodies, non-TABULAR amplitudes other than SMOOTH STEP | **Implemented**, unit-tested, guarded by the run-time replay check; not yet run on Abaqus | ABAQUS_REQUIRED_TESTS C5, C11 |
+| RIKS, explicit dynamics, heat transfer, dynamics combined with constraints | **Refused with the reason** | KNOWN_LIMITATIONS |
 
 Every result in the app carries its own evidence badge: **Validated**, **Experimental**, **Unverified**, **Failed**
 or **Synthetic**. The badge comes with notes, including suspect increments flagged by the non-smoothness detector.
 
-## Installation (Windows)
+## Installation
 
-**Installer.** Run `ABSS-Setup-<version>.exe`, which `scripts\package.ps1` builds into `dist\`. It asks for
-administrator rights once. Its components page offers the optional *User-subroutine compilers (UMAT/UEL)*. If you tick
-that component and accept the vendor licences, the installer detects Microsoft C++ Build Tools and Intel Fortran
-(oneAPI `ifx`). Any that are missing are downloaded and installed silently; the Intel installer is checked against
-its published SHA-256 and the Microsoft one by its signature. You can rerun this check later with
-`tools\toolchain.ps1 -Install` from the install folder.
+One file per platform does everything; `scripts\package.ps1` builds both into `dist\`.
+
+| Platform | Run | What it does |
+|---|---|---|
+| **Windows** | `ABSS-Setup-<version>.exe` | One administrator prompt. Installs the application, the examples, the ELF host for Linux material libraries, and the compilers for user subroutines (Microsoft C++ Build Tools, Intel Fortran). Missing compilers are downloaded and installed silently after one licence consent; the Intel download is checked against its published SHA-256 and the Microsoft one by its signature. Unattended deployment: `ABSS-Setup-<version>.exe /S /ACCEPT_LICENSES`. |
+| **Linux workstation** | `bash ABSS-Installer-Linux-<version>.run` | No root rights. Downloads a private toolchain into `~/abss` (micromamba + conda-forge: compilers, CMake, Qt 6, VTK, Kokkos/OpenMP, SuiteSparse, OpenBLAS…), builds ABSS, runs its tests, installs `abss` and `abss-cli`, a desktop entry and a PATH entry, and records the Abaqus it finds. |
+| **HPC cluster** | the same `.run` on a login node | Detects the scheduler (Slurm/PBS/LSF) or the missing display and builds the headless `abss-cli`. Writes an environment module (`module use ~/abss/modulefiles && module load abss`) and a Slurm template (`~/abss/share/abss/hpc/abss_slurm.sh`). Finds Abaqus through `ABSS_ABAQUS_CMD`, PATH or `module load abaqus`, which the launchers then load automatically. |
+
+Options (Linux): `--prefix DIR`, `--cli-only`, `--gui`, `--jobs N`, `--abaqus CMD`, `--no-tests`, `--toolchain DIR`.
+On Linux, compiled material libraries (`.so`) are loaded in-process by a generated UMAT, so no helper is needed.
+
+The Windows compilers can be checked or installed again later with `tools\toolchain.ps1 -Install` from the install
+folder.
 
 **From source, automatically:** `powershell -ExecutionPolicy Bypass -File scripts\setup_dependencies.ps1
 [-UserSubroutines]`. This finds or downloads MSYS2, its packages and Kokkos, optionally the compilers, then builds and
@@ -112,9 +124,10 @@ GUI: **File → Open** an `.inp`, select parameters, then Run. CLI:
      --order 2 --jobs 4 --validate --out truss.abss
 .\build\bin\abss-cli.exe show truss.abss                                    # evidence summary, no Abaqus needed
 ```
-- **Inputs.** Requirements in this version: a flat deck (no parts/instances) with `*STATIC` steps and
-  `*BOUNDARY`/`*CLOAD`/`*DLOAD`/`*DSLOAD` loading. The original INP is never modified; edited copies live in the
-  scratch folder.
+- **Inputs.** Flat or part/assembly decks, with or without `*INCLUDE`s, using `*STATIC`, `*VISCO` or implicit
+  `*DYNAMIC` steps, constraints, contact, and `*BOUNDARY`/`*CLOAD`/`*DLOAD`/`*DSLOAD`/`*TEMPERATURE` loading with any
+  analytic amplitude. The exceptions are in KNOWN_LIMITATIONS. The original INP is never modified; edited and
+  flattened copies live in the scratch folder.
 - **User subroutines.** For a UMAT/UEL model, pass `--user` (GUI: Set up ▸ Abaqus ▸ User subroutine) with one of:
   - Fortran or C source (`.f`, `.for`, `.f90`, `.c`, `.cpp`);
   - an object file (`.obj`), without its source;
@@ -126,6 +139,15 @@ GUI: **File → Open** an `.inp`, select parameters, then Run. CLI:
   your routines together with thunks that forward every other entry point to Abaqus's stub library. The built folder
   (`standardU.dll` + `abss_abqstub.dll`) can be reused without the source: `abss-cli usersub my_umat.f --out lib`.
   PROPS are differentiated as opaque indexed constants.
+- **Compiled materials Abaqus cannot load (material bridge).** Pass the library, or its vendor package folder, as
+  the user subroutine. That can be a Linux `.so`, or a Windows `.dll` that exports a standard UMAT or a
+  deformation-gradient update plus a state initialiser (for example `ti_regular` / `ti_reg_sdvini`). ABSS generates
+  a UMAT/SDVINI `standardU.dll` that forwards every material-point call to a helper process running the library.
+  A Linux `.so` runs natively in ABSS's ELF host (`abss_elfhost.exe`, installed with ABSS, no WSL needed). A `.dll`
+  runs under Abaqus's own Python. Sizes declared in a header next to the library (`#define …_NTENS/_NSTATV/_NPROPS`)
+  are checked against the deck. Linux libraries that read input files, or need imports the ELF host does not
+  provide, run under WSL instead (administrator: `wsl --install -d Ubuntu`, then in Ubuntu
+  `sudo apt install python3 liblapack3 libblas3 libgfortran5`).
 - **Cost.** Every probe and commit is a short Abaqus job (about 13 s of start-up on the development PC). `--jobs N`
   runs N at once (licence permitting). See SCIENCE.md §8 for the job anatomy.
 

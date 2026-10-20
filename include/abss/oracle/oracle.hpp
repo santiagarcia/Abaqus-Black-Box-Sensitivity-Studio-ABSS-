@@ -74,6 +74,12 @@ public:
     virtual std::vector<std::vector<double>> runNominal(ResultStore& store, const ProgressFn& progress) = 0;
 
     virtual const DofMap& dofMap() const = 0;
+    /// Unknown (free) DOFs at frame i. Differs from dofMap().freeIndices() only when the constrained set changes
+    /// between steps (a boundary condition added or released): a DOF is free in the frames where no BC holds it.
+    virtual std::vector<std::int32_t> freeIndicesAt(int frame) const {
+        (void)frame;
+        return dofMap().freeIndices();
+    }
 
     /// Tangent K_i = -dr_i/du at the converged nominal state of frame i (full independent-DOF square matrix).
     virtual CsrMatrix tangent(int frame) = 0;

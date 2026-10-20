@@ -6,6 +6,7 @@
 #include "abss/oracle/synthetic.hpp"
 #include "abss/sensitivity/engine.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <cstdio>
@@ -33,8 +34,11 @@ void usage() {
   abss-cli abaqus-info [--check-licence <scratchdir>]
       Detect Abaqus and optionally run a tiny licence test job.
   abss-cli run <model.inp> --params id1,id2 [--order K] [--rel-step h] [--jobs N] [--user file.f|.obj] [--scratch dir]
-                [--out file.abss] [--validate] [--keep] [--no-tangent-check]
-      Real Abaqus sensitivity run (requires Abaqus + licence).
+                [--out file.abss] [--validate] [--val-step-factor F] [--keep] [--no-tangent-check]
+      A parameter id may be a linked direction "combo:<id>*<w>+<id>*<w>" (one scalar moving several values), e.g.
+      combo:umat:MAT:props:1*1+umat:MAT:props:2*-1 keeps PROPS[1]+PROPS[2] constant.
+      Real Abaqus sensitivity run (requires Abaqus + licence). --val-step-factor scales the validation reruns' FD
+      step relative to the engine step (default 1; larger steps reduce rerun noise for quantities near zero).
   abss-cli usersub <file.f|file.obj|standardU.dll|folder> [--out dir]
       Prepare a UMAT/UEL library once (build from source/.obj with `abaqus make`, or accept a prebuilt
       standardU.dll) and report the compiler toolchain. Prebuilt libraries need no compiler.
@@ -177,6 +181,39 @@ int cmdRun(int argc, char** argv) {
     cfg.abaqusCommand = inst.command;
     cfg.scratchDir = o.count("scratch") ? o["scratch"] : (std::filesystem::temp_directory_path() / "abss_run").string();
     cfg.parameters = inp::discoverParameters(deck);
+    // Linked parameters: "combo:<id>*<w>+<id>*<w>..." is one scalar t (nominal 0) that moves every listed value by
+    // w * t - the derivative along a constrained direction, e.g. two fractions whose sum must stay fixed.
+    for (const auto& id : split(o.count("params") ? o["params"] : "", ',')) {
+        if (id.rfind("combo:", 0) != 0) continue;
+        ParameterInfo c;
+        c.id = id;
+        c.category = ParamCategory::Custom;
+        c.confidence = Confidence::OpaqueIndexed;
+        c.mode = EditMode::Offset;
+        c.nominal = 0.0;
+        std::string label;
+        for (const auto& term : split(id.substr(6), '+')) {
+            const auto star = term.rfind('*');
+            const std::string pid = star == std::string::npos ? term : term.substr(0, star);
+            const double w = star == std::string::npos ? 1.0 : std::stod(term.substr(star + 1));
+            const auto it = std::find_if(cfg.parameters.begin(), cfg.parameters.end(), [&](const ParameterInfo& p) { return p.id == pid; });
+            if (it == cfg.parameters.end()) {
+                std::cerr << "Unknown parameter in " << id << ": " << pid << "\n";
+                return 2;
+            }
+            for (auto t : it->targets) {
+                t.weight = w;
+                c.targets.push_back(t);
+            }
+            std::ostringstream os;
+            os << (label.empty() ? "" : (w < 0 ? " - " : " + ")) << (label.empty() && w < 0 ? "-" : "")
+               << (std::abs(w) == 1.0 ? std::string() : std::to_string(std::abs(w)) + "*") << it->name;
+            label += os.str();
+        }
+        c.name = "linked: " + label;
+        c.description = "One scalar t moving several values together (" + label + "), derivative along that direction";
+        cfg.parameters.push_back(std::move(c));
+    }
     cfg.maxConcurrentJobs = o.count("jobs") ? std::stoi(o["jobs"]) : 1;
     if (o.count("user")) cfg.userSubroutine = std::filesystem::absolute(o["user"]).string();
     cfg.keepJobFiles = o.count("keep") > 0;
@@ -206,6 +243,7 @@ int cmdRun(int argc, char** argv) {
     std::cout << "Engine wall time " << rep.seconds << " s\n";
     if (o.count("validate")) {
         ValidationOptions vo;
+        if (o.count("val-step-factor")) vo.stepFactor = std::stod(o.at("val-step-factor"));
         std::cout << validateAgainstReruns(*oracle, req, store, vo, ctl);
     }
     printQuality(store);

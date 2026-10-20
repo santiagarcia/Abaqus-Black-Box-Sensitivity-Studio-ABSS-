@@ -1,7 +1,9 @@
 #include "abaqus_files.hpp"
 
 #include <charconv>
+#include <cmath>
 #include <cstdlib>
+#include <limits>
 #include <fstream>
 #include <regex>
 #include <sstream>
@@ -15,6 +17,11 @@ namespace {
 using Token = std::variant<std::int64_t, double, std::string>;
 
 double toDouble(std::string s) {
+    // Abaqus writes non-finite values (from a user material) as NAN / INF text: keep them as such so the caller can
+    // report which job and quantity went non-finite instead of failing on the number format.
+    if (s.find("NAN") != std::string::npos || s.find("nan") != std::string::npos) return std::numeric_limits<double>::quiet_NaN();
+    if (s.find("INF") != std::string::npos || s.find("inf") != std::string::npos)
+        return s.find('-') != std::string::npos ? -std::numeric_limits<double>::infinity() : std::numeric_limits<double>::infinity();
     for (char& c : s)
         if (c == 'D' || c == 'd') c = 'E';
     // classic-locale independent parse
@@ -35,34 +42,35 @@ std::vector<std::vector<Token>> filRecords(const std::string& path) {
         if (line.size() < 80) line.append(80 - line.size(), ' ');
         raw += line;
     }
+    // Token-by-token scan: a record starts with '*' at a token boundary. Character tokens ('A' + 8 characters) are
+    // consumed whole, so text such as a heading containing '*' cannot split a record.
     std::vector<std::vector<Token>> recs;
-    size_t pos = raw.find('*');
-    while (pos != std::string::npos) {
-        const size_t end = raw.find('*', pos + 1);
-        const std::string rec = raw.substr(pos + 1, end == std::string::npos ? std::string::npos : end - pos - 1);
-        std::vector<Token> toks;
-        size_t i = 0;
-        while (i < rec.size()) {
-            const char c = rec[i];
-            if (c == 'I') {
-                const int w = std::stoi(rec.substr(i + 1, 2));
-                toks.emplace_back(static_cast<std::int64_t>(std::stoll(rec.substr(i + 3, static_cast<size_t>(w)))));
-                i += 3 + static_cast<size_t>(w);
-            } else if (c == 'D') {
-                toks.emplace_back(toDouble(rec.substr(i + 1, 22)));
-                i += 23;
-            } else if (c == 'A') {
-                toks.emplace_back(rec.substr(i + 1, 8));
-                i += 9;
-            } else if (c == ' ') {
-                ++i;
-            } else {
-                throw std::runtime_error("Unexpected token '" + std::string(1, c) + "' in results file " + path);
-            }
+    std::vector<Token> toks;
+    size_t i = raw.find('*');
+    while (i != std::string::npos && i < raw.size()) {
+        const char c = raw[i];
+        if (c == '*') {
+            if (!toks.empty()) recs.push_back(std::move(toks));
+            toks.clear();
+            ++i;
+        } else if (c == 'I') {
+            if (i + 3 > raw.size()) break;
+            const int w = std::stoi(raw.substr(i + 1, 2));
+            toks.emplace_back(static_cast<std::int64_t>(std::stoll(raw.substr(i + 3, static_cast<size_t>(w)))));
+            i += 3 + static_cast<size_t>(w);
+        } else if (c == 'D') {
+            toks.emplace_back(toDouble(raw.substr(i + 1, 22)));
+            i += 23;
+        } else if (c == 'A') {
+            toks.emplace_back(raw.substr(i + 1, 8));
+            i += 9;
+        } else if (c == ' ') {
+            ++i;
+        } else {
+            throw std::runtime_error("Unexpected token '" + std::string(1, c) + "' in results file " + path);
         }
-        if (!toks.empty()) recs.push_back(std::move(toks));
-        pos = end;
     }
+    if (!toks.empty()) recs.push_back(std::move(toks));
     return recs;
 }
 
@@ -101,11 +109,11 @@ std::vector<FilIncrement> readFil(const std::string& path) {
         }
         if (incs.empty()) continue;
         auto& inc = incs.back();
-        if (key == 101 || key == 104 || key == 106) {
+        if (key == 101 || key == 102 || key == 103 || key == 104 || key == 106) {
             const auto node = inum(t[2]);
             std::vector<double> v;
             for (size_t k = 3; k < t.size(); ++k) v.push_back(num(t[k]));
-            (key == 101 ? inc.U : key == 104 ? inc.RF : inc.CF)[node] = std::move(v);
+            (key == 101 ? inc.U : key == 102 ? inc.V : key == 103 ? inc.A : key == 104 ? inc.RF : inc.CF)[node] = std::move(v);
         } else if (key == 1) {
             FilElementPoint p;
             p.element = inum(t[2]);
@@ -123,6 +131,30 @@ std::vector<FilIncrement> readFil(const std::string& path) {
         }
     }
     return incs;
+}
+
+FilModel readFilModel(const std::string& path) {
+    FilModel m;
+    for (const auto& t : filRecords(path)) {
+        if (t.size() < 3) continue;
+        const auto key = inum(t[1]);
+        if (key == 2000) break;  // model definition precedes the first increment
+        if (key == 1901) {
+            std::vector<double> x;
+            for (size_t k = 3; k < t.size(); ++k) x.push_back(num(t[k]));
+            m.nodes[inum(t[2])] = std::move(x);
+        } else if (key == 1900) {
+            std::string type;
+            std::vector<std::int64_t> nodes;
+            for (size_t k = 3; k < t.size(); ++k) {
+                if (auto* s = std::get_if<std::string>(&t[k])) type += *s;
+                else nodes.push_back(inum(t[k]));
+            }
+            while (!type.empty() && type.back() == ' ') type.pop_back();
+            m.elements[inum(t[2])] = {type, std::move(nodes)};
+        }
+    }
+    return m;
 }
 
 std::map<std::pair<int, int>, std::vector<EmoBlock>> readEmo(const std::string& path) {

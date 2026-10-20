@@ -1,5 +1,7 @@
 ; ABSS Windows installer (NSIS 3, Modern UI 2). Built by scripts\package.ps1:
 ;   makensis /DDISTDIR=<dist\ABSS> /DOUTFILE=<setup.exe> /DVERSION=<x.y.z> packaging\abss.nsi
+; Every component is selected by default; the only question is the compilers' licence consent.
+; Fully unattended (IT deployment):  ABSS-Setup-<v>.exe /S /ACCEPT_LICENSES  [/D=C:\path\to\ABSS]
 ; The installer asks for administrator rights once (Windows prompt). The optional "User-subroutine compilers"
 ; component asks for explicit consent to the vendors' licences, then detects/downloads/installs Microsoft C++ Build
 ; Tools and Intel Fortran inside this already-approved session (no further prompts).
@@ -9,6 +11,7 @@ Target amd64-unicode
 !include "LogicLib.nsh"
 !include "x64.nsh"
 !include "Sections.nsh"
+!include "FileFunc.nsh"
 
 !ifndef VERSION
   !define VERSION "0.1.0"
@@ -40,7 +43,7 @@ VIAddVersionKey "LegalCopyright" "ABSS contributors"
 
 !define MUI_ABORTWARNING
 !define MUI_WELCOMEPAGE_TITLE "Welcome to ${FULLNAME} ${VERSION}"
-!define MUI_WELCOMEPAGE_TEXT "ABSS computes how every result of an Abaqus/Standard analysis, at every accepted increment, changes when a model parameter changes, and lets you explore those sensitivities in 2D/3D.$\r$\n$\r$\nEverything runs on this computer; nothing is uploaded.$\r$\n$\r$\nOn the next page you can also install the optional compilers needed to build Abaqus user subroutines (UMAT/UEL) from source. Prebuilt subroutine libraries (standardU.dll) work without them.$\r$\n$\r$\nClick Next to continue."
+!define MUI_WELCOMEPAGE_TEXT "ABSS computes how every result of an Abaqus/Standard analysis, at every accepted increment, changes when a model parameter changes, and lets you explore those sensitivities in 2D/3D.$\r$\n$\r$\nEverything runs on this computer; nothing is uploaded.$\r$\n$\r$\nEverything is installed for you: the application, the examples, and the compilers for Abaqus user subroutines and compiled vendor materials (you are asked once to accept the Microsoft and Intel licences). Parts already on this computer are detected and skipped.$\r$\n$\r$\nClick Next to continue."
 !define MUI_COMPONENTSPAGE_SMALLDESC
 !define MUI_FINISHPAGE_RUN "$INSTDIR\abss.exe"
 !define MUI_FINISHPAGE_RUN_TEXT "Start ABSS now"
@@ -94,7 +97,10 @@ Section "Desktop shortcut" SecDesktop
   CreateShortcut "$DESKTOP\ABSS.lnk" "$INSTDIR\abss.exe"
 SectionEnd
 
-Section /o "User-subroutine compilers (UMAT/UEL)" SecTool
+Var AcceptLicences
+Section "User-subroutine compilers (UMAT/UEL)" SecTool
+  ; Unattended installs (/S) accept the vendor licences only when /ACCEPT_LICENSES is given on the command line.
+  StrCmp $AcceptLicences "1" tool_go
   MessageBox MB_YESNO|MB_ICONQUESTION "ABSS will now download and install, if they are missing:$\r$\n$\r$\n  - Microsoft Visual Studio 2022 Build Tools (C++), about 2-4 GB$\r$\n  - Intel oneAPI HPC Toolkit 2025.1 (Fortran compiler), about 2.8 GB download$\r$\n$\r$\nThese are installed under their own licences:$\r$\n  Microsoft: https://visualstudio.microsoft.com/license-terms/$\r$\n  Intel: https://www.intel.com/content/www/us/en/developer/articles/license/end-user-license-agreement.html$\r$\n$\r$\nDo you accept these licences and want to install them now? (This can take 30 minutes or more.)" /SD IDNO IDYES tool_go
     DetailPrint "User-subroutine compilers: skipped (licences not accepted)."
     Goto tool_done
@@ -118,7 +124,7 @@ SectionEnd
   !insertmacro MUI_DESCRIPTION_TEXT ${SecApp} "The ABSS desktop application and command-line tool (required)."
   !insertmacro MUI_DESCRIPTION_TEXT ${SecDocs} "Example Abaqus models (truss, J2 plasticity, UMAT, UEL) and the science/validation documentation."
   !insertmacro MUI_DESCRIPTION_TEXT ${SecDesktop} "Put an ABSS shortcut on the desktop."
-  !insertmacro MUI_DESCRIPTION_TEXT ${SecTool} "Optional. Microsoft C++ Build Tools + Intel Fortran, needed only to BUILD Abaqus UMAT/UEL subroutines from source or .obj files. Prebuilt standardU.dll libraries run without them. Already-installed parts are detected and skipped."
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecTool} "Microsoft C++ Build Tools + Intel Fortran: build Abaqus UMAT/UEL subroutines from source or .obj files, and the material bridge for compiled vendor materials (including Linux .so libraries, which then run natively). Already-installed parts are detected and skipped."
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 Function .onInit
@@ -127,6 +133,12 @@ Function .onInit
     Abort
   ${EndIf}
   SetRegView 64
+  ${GetParameters} $R0
+  ClearErrors
+  ${GetOptions} $R0 "/ACCEPT_LICENSES" $R1
+  StrCpy $AcceptLicences "0"
+  IfErrors +2 0
+    StrCpy $AcceptLicences "1"
   ; Mark the toolchain component when it is already present.
   StrCpy $ToolchainPresent "0"
   IfFileExists "$PROGRAMFILES32\Intel\oneAPI\setvars.bat" 0 +3

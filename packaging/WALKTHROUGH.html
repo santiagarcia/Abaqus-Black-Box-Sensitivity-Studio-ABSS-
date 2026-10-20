@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ABSS Walkthrough</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1d2129; --muted: #5b6270; --line: #e3e6eb; --panel: #f6f7f9;
+    --accent: #2f6fdb; --ok: #1b8a4b; --warn: #b7791f; --bad: #c0392b; --code: #f1f3f6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16181d; --fg: #e6e8eb; --muted: #9aa1ad; --line: #2b2f37; --panel: #1d2027;
+      --accent: #6aa0ff; --ok: #4cc785; --warn: #e0a84a; --bad: #ef6b5e; --code: #22262e;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16181d; --fg: #e6e8eb; --muted: #9aa1ad; --line: #2b2f37; --panel: #1d2027;
+    --accent: #6aa0ff; --ok: #4cc785; --warn: #e0a84a; --bad: #ef6b5e; --code: #22262e;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 32px 16px 80px; }
+  h1 { font-size: 2rem; margin: 0 0 4px; }
+  h2 { margin-top: 56px; padding-top: 8px; border-top: 1px solid var(--line); }
+  h3 { margin-top: 32px; }
+  .lead { color: var(--muted); font-size: 1.1rem; margin-top: 0; }
+  nav.toc { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 20px; margin: 24px 0; }
+  nav.toc ol { margin: 6px 0; padding-left: 20px; }
+  a { color: var(--accent); }
+  code, pre { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--code); padding: 1px 5px; border-radius: 4px; }
+  pre { background: var(--code); padding: 12px 14px; border-radius: 8px; overflow-x: auto; }
+  figure { margin: 20px 0; }
+  figure img { width: 100%; height: auto; border: 1px solid var(--line); border-radius: 8px; display: block; }
+  figcaption { color: var(--muted); font-size: 0.92rem; margin-top: 6px; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.93rem; display: block; overflow-x: auto; }
+  th, td { border-bottom: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--panel); }
+  .ok { color: var(--ok); font-weight: 600; }
+  .warn { color: var(--warn); font-weight: 600; }
+  .bad { color: var(--bad); font-weight: 600; }
+  .steps { counter-reset: s; list-style: none; padding: 0; }
+  .steps > li { counter-increment: s; position: relative; padding-left: 44px; margin: 14px 0; }
+  .steps > li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 0.9rem; }
+  .callout { background: var(--panel); border-left: 4px solid var(--accent); padding: 10px 16px; border-radius: 6px; margin: 16px 0; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }
+  svg text { fill: var(--fg); font: 13px system-ui, sans-serif; }
+  svg .box { fill: var(--panel); stroke: var(--line); }
+  svg .acc { fill: none; stroke: var(--accent); stroke-width: 2; }
+</style>
+</head>
+<body>
+<main>
+<h1>Abaqus Black-Box Sensitivity Studio</h1>
+<p class="lead">A walkthrough: what ABSS computes, how it does it with Abaqus as a black box, how to use the
+application, and what has been verified on real Abaqus 2024.</p>
+
+<nav class="toc"><strong>Contents</strong>
+<ol>
+  <li><a href="#what">What ABSS does</a></li>
+  <li><a href="#how">How it works</a></li>
+  <li><a href="#install">Installing</a></li>
+  <li><a href="#gui">Using the application, page by page</a></li>
+  <li><a href="#cli">The same from the command line</a></li>
+  <li><a href="#materials">User materials, precompiled libraries and the material bridge</a></li>
+  <li><a href="#verified">What has been verified</a></li>
+  <li><a href="#package">What is in this package</a></li>
+  <li><a href="#limits">What is not supported, and why</a></li>
+</ol></nav>
+
+<h2 id="what">1. What ABSS does</h2>
+<p>You have an Abaqus/Standard model. ABSS tells you how <em>every</em> result of that analysis changes when a model
+parameter changes: displacements, reactions, stresses, strains, plastic strain and state variables, at every accepted
+increment. Parameters can be a Young's modulus, a yield stress, a load, a prescribed displacement, a node set's
+position, or an opaque constant of a compiled user material.</p>
+<p>For each parameter <em>a</em> and each output <em>F</em>, ABSS computes the derivatives
+<code>dF/da</code>, and optionally <code>d²F/da²</code> and mixed derivatives, as full fields over the mesh and over time.
+You look at them in the same window as colour maps on the deformed mesh and as history curves at points you click.</p>
+<div class="callout">ABSS does not re-implement any Abaqus element or material. Abaqus does every mechanical computation;
+ABSS only decides which small Abaqus jobs to run and how to combine their answers. Everything runs on your computer.</div>
+
+<h2 id="how">2. How it works</h2>
+<p>The idea is to use Abaqus as a <strong>residual oracle</strong>. Each step below is something ABSS makes Abaqus do.</p>
+<ol class="steps">
+  <li><strong>Nominal analysis.</strong> ABSS runs your model once, unchanged except for extra output requests and tight
+  equilibrium tolerances. The accepted increments define the time grid on which all derivatives are taken.</li>
+  <li><strong>Probe jobs.</strong> To ask "what is the out-of-balance force if the structure were in this shape, with this
+  parameter value?", ABSS restarts Abaqus from the previous increment and <em>prescribes every degree of freedom</em>.
+  Abaqus then reports the reaction forces, which are exactly the residual <code>r = −RF</code>. These short jobs are
+  the only way ABSS talks to Abaqus.</li>
+  <li><strong>History branches.</strong> For every perturbed parameter value (<em>a</em> ± h, ± 2h, …) ABSS keeps a
+  separate chain of restart files. Plasticity, damage and every other history effect is therefore integrated by Abaqus
+  on the perturbed path, so the derivatives are <em>history-consistent</em>.</li>
+  <li><strong>Sensitivity solve.</strong> At each increment ABSS combines the probe residuals with a finite-difference
+  stencil and solves <code>K u' = −∂r/∂a</code> for the displacement derivative. <code>K</code> comes from Abaqus's own element
+  matrices. When that matrix is not the true tangent (plasticity, hyperelasticity under NLGEOM, constraints, dynamics),
+  ABSS detects the mismatch and solves matrix-free with GMRES, using more probe jobs instead of the matrix.</li>
+  <li><strong>Commit.</strong> Each branch advances to its first-order predicted state; the field outputs of those
+  commits, combined with the stencil, give the derivatives of <em>every</em> output field.</li>
+  <li><strong>Checks.</strong> Every run measures its own consistency: a tangent check, a predictor-consistency
+  ratio, a nominal replay check and a non-smoothness detector. With "Validate" switched on, ABSS also re-runs complete
+  Abaqus analyses at <em>a</em> ± h and compares every value at every increment. Each result then carries a badge:
+  Validated, Experimental, Unverified or Failed.</li>
+</ol>
+<figure>
+<svg viewBox="0 0 900 230" width="100%" role="img" aria-label="Oracle loop">
+  <rect class="box" x="10" y="80" width="170" height="70" rx="10"/><text x="95" y="110" text-anchor="middle">Your model (.inp)</text><text x="95" y="130" text-anchor="middle">never modified</text>
+  <rect class="box" x="230" y="20" width="200" height="70" rx="10"/><text x="330" y="50" text-anchor="middle">Nominal job</text><text x="330" y="70" text-anchor="middle">time grid, element K, M</text>
+  <rect class="box" x="230" y="140" width="200" height="70" rx="10"/><text x="330" y="170" text-anchor="middle">Branches a ± h</text><text x="330" y="190" text-anchor="middle">restart chains (history)</text>
+  <rect class="box" x="480" y="80" width="190" height="70" rx="10"/><text x="575" y="110" text-anchor="middle">Probe jobs</text><text x="575" y="130" text-anchor="middle">all DOFs prescribed → r = −RF</text>
+  <rect class="box" x="710" y="80" width="180" height="70" rx="10"/><text x="800" y="110" text-anchor="middle">Solve K u' = −∂r/∂a</text><text x="800" y="130" text-anchor="middle">(or matrix-free GMRES)</text>
+  <path class="acc" d="M180 115 L230 55 M180 115 L230 175 M430 55 L480 105 M430 175 L480 125 M670 115 L710 115"/>
+  <path class="acc" d="M800 150 C 800 215, 330 225, 330 210" stroke-dasharray="5 4"/>
+  <text x="560" y="222" text-anchor="middle">commit predicted state, next increment</text>
+</svg>
+<figcaption>Abaqus does all the mechanics; ABSS orchestrates restart jobs and solves the sensitivity equations.</figcaption>
+</figure>
+<p>The full mathematics, with the derivations and the Council review, is in <code>docs/SCIENCE.md</code>.</p>
+
+<h2 id="install">3. Installing</h2>
+<p>Each platform has one file that installs everything.</p>
+<table>
+<tr><th>Platform</th><th>Run</th><th>You do</th></tr>
+<tr><td>Windows</td><td><code>ABSS-Setup-&lt;version&gt;.exe</code></td><td>Approve the administrator prompt, and accept the Microsoft and Intel
+compiler licences once. For IT deployment with no questions at all: <code>ABSS-Setup.exe /S /ACCEPT_LICENSES</code>.</td></tr>
+<tr><td>Linux workstation</td><td><code>bash ABSS-Installer-Linux-&lt;version&gt;.run</code></td><td>Nothing. It needs no root rights; it installs a private
+toolchain into <code>~/abss</code>, builds and tests ABSS, and adds <code>abss</code> and <code>abss-cli</code> to your PATH.</td></tr>
+<tr><td>HPC cluster</td><td>the same <code>.run</code> on a login node</td><td>Nothing. It builds the headless <code>abss-cli</code> and writes an
+environment module (<code>module load abss</code>) and a Slurm job template; the cluster's <code>module load abaqus</code> is used automatically.</td></tr>
+</table>
+<ol class="steps">
+  <li>On Windows the installer finds Microsoft C++ Build Tools and Intel Fortran, or downloads and installs them. Parts
+  already present are skipped. Prebuilt libraries and models without user subroutines don't need them.</li>
+  <li>Abaqus itself is found automatically (<code>C:\SIMULIA\Commands\abaqus.bat</code>, or set <code>ABSS_ABAQUS_CMD</code>).
+  The built-in demos work without Abaqus.</li>
+  <li>Linux-only material libraries (<code>.so</code>) run natively through ABSS's ELF host; nothing else is needed. Only a
+  library that reads input files at run time needs WSL (administrator PowerShell: <code>wsl --install -d Ubuntu</code>).</li>
+</ol>
+
+<h2 id="gui">4. Using the application, page by page</h2>
+<p>The left bar takes you through five pages in order. Each page tells you what is missing before you can go on, so
+you cannot start a run that is set up wrong.</p>
+
+<h3>Start</h3>
+<figure><img src="screenshots/01_start.png" alt="Start page"><figcaption>Start: open an <code>.inp</code> or a saved
+<code>.abss</code> result, or run a built-in demo. The status bar shows whether Abaqus was found and which compute backend is
+active.</figcaption></figure>
+
+<h3>Parameters</h3>
+<figure><img src="screenshots/02_parameters.png" alt="Parameters page"><figcaption>Parameters: ABSS reads the model
+(here a part/assembly deck) and lists every value you can differentiate with respect to: materials, loads, boundary
+conditions, geometry (node sets), sections, amplitudes and user-material constants. Click a row to see its source line
+in the input file. Tick the ones you want, and use the category filters and search box for large models.</figcaption></figure>
+<ul>
+  <li><strong>Known</strong> parameters have a physical meaning, for example "ALU: E".</li>
+  <li><strong>Indexed</strong> ones are opaque: "UMAT NH: PROPS[3]" is a position in a compiled material, and ABSS
+  never invents a name for it.</li>
+  <li>Unsupported rows (shown greyed when "Show unsupported" is on) explain why they cannot be perturbed.</li>
+</ul>
+
+<h3>Set up</h3>
+<figure><img src="screenshots/03_setup_user_material.png" alt="Set up page"><figcaption>Set up, for a model with a
+user material:
+<ul>
+  <li>Choose the derivative order: 1 (rate of change), 2 (curvature), or 3 (experimental).</li>
+  <li>Choose the outputs to keep, and whether to validate against full re-analyses.</li>
+  <li>For a UMAT/UEL, choose the compiled subroutine. ABSS accepts source, an <code>.obj</code>, a prebuilt <code>standardU.dll</code>
+  or its folder, or a foreign material library. The panel tells you which of these your computer can build.</li>
+  <li>Set how many Abaqus jobs may run at once (licence permitting).</li>
+</ul>
+The right panel estimates the work before you start.</figcaption></figure>
+
+<h3>Run</h3>
+<p>The Run page shows progress per increment, a live log and a Cancel button; the window stays responsive. If something
+cannot work (a missing subroutine, an unsupported feature, a licence problem), the page explains it in plain language
+and says what to do, instead of producing numbers.</p>
+
+<h3>Results</h3>
+<figure><img src="screenshots/04_results_constraints.png" alt="Results page"><figcaption>Results for the constraint
+model (a fine block tied to a coarse block, top face coupled to a loaded reference node). Pick the output (here the
+von Mises stress), the parameter and the order. The colour map shows the derivative field on the deformed mesh, with
+a diverging scale centred at zero. The increment slider scrubs through time. The quality badge (top right) is the
+evidence for this result, and "Evidence…" lists the checks behind it.</figcaption></figure>
+<div class="grid2">
+<figure><img src="screenshots/05_history_constraints.png" alt="History chart"><figcaption>Click points on the mesh to
+plot histories over every increment; Ctrl+click compares points. You can export the data as CSV or the chart as PNG.</figcaption></figure>
+<figure><img src="screenshots/07_history_dynamic.png" alt="Dynamic history"><figcaption>The implicit dynamic
+cantilever: dU3/dE at the tip over the 0.06 s after a suddenly applied load. The sensitivity builds up as the beam
+starts to swing.</figcaption></figure>
+</div>
+<figure><img src="screenshots/08_results_shell.png" alt="Shell results"><figcaption>Large rotations: the S4R shell
+cantilever (tip rotation 0.53 rad). Finite rotations are replayed exactly in every restart job.</figcaption></figure>
+<p>From here you can export CSV, PNG and VTU, or save the whole result as <code>.abss</code>. A saved result reopens later
+without Abaqus. The <code>results</code> folder of this package contains one for every verification case: open any of
+them with <em>File → Open</em>.</p>
+
+<h2 id="cli">5. The same from the command line</h2>
+<pre>abss-cli inspect model.inp                         # list parameters and their ids
+abss-cli run model.inp --params "mat:STEEL:elastic:E,load:LOAD:cload:TIP:1" --order 2 --jobs 4 --validate --out run.abss
+abss-cli show run.abss                             # evidence summary, no Abaqus needed
+abss-cli usersub my_umat.f --out mylib             # build a reusable UMAT library once
+abss.exe run.abss                                  # open the result in the GUI</pre>
+
+<h2 id="materials">6. User materials, precompiled libraries and the material bridge</h2>
+<table>
+<tr><th>You have</th><th>What ABSS does</th><th>Needs</th></tr>
+<tr><td>Fortran/C source (<code>.f</code>, <code>.for</code>, <code>.f90</code>, <code>.c</code>)</td><td>builds <code>standardU.dll</code> once, then every job loads it</td><td>C++ build tools + Intel Fortran</td></tr>
+<tr><td>Object file only (<code>.obj</code>), no source</td><td>links it into <code>standardU.dll</code></td><td>C++ build tools</td></tr>
+<tr><td>Prebuilt <code>standardU.dll</code> or its folder</td><td>uses it as is</td><td>nothing</td></tr>
+<tr><td>A compiled material Abaqus cannot load: a Linux <code>.so</code>, or a <code>.dll</code> with its own interface (e.g. a
+deformation-gradient update + state initialiser)</td><td>generates a UMAT/SDVINI that forwards each call to a helper process running the library
+(<strong>material bridge</strong>), and checks the sizes declared in the library's header against the model. A Linux
+<code>.so</code> runs natively in ABSS's ELF host: no Linux, no WSL.</td><td>C++ build tools</td></tr>
+</table>
+<p>ABSS builds these libraries itself, so they work even though this Abaqus installation lacks its own
+user-subroutine development files. Only the opaque constants (<code>PROPS</code>) are differentiated. The source is never read
+and nothing is uploaded.</p>
+
+<h2 id="verified">7. What has been verified</h2>
+<p>Every case below was run on real Abaqus 2024 with the build in this package, and validated by comparing every
+derivative at every increment and every node or integration point against central differences of
+<strong>complete Abaqus re-analyses</strong>. The tolerance is 1e-3 relative. The exact numbers, per field, are in
+<code>results/SUMMARY.md</code> and the full logs next to it.</p>
+<!--RESULTS_TABLE-->
+
+<h2 id="package">8. What is in this package</h2>
+<table>
+<tr><th>Folder</th><th>Contents</th></tr>
+<tr><td><code>results/</code></td><td><code>SUMMARY.md</code>; for each case the complete log (<code>.log</code>) and the result file
+(<code>.abss</code>), which opens in the GUI without Abaqus</td></tr>
+<tr><td><code>examples/models/</code></td><td>every model used above, ready to run</td></tr>
+<tr><td><code>examples/subroutines/</code></td><td>the UMAT and UEL sources used in the user-subroutine cases</td></tr>
+<tr><td><code>examples/bridge_material/</code></td><td>the test material library for the material bridge (DLL, header, source)</td></tr>
+<tr><td><code>screenshots/</code></td><td>the images in this walkthrough, captured from the real application</td></tr>
+<tr><td><code>docs/</code></td><td>science, architecture, validation results, limitations, Abaqus test plan</td></tr>
+</table>
+<p>To re-create the package on your own machine, run <code>scripts\make_verification_package.ps1</code>. It needs Abaqus and
+a licence.</p>
+
+<h2 id="limits">9. What is not supported, and why</h2>
+<ul>
+  <li><strong>RIKS:</strong> the load factor is itself an unknown of the arc-length method, so there is no fixed load path to differentiate along.</li>
+  <li><strong>Explicit dynamics, heat transfer, coupled procedures:</strong> they have no displacement residual that this oracle can evaluate.</li>
+  <li><strong>Implicit dynamics combined with constraints:</strong> the inertia of tied or coupled nodes reaches their masters
+  only through constraint equations that Abaqus does not expose.</li>
+  <li><strong>Amplitudes or temperatures computed at run time</strong> (solution-dependent, user subroutines, read from
+  another results file): ABSS cannot re-evaluate them at its own increments.</li>
+  <li><strong>Non-smooth events</strong> (yield onset, contact opening) make derivatives one-sided. ABSS flags those increments
+  instead of smoothing them away.</li>
+</ul>
+<p>Everything ABSS cannot do is refused with the reason, not approximated. See <code>docs/KNOWN_LIMITATIONS.md</code>.</p>
+</main>
+</body>
+</html>

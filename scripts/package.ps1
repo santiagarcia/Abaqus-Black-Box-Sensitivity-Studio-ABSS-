@@ -14,7 +14,7 @@ $ucrt = Join-Path $Msys2Root "ucrt64\bin"
 $out = Join-Path $root "$OutDir\ABSS"
 if (Test-Path $out) { Remove-Item -Recurse -Force $out }
 New-Item -ItemType Directory -Force $out | Out-Null
-$exes = @("abss.exe", "abss-cli.exe") | Where-Object { Test-Path (Join-Path $bin $_) }
+$exes = @("abss.exe", "abss-cli.exe", "abss_elfhost.exe") | Where-Object { Test-Path (Join-Path $bin $_) }
 if (-not $exes) { throw "No executables in $bin; build first (scripts\build.ps1)" }
 foreach ($e in $exes) { Copy-Item (Join-Path $bin $e) $out }
 
@@ -72,3 +72,10 @@ $rc = $LASTEXITCODE
 Pop-Location
 if ($rc -ne 0) { throw "makensis failed ($rc)" }
 Write-Output "Installer: $setup"
+
+# Linux / HPC installer: one self-extracting .run (source + automatic user-space toolchain and build).
+$bash = Join-Path $Msys2Root "usr\bin\bash.exe"
+$rootPosix = ($root -replace "\\", "/") -replace "^([A-Za-z]):", { "/" + $_.Groups[1].Value.ToLower() }
+# Non-login shell with an explicit PATH: the MSYS2 login profile forks several processes and can fail under load.
+& $bash --noprofile --norc -c "export PATH=/usr/bin:`$PATH; cd '$rootPosix' && bash packaging/linux/make_installer.sh '$rootPosix/$($OutDir -replace '\\','/')'"
+if ($LASTEXITCODE -ne 0) { throw "Linux installer build failed ($LASTEXITCODE)" }

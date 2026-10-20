@@ -184,6 +184,74 @@ Doctest reported 2 test cases, 112 assertions, 0 failures, after 1518 s (wall cl
 UEL case before any Abaqus job ran. The cause was a second compiler-environment load in the same process (vcvars64
 on an already-extended PATH). The fix is to load the environment once per process.
 
+### 3.6 Model structure, material bridge, dynamics (Abaqus 2024, order 1, full-rerun central FD, tolerance 1e-3)
+
+| Model (`examples/models/`) | Parameters | Max rel. error | Notes |
+|---|---|---|---|
+| `c3d8_block.inp` (part / assembly / translated instance) | E, CLOAD, top-face geometry | 5.5e-7, 1.2e-10, 2.2e-9 | numbering mapped and checked against Abaqus's model records (27 nodes, 8 elements, connectivity exact) |
+| `two_part_assembly.inp` (2 parts, rotated instance listed first, label gaps 1001+/501+, NLGEOM) | E of each part, CLOAD on a set of the rotated instance | 9.7e-5 (STEEL E), 4.3e-4 (ALU E), 7.6e-6 (CLOAD) | first run: E failed 0.33 / 0.053 because of RF at free DOFs (fixed, see below); then dS/dE failed only through the validation floor (see below) |
+| `include_demo/main.inp` (part, assembly and step in `*INCLUDE` files) | E | 5.5e-7 | every generated job uses a flattened copy |
+| `bridge_nh_block.inp` + `tests/abaqus/bridge_material` (deformation-gradient library behind the generated UMAT/SDVINI, helper under Abaqus's Python) | μ, λ (PROPS 1, 2) | 1.5e-6, 1.4e-6 | exact library tangent (tangent check 3e-9); the approximate-tangent variant runs through GMRES |
+| `dynamic_cantilever.inp` (`*DYNAMIC`, HHT α = −0.05, NLGEOM, suddenly applied load, 6 increments) | E, density | 8.0e-9, 9.3e-9 | inertia added by ABSS (−M a) with per-branch mass matrices and initial accelerations |
+
+Findings behind these results (each measured, then fixed):
+- **RF at free DOFs.** A commit prescribes every DOF, so under NLGEOM Abaqus reports the O(h²) predictor residual
+  as "RF" at free DOFs. A full rerun reports exactly 0 there. ABSS now zeroes RF at free DOFs of commits; the
+  two-part E error at those values came from this.
+- **Nominal tolerance.** With Abaqus's default R_n = 5e-3, the nominal state carries an equilibrium error that
+  limits every nonlinear sensitivity to 1e-4..1e-3. Measured: the bridge material gave 1.1e-3 / 2.4e-4 with either
+  tangent, and built-in NEO HOOKE gave 1.3e-4 / 1.6e-4. With R_n = 1e-8 in the nominal job, the bridge reaches
+  1.5e-6.
+- **Dynamics.** In a restart step with every DOF prescribed, RF excludes inertia: the replay RF at free nodes
+  equals −M·a₆ within 5e-4 for α = 0 and α = −0.05, at the nominal job's default tolerance. The Newmark
+  acceleration computed from the nominal history reproduces Abaqus's a₆ to 1e-14. Probe A output at prescribed
+  DOFs is 0, so ABSS integrates the kinematics itself.
+- **Finite rotations (H-UR).** Replaying increment 2 of a coupled NLGEOM model left a residual of 0.27 at the
+  reference node. With the BC value composed spatially, b = b_prev + log(R(φ₂) R(φ₁)ᵀ), the residual is 1e-8 and
+  the output UR matches the target to 10 digits. The material-frame alternative gives 0.54.
+- **Validation floor.** The absolute error floor of the rerun comparison was 1e-4·max|F|/aᵏ, i.e. an
+  absolute threshold of 1e-7·max|F|/a at tolerance 1e-3. That is below the scheme's own truncation error,
+  ~h_rel·max|F|/a = 1e-5 for first-order predictor commits. Derivatives that are almost zero therefore failed even
+  when correct; dS/dE of a force-driven single-material body was off by 2e-5·max|S|/E. The floor is now
+  5e-2·max|F|/aᵏ (absolute threshold 5e-5·max|F|/a). The negative-control unit tests still fail as intended.
+- **Constraints.** Abaqus keeps a constraint and ignores a BC on its dependent DOF ("BCs on inactive dof"). This was
+  measured for *TIE, *EQUATION, *MPC and *KINEMATIC COUPLING: the dependent node follows its master, its RF is 0,
+  and the master's RF carries the transmitted force.
+
+### 3.7 Verification package (current build): 16 models, 39 derivatives, all Validated
+
+`scripts\make_verification_package.ps1` reruns every case with the current build and writes the logs, `.abss`
+results and `results/SUMMARY.md` into `dist\ABSS-Verification`. Every derivative is compared at every increment
+and every node or integration point against central differences of complete Abaqus re-analyses (tolerance 1e-3,
+or 1e-2 at order 2).
+
+| # | Model | Derivatives | Worst rel. error |
+|---|---|---|---|
+| 01 | T2D2 truss, order 2 (E, CLOAD, geometry) | 6 | 8.7e-7 |
+| 02 | CPS4 J2 plasticity, 20 increments with unloading | 3 | 5.8e-9 |
+| 03 | Part/instance block | 3 | 1.1e-9 |
+| 04 | Two parts, rotated instance, label gaps, NLGEOM | 3 | 4.3e-4 |
+| 05 | Steps and assembly in `*INCLUDE` files | 1 | 1.1e-9 |
+| 06 | UMAT from source | 2 | 2.7e-9 |
+| 07 | UEL from source | 2 | 1.0e-10 |
+| 08 | Material bridge (deformation-gradient library) | 2 | 1.5e-6 |
+| 09 | TIE + kinematic coupling, NLGEOM | 3 | 4.5e-8 |
+| 10 | S4R shell, large rotations (0.53 rad) | 2 | 7.4e-7 |
+| 11 | Implicit dynamics (HHT), E and density | 2 | 9.3e-9 |
+| 12 | BC released in step 2 | 2 | 1.4e-9 |
+| 13 | Thermal stress: initial + step temperature, SMOOTH STEP amplitude | 2 | 1.6e-9 |
+| 14 | `*VISCO` power-law creep | 2 | 2.0e-9 |
+| 15 | Follower pressure (`*DSLOAD`), NLGEOM | 2 | 7.0e-8 |
+| 16 | Contact (surface-to-surface, penalty), NLGEOM | 2 | 2.2e-5 |
+
+J2 plasticity went from 5.0e-4 (§3.3, default nominal tolerance) to 5.8e-9 with the tight nominal controls.
+
+Findings during these runs:
+- `*VISCO` applies loads instantly by default (STEP). ABSS's load-replay self-check refused the first run with a
+  mismatch of 3.0, which is exactly the ratio RAMP vs STEP gives. Fixed, then validated.
+- Element-matrix output in a model with `*EXPANSION` makes Abaqus 2024 repeat its first increment indefinitely. ABSS
+  now takes the matrices from a separate job without `*EXPANSION`; tangent check 1.1e-10.
+
 ## 4. Performance (measured with `abss-cli bench --n 400`, 24 threads)
 | Kernel | Serial | Kokkos OpenMP | Speedup |
 |---|---|---|---|

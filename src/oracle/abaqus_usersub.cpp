@@ -14,6 +14,7 @@
 // modified.
 #include "abss/oracle/abaqus.hpp"
 
+#include "abaqus_matbridge.hpp"
 #include "abaqus_process.hpp"
 
 #include <algorithm>
@@ -393,6 +394,38 @@ UserSubroutineLibrary prepareUserSubroutine(const std::string& abaqusCommand, co
 #else
     const char* libName = "libstandardU.so";
 #endif
+    // 0) Foreign material library (Linux .so, or a .dll that is not standardU.dll): material bridge. A folder without
+    //    standardU.dll that holds exactly one such library (directly or in lib/) is accepted too (a vendor package).
+    fs::path foreign;
+    if (detail::isForeignMaterialLibrary(in)) foreign = in;
+    if (fs::is_directory(in, ec) && !fs::exists(in / libName, ec)) {
+        std::vector<fs::path> found;
+        for (const auto& d : {in, in / "lib"})
+            for (const auto& e : fs::directory_iterator(d, ec))
+                if (detail::isForeignMaterialLibrary(e.path())) found.push_back(e.path());
+        if (found.size() == 1) foreign = found.front();
+    }
+    if (!foreign.empty()) {
+#ifdef _WIN32
+        auto tc = detectCompilerToolchain();
+        if (!tc.msvc)
+            throw std::runtime_error("Running " + foreign.filename().string() + " through the material bridge needs the "
+                                     "Microsoft C++ tools to build the bridge UMAT once (ABSS setup: 'User-subroutine "
+                                     "compilers'). (" + tc.message + ")");
+        if (!activateCompilerToolchain(tc))
+            throw std::runtime_error("The compiler environment could not be loaded (" + tc.message + ").");
+        const fs::path home = abaqusHome(abaqusCommand);
+        if (home.empty()) throw std::runtime_error("Could not determine the Abaqus installation directory.");
+        const fs::path dir = fs::absolute(buildDir);
+        if (log) log("Building the material bridge for " + foreign.filename().string() + "...");
+        return detail::prepareMaterialBridge(
+            home, foreign, dir, [&](const fs::path& src) { directBuild(home, src, false, false, dir, tc, log); },
+            [](const fs::path& p) { return peExportNames(p); }, log);
+#else
+        if (log) log("Building the material bridge for " + foreign.filename().string() + "...");
+        return detail::prepareMaterialBridgePosix(abaqusCommand, foreign, fs::absolute(buildDir), log);
+#endif
+    }
     // 1) Prebuilt library: folder containing it, or the library file itself. Nothing to compile.
     if (fs::is_directory(in, ec) || lower(in.filename().string()) == lower(libName)) {
         const fs::path dir = fs::is_directory(in, ec) ? in : in.parent_path();

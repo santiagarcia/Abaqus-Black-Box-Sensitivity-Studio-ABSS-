@@ -56,6 +56,18 @@ if(ABSS_BUILD_GUI)
 endif()
 add_subdirectory(apps/cli)
 
+# ELF host of the material bridge: runs Linux material libraries (.so) natively on Windows (no WSL needed).
+if(WIN32)
+  find_library(ABSS_OPENBLAS_LIB NAMES openblas)
+  if(ABSS_OPENBLAS_LIB)
+    add_executable(abss_elfhost tools/elfhost/abss_elfhost.c)
+    target_link_libraries(abss_elfhost PRIVATE ${ABSS_OPENBLAS_LIB})
+    target_compile_options(abss_elfhost PRIVATE -O2)
+  else()
+    message(STATUS "OpenBLAS not found: abss_elfhost (Linux material libraries without WSL) is not built")
+  endif()
+endif()
+
 if(ABSS_BUILD_TESTS)
   enable_testing()
   add_subdirectory(tests)

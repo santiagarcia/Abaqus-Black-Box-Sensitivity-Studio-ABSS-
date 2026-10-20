@@ -18,6 +18,10 @@ struct Comparison {
     long long compared = 0;
     long long nonFinite = 0;   ///< engine or reference NaN/Inf where the nominal value exists
     int missingFrames = 0;     ///< frames without an engine value
+    // Where the worst error is (for diagnosis): increment, flat component index, engine and reference values, scale.
+    size_t worstFrame = 0, worstIndex = 0;
+    double worstEngine = 0, worstRef = 0, worstScale = 0;
+    std::string perField;  ///< "U 1e-7, RF 2e-6, ..." relative error of every compared field
 };
 
 template <class Ref>
@@ -34,11 +38,16 @@ Comparison compare(const ResultStore& store, const DerivativeSpec& spec, const V
         for (size_t fr = 1; fr < nFrames; ++fr)
             for (double v : nominalFields[fr].values[f])
                 if (std::isfinite(v)) nominalMax = std::max(nominalMax, std::abs(v));
-        // Absolute floor: an error below floorK * max|F| / a^k changes the order-k Taylor term by a negligible amount;
-        // it also sits above the rerun-reference noise (~ tol / h^k) for k >= 2.
-        static const double floorK[] = {1e-4, 1e-4, 1e-4, 1e-3, 1e-3};
+        // Absolute floor: an error below floorK * max|F| / a^k changes the order-k Taylor term by a negligible amount
+        // (5e-7 of the field for a 1 % parameter change at order 1). It must also exceed the scheme's own truncation
+        // error: commits use the order-K predictor, so a derivative carries ~h_rel * max|F| / a^k (h_rel = 1e-5 at
+        // K = 1). The former 1e-4 (threshold 1e-7 at tolerance 1e-3) sat below that, so derivatives that are nearly
+        // zero (e.g. dS/dE of a force-driven single-material body, measured 2e-5 of max|S|/E) could never pass.
+        static const double floorK[] = {5e-2, 5e-2, 5e-2, 1e-1, 1e-1};
         double scale = floorK[std::min(order, 4)] * nominalMax / paramScaleK;
         double err = 0;
+        size_t errFrame = 0, errIndex = 0;
+        double errEngine = 0, errRef = 0;
         for (size_t fr = 1; fr < nFrames; ++fr) {
             const auto* s = store.get(static_cast<int>(f), spec, static_cast<int>(fr));
             if (!s) {
@@ -55,13 +64,24 @@ Comparison compare(const ResultStore& store, const DerivativeSpec& spec, const V
                 }
                 ++out.compared;
                 scale = std::max(scale, std::abs(r));
-                err = std::max(err, std::abs((*s)[c] - r));
+                if (std::abs((*s)[c] - r) > err) {
+                    err = std::abs((*s)[c] - r);
+                    errFrame = fr, errIndex = c, errEngine = (*s)[c], errRef = r;
+                }
             }
         }
         const double rel = scale > 0 ? err / scale : err;
+        {
+            std::ostringstream fe;
+            fe.precision(2);
+            fe << (out.perField.empty() ? "" : ", ") << store.fields[f].name << " " << rel;
+            out.perField += fe.str();
+        }
         if (rel > worst) {
             worst = rel;
             worstField = store.fields[f].name;
+            out.worstFrame = errFrame, out.worstIndex = errIndex, out.worstEngine = errEngine, out.worstRef = errRef;
+            out.worstScale = scale;
         }
     }
     return out;
@@ -86,6 +106,10 @@ void grade(QualityRecord& q, const Comparison& cmp, double tol, double h, int or
     q.status = pass ? (order <= 2 ? QualityStatus::Validated : QualityStatus::Experimental) : QualityStatus::Failed;
     note << "Full-rerun central FD check (h=" << h << ", all increments, " << cmp.compared << " values): max relative error "
          << cmp.worst << " (worst field " << cmp.field << ", tolerance " << tol << ") -> " << (pass ? "pass" : "FAIL");
+    note << ". Per field: " << cmp.perField;
+    if (!pass)
+        note << ". Worst value: increment " << cmp.worstFrame << ", component index " << cmp.worstIndex << ": engine "
+             << cmp.worstEngine << ", rerun FD " << cmp.worstRef << " (error scale " << cmp.worstScale << ")";
     q.notes.push_back(note.str());
     summary << label << ": max rel. error " << cmp.worst << " [" << cmp.field << "] " << (pass ? "PASS" : "FAIL") << "\n";
 }

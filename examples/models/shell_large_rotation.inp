@@ -1,0 +1,44 @@
+*HEADING
+ABSS example: finite rotations - S4R shell cantilever, NLGEOM, tip moment and force (large rotations)
+*NODE
+1, 0, 0, 0.
+2, 2.5, 0, 0.
+3, 5, 0, 0.
+4, 7.5, 0, 0.
+5, 10, 0, 0.
+6, 0, 2, 0.
+7, 2.5, 2, 0.
+8, 5, 2, 0.
+9, 7.5, 2, 0.
+10, 10, 2, 0.
+*ELEMENT, TYPE=S4R, ELSET=PLATE
+1, 1, 2, 7, 6
+2, 2, 3, 8, 7
+3, 3, 4, 9, 8
+4, 4, 5, 10, 9
+*NSET, NSET=ROOT
+1, 6
+*NSET, NSET=TIP
+5, 10
+*SHELL SECTION, ELSET=PLATE, MATERIAL=M
+0.5, 5
+*MATERIAL, NAME=M
+*ELASTIC
+70000., 0.3
+*STEP, NAME=BEND, NLGEOM=YES, INC=100
+*STATIC, DIRECT
+0.25, 1.
+*BOUNDARY
+ROOT, ENCASTRE
+*CLOAD
+TIP, 5, -20.
+TIP, 3, 4.
+*OUTPUT, FIELD
+*NODE OUTPUT
+U, RF
+*ELEMENT OUTPUT
+S
+*END STEP
+
+
+

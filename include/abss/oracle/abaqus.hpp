@@ -48,9 +48,18 @@ struct UserSubroutineLibrary {
     std::string kind;         ///< "prebuilt library", "object file", "Fortran source", "C/C++ source"
     bool builtHere = false;   ///< compiled/linked by ABSS with `abaqus make`
     std::string message;
+    // Foreign material library (material bridge): requirements the model must meet, 0 = no requirement.
+    int requiredNtens = 0, requiredNstatv = 0, requiredNprops = 0;
+    bool requiresSdvini = false;  ///< the library initialises its state itself (deck needs *INITIAL CONDITIONS, TYPE=SOLUTION, USER)
 };
 /// Accepts: a folder or standardU.dll (prebuilt, no compiler needed), an object file (.obj/.o: needs LINK) or source
-/// (.f/.for/.f90/.c/.cpp: needs the compilers). Objects/sources are built ONCE with `abaqus make` into `buildDir`.
+/// (.f/.for/.f90/.c/.cpp: needs the compilers). Objects/sources are built ONCE into `buildDir`.
+/// Also accepts a FOREIGN material library that Abaqus cannot load itself - a Linux shared object (.so, run under
+/// WSL) or a Windows .dll that is not an Abaqus standardU.dll - exporting either a standard UMAT (`umat_`/`umat`,
+/// optional `sdvini`) or a deformation-gradient-driven batched update (`<name>(n, nprops, ntens, nstatv, props,
+/// stress, statev, ddsdde, f0, f1, dtime, time, temp, dtemp, coords, celent, noel, npt, kstep, kinc, pnewdt)` plus
+/// `<name>sdvini(n, nstatv, statev, coords, noel, npt)`). ABSS then builds a bridge standardU.dll whose UMAT/SDVINI
+/// forward every call to a helper process that runs the library (material bridge).
 /// Throws std::runtime_error with a plain-language explanation when this is impossible on this computer.
 UserSubroutineLibrary prepareUserSubroutine(const std::string& abaqusCommand, const std::string& input,
                                             const std::string& buildDir, const std::function<void(const std::string&)>& log);

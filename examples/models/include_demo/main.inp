@@ -1,0 +1,10 @@
+*HEADING
+ABSS example: the model and the step live in *INCLUDE files (block_model.inp, steps/press.inp)
+*INCLUDE, INPUT=block_model.inp
+*MATERIAL, NAME=ALU
+*ELASTIC
+70000., 0.33
+*DENSITY
+2.7e-09
+*INCLUDE, INPUT=steps/press.inp
+

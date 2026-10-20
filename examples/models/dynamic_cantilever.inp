@@ -1,0 +1,51 @@
+*HEADING
+ABSS example: implicit dynamics (HHT) - 4-element C3D8 cantilever, NLGEOM, suddenly applied tip load
+*NODE
+1, 0, 0., 0.
+2, 2, 0., 0.
+3, 4, 0., 0.
+4, 6, 0., 0.
+5, 8, 0., 0.
+6, 0, 1., 0.
+7, 2, 1., 0.
+8, 4, 1., 0.
+9, 6, 1., 0.
+10, 8, 1., 0.
+11, 0, 0., 1.
+12, 2, 0., 1.
+13, 4, 0., 1.
+14, 6, 0., 1.
+15, 8, 0., 1.
+16, 0, 1., 1.
+17, 2, 1., 1.
+18, 4, 1., 1.
+19, 6, 1., 1.
+20, 8, 1., 1.
+*ELEMENT, TYPE=C3D8, ELSET=BEAM
+1, 1, 2, 7, 6, 11, 12, 17, 16
+2, 2, 3, 8, 7, 12, 13, 18, 17
+3, 3, 4, 9, 8, 13, 14, 19, 18
+4, 4, 5, 10, 9, 14, 15, 20, 19
+*NSET, NSET=FIX
+1, 6, 11, 16
+*NSET, NSET=TIP
+5, 10, 15, 20
+*SOLID SECTION, ELSET=BEAM, MATERIAL=M
+*MATERIAL, NAME=M
+*ELASTIC
+1000., 0.3
+*DENSITY
+1e-3
+*STEP, NAME=IMPACT, NLGEOM=YES, INC=100
+*DYNAMIC, DIRECT
+0.01, 0.06
+*BOUNDARY
+FIX, ENCASTRE
+*CLOAD
+TIP, 3, -0.5
+*OUTPUT, FIELD
+*NODE OUTPUT
+U, RF
+*ELEMENT OUTPUT
+S, LE
+*END STEP

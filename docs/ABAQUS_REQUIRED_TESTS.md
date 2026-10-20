@@ -1,4 +1,4 @@
-# Tests that need a licensed Abaqus
+﻿# Tests that need a licensed Abaqus
 
 All commands are run from the repository root on Windows PowerShell, with the build from README §Build. On Linux,
 replace `abss-cli.exe` with `abss-cli` and the Abaqus command path.
@@ -18,6 +18,7 @@ $cli = ".\build\bin\abss-cli.exe"
 | A4 | CPS4 J2 plasticity, 20 increments (load, then unload), order 1, every increment vs reruns | `& $cli run examples\models\j2_plastic.inp --params "mat:STEEL:elastic:E,mat:STEEL:plastic:sigma_y:1,bc:LOAD:RIGHT:1-1" --order 1 --jobs 6 --validate --out j2.abss` | **pass** (5.0e-4 / 3.2e-4 / 1.6e-5; 89 min) |
 | A5 | Abaqus mechanism experiments (oracle sign, restart replay, tangent output, precision) | `validation/experiments/scout/*`, `validation/experiments/curie/*` (commands in those reports) | see the council reports |
 | A6 | UMAT and UEL, each as source, `.obj` only and library only, order 1, against analytic values | `.\build\bin\test_abaqus.exe -tc="UMAT*,UEL*"` (needs ifort/ifx + MSVC) | **pass** (112 assertions, 1518 s; VALIDATION_RESULTS §3.5) |
+| A7 | The verification package: 11 models, 29 derivatives, every one against full Abaqus reruns. Truss at order 2, J2 plasticity, part/instance, two-part NLGEOM assembly, `*INCLUDE` deck, UMAT, UEL, material bridge, TIE + kinematic coupling, large-rotation shell, implicit HHT dynamics | `powershell -ExecutionPolicy Bypass -File scripts\make_verification_package.ps1` (writes `dist\ABSS-Verification` with logs, `.abss` results, screenshots, walkthrough) | **pass**: all 29 Validated (VALIDATION_RESULTS §3.7) |
 
 ## B. User subroutines: still to run
 
@@ -40,13 +41,18 @@ ABSS builds the library once and points every nominal, probe, commit and rerun j
 |---|---|---|
 | C1 | CPS8 + CPS6 mixed (`examples\models\cps8_mixed.inp`) | stress recovery at quadratic-element integration points; order 1–2 vs reruns |
 | C2 | C3D8 block with spatially varying DLOAD (`examples\models\c3d8_block.inp`, flattened) | 3D, DLOAD replay self-check, geometry parameter |
-| C3 | S4R plate (`examples\models\s4r_plate.inp`) | rotational DOFs, section points (H-UR hypothesis) |
-| C4 | NLGEOM hyperelastic + follower pressure | follower-load replay (`*DLOAD, FOLLOWER`) |
-| C5 | *EQUATION / *TIE / *COUPLING models | currently refused; validating the RF-on-independent-DOF hypothesis (Noether §2.3) would allow enabling them |
-| C6 | Contact with a stable active set | currently refused |
+| C3 | ~~S4R plate, rotational DOFs (H-UR)~~ | **done**: H-UR measured and resolved (spatially composed rotation BCs), `shell_large_rotation.inp` validated in A7 |
+| C4 | ~~Follower pressure under NLGEOM~~ | **done**: `follower_pressure_nlgeom.inp` validated (A7 #15). `*CLOAD, FOLLOWER` on rotational nodes still to run |
+| C5 | ~~*EQUATION / *TIE / *COUPLING models~~ | **done** for TIE + KINEMATIC COUPLING (A7). Still to run: *EQUATION, *MPC BEAM, DISTRIBUTING COUPLING, RIGID BODY |
+| C6 | ~~Contact with a stable active set~~ | **done** for surface-to-surface penalty contact (A7 #16); hard contact and friction still to run |
+| C10 | ~~BC released by OP=NEW in step 2~~ | **done** (A7 #12, 1.4e-9) |
+| C11 | ~~Step `*TEMPERATURE` with initial temperature; SMOOTH STEP amplitude~~ | **done** (A7 #13); PERIODIC/MODULATED/DECAY/EQUALLY SPACED still to run on Abaqus |
+| C12 | ~~`*VISCO` creep~~ | **done** (A7 #14); `*DYNAMIC, APPLICATION=QUASI-STATIC` (backward Euler) still to run |
+| C13 | Material bridge with a Linux `.so` | runs natively in the ELF host (no WSL); vendor Ti-6242 library reproduces its reference results; Abaqus sensitivity runs in progress (private model) |
 | C7 | Third-order derivatives on smooth Abaqus models | currently Experimental; needs h-sweeps showing a plateau |
 | C8 | J2 CPS4 at order 2: `& $cli run examples\models\j2_plastic.inp --params "mat:STEEL:plastic:sigma_y:1" --order 2 --jobs 6 --validate` | second order through plastic increments with GMRES; not yet run (about 3 h) |
 | C9 | h-shrink sweep on Abaqus: repeat A4 with `--rel-step 1e-4`, then `1e-6` | spec §7 "as h shrinks"; not yet run |
 
 Each C test: run `abss-cli run … --validate` and record the commands and the per-order maximum relative errors in
 VALIDATION_RESULTS.md.
+

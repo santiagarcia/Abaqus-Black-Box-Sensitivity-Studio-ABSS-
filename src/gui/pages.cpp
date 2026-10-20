@@ -893,13 +893,15 @@ SetupPage::SetupPage(Controller* c, QWidget* parent) : QWidget(parent), controll
     auto* subRow = new QHBoxLayout;
     userSub_ = new QLineEdit;
     userSub_->setPlaceholderText("Not needed for this model");
-    userSub_->setToolTip("UMAT/UEL used by this input file. A precompiled object or library (.obj/.o/.dll/.lib) is passed "
-                         "to Abaqus as-is; Fortran/C source (.f/.for/.f90/.c/.cpp) is compiled by Abaqus, which needs a "
-                         "configured Intel oneAPI Fortran + Visual Studio. ABSS never reads or uploads the subroutine.");
+    userSub_->setToolTip("UMAT/UEL used by this input file: Fortran/C source, an object file (.obj), a prebuilt "
+                         "standardU.dll (or its folder), or a compiled material library Abaqus cannot load itself "
+                         "(a Linux .so, or another .dll), which ABSS runs through its material bridge. ABSS never reads "
+                         "or uploads the subroutine.");
     auto* browse = new QPushButton("File…");
-    browse->setToolTip("Fortran/C source, object file (.obj), or a prebuilt standardU.dll");
+    browse->setToolTip("Fortran/C source, object file (.obj), a prebuilt standardU.dll, or a material library (.so/.dll)");
     auto* browseDir = new QPushButton("Folder…");
-    browseDir->setToolTip("A folder containing a prebuilt standardU.dll (no source and no compiler needed)");
+    browseDir->setToolTip("A folder containing a prebuilt standardU.dll, or a vendor package folder with one material "
+                          "library (.so/.dll, also in lib/)");
     subRow->addWidget(userSub_, 1);
     subRow->addWidget(browse);
     subRow->addWidget(browseDir);
@@ -917,11 +919,11 @@ SetupPage::SetupPage(Controller* c, QWidget* parent) : QWidget(parent), controll
     connect(browse, &QPushButton::clicked, this, [this]() {
         const QString f = QFileDialog::getOpenFileName(
             this, "Choose the user subroutine (UMAT/UEL)", QFileInfo(controller_->inpPath()).absolutePath(),
-            "User subroutines (*.obj *.o *.dll *.lib *.f *.for *.f90 *.c *.cpp);;All files (*)");
+            "User subroutines and material libraries (*.obj *.o *.dll *.so *.lib *.f *.for *.f90 *.c *.cpp);;All files (*)");
         if (!f.isEmpty()) userSub_->setText(QDir::toNativeSeparators(f));
     });
     connect(browseDir, &QPushButton::clicked, this, [this]() {
-        const QString d = QFileDialog::getExistingDirectory(this, "Folder containing a prebuilt standardU.dll",
+        const QString d = QFileDialog::getExistingDirectory(this, "Folder with a prebuilt standardU.dll or a material library package",
                                                             QFileInfo(controller_->inpPath()).absolutePath());
         if (!d.isEmpty()) userSub_->setText(QDir::toNativeSeparators(d));
     });
@@ -1050,7 +1052,9 @@ void SetupPage::reload() {
     userSubNote_->setText(
         needsSub ? QString("This input file uses a %1. Abaqus can only run it with the compiled subroutine. A prebuilt "
                            "standardU.dll (or the folder containing it) needs no source code and no compiler; source "
-                           "(.f/.for/.c) or an .obj file is built once into such a library. %2")
+                           "(.f/.for/.c) or an .obj file is built once into such a library. A compiled material library "
+                           "that Abaqus cannot load itself (a Linux .so via WSL, or a .dll with its own interface) runs "
+                           "through ABSS's material bridge. %2")
                        .arg(deck->usesUserElement() ? "user element (UEL)" : "user material (UMAT)", tcText)
                  : QString());
     userSubNote_->setVisible(needsSub);
