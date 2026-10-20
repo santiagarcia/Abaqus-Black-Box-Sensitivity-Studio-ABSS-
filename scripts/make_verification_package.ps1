@@ -79,6 +79,25 @@ if ($logTime) {
     Set-Content (Join-Path $out "results\SUMMARY.md") $sum -Encoding utf8
 }
 
+# Private Ti-6242 case (only when its results exist on this machine): model, logs, .abss results. The compiled
+# vendor library itself is never packaged.
+$priv = Join-Path $root "validation\private"
+if (Test-Path (Join-Path $priv "results\ti6242_56.abss")) {
+    $ti = Join-Path $out "results\ti6242"
+    New-Item -ItemType Directory -Force $ti | Out-Null
+    Copy-Item (Join-Path $priv "ti6242_cube.inp") $ti
+    Get-ChildItem (Join-Path $priv "results") -File | Where-Object { $_.Extension -in ".abss", ".log", ".md", ".csv" } | Copy-Item -Destination $ti
+    $tsum = "`n## Ti-6242 compiled crystal-plasticity UMAT (vendor Linux library, run natively through the ABSS ELF host)`n`n" +
+            "Model: results/ti6242/ti6242_cube.inp (unit C3D8 cube, uniaxial stretch, 12 increments, synthetic PROPS from the vendor package).`n" +
+            "The compiled library is not included in this package.`n`n| Derivative | Status | Max rel. error vs full Abaqus reruns |`n|---|---|---|`n"
+    foreach ($log in Get-ChildItem $ti -Filter *.log) {
+        foreach ($l in (Get-Content $log.FullName -Encoding UTF8)) {
+            if ($l -match '^\s+(d.+?): (\w+), rerun-FD max rel\. error ([0-9.eE+-]+)') { $tsum += "| $($Matches[1]) | $($Matches[2]) | $($Matches[3]) |`n" }
+        }
+    }
+    Add-Content (Join-Path $out "results\SUMMARY.md") $tsum -Encoding utf8
+}
+
 # GUI screenshots (unattended automation of the real application).
 $shots = Join-Path $out "screenshots"
 $gui = Join-Path $bin "abss.exe"

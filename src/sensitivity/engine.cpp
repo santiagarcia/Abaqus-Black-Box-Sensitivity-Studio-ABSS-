@@ -181,7 +181,7 @@ SensitivityReport runSensitivities(Oracle& oracle, const std::vector<std::vector
             }
         }
 
-        const auto KFF = oracle.tangent(i).submatrix(F, F);
+        auto KFF = oracle.tangent(i).submatrix(F, F);
         SolveReport srep;
         auto fact = factorize(KFF, req.solver, &srep);
         if (!fact->ok()) throw std::runtime_error("Tangent factorization failed at increment " + std::to_string(i) + ": " + fact->message());
@@ -336,6 +336,37 @@ SensitivityReport runSensitivities(Oracle& oracle, const std::vector<std::vector
             diag.tangentCheckError = den > 0 ? num / den : num;
             maxTangentErr = std::max(maxTangentErr, diag.tangentCheckError);
             if (diag.tangentCheckError > req.krylovTrigger) useKrylov = true;
+        }
+        // Inconsistent tangent with few unknowns and many directions: assembling the true tangent column by column from
+        // frozen-history probes (2 per free DOF, once per increment) is cheaper than GMRES, which costs ~2 probes per
+        // iteration for EVERY direction. Exact to the same finite-difference accuracy as GMRES's operator.
+        if (useKrylov && !req.forceKrylov && F.size() <= 4 * nD) {
+            std::vector<std::vector<double>> us;
+            us.reserve(2 * F.size());
+            const double eps = 1e-6 * uScale;
+            for (size_t q = 0; q < F.size(); ++q)
+                for (double s : {1.0, -1.0}) {
+                    auto u = uS;
+                    u[static_cast<size_t>(F[q])] += s * eps;
+                    us.push_back(std::move(u));
+                }
+            const auto rr = base->residuals(i, us);
+            evals += static_cast<long long>(us.size());
+            std::vector<Triplet> t;
+            for (size_t q = 0; q < F.size(); ++q)
+                for (size_t r = 0; r < F.size(); ++r) {
+                    const double v = -(rr[2 * q][static_cast<size_t>(F[r])] - rr[2 * q + 1][static_cast<size_t>(F[r])]) / (2 * eps);
+                    if (v != 0.0) t.push_back({static_cast<std::int32_t>(r), static_cast<std::int32_t>(q), v});
+                }
+            KFF = CsrMatrix::fromTriplets(static_cast<std::int32_t>(F.size()), static_cast<std::int32_t>(F.size()), std::move(t));
+            SolveReport probeRep;
+            auto probeFact = factorize(KFF, req.solver, &probeRep);
+            if (probeFact->ok()) {
+                fact = std::move(probeFact);
+                useKrylov = false;
+                diag.probedTangent = true;
+                diag.solver = probeRep.message + " (true tangent assembled from " + std::to_string(us.size()) + " probes)";
+            }
         }
 
         // wk[d][k]: k-th derivative of u w.r.t. t along direction d (full length; free entries meaningful).
@@ -531,6 +562,7 @@ SensitivityReport runSensitivities(Oracle& oracle, const std::vector<std::vector
         int rp = 0;
         for (int p : diag.reprobePasses) rp += p;
         if (rp) os << ", adaptive re-probe passes " << rp;
+        if (diag.probedTangent) os << ", tangent inconsistent -> true tangent assembled from " << 2 * F.size() << " probes";
         if (diag.krylovUsed)
             os << ", tangent inconsistent -> matrix-free GMRES (" << diag.krylovMatvecs << " operator applications, residual "
                << fmt(diag.krylovResidual) << ")";

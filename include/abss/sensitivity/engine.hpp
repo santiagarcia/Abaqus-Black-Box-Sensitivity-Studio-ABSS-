@@ -72,6 +72,7 @@ struct FrameDiagnostics {
     int krylovMatvecs = 0;               ///< operator applications (2 oracle probes each)
     double krylovResidual = 0;           ///< worst final relative residual over right-hand sides
     bool krylovConverged = true;         ///< false = engine failure at this increment (reported, never hidden)
+    bool probedTangent = false;          ///< true tangent assembled from probes (few unknowns, many directions)
     std::string solver;
 };
 

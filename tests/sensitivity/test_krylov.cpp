@@ -21,13 +21,18 @@ TEST_CASE("Inconsistent (elastic) oracle tangent under plasticity: detected and 
             for (int p : req.parameters) req.absoluteSteps.push_back(1e-3 * s.parameters[static_cast<size_t>(p)].nominal);
         RunControl ctl;
         const auto rep = runSensitivities(o, u, req, s, ctl);
-        int used = 0;
-        for (const auto& f : rep.frames) used += f.krylovUsed ? 1 : 0;
+        // Plastic increments must be detected and corrected: by GMRES (many unknowns) or, when the unknowns are few
+        // compared with the directions (the truss), by assembling the true tangent from probes.
+        int used = 0, probed = 0;
+        for (const auto& f : rep.frames) used += f.krylovUsed ? 1 : 0, probed += f.probedTangent ? 1 : 0;
         CAPTURE(plate);
-        CHECK(used > 0);  // plastic increments detected
+        CHECK(used + probed > 0);
+        if (plate) CHECK(used > 0);
+        else CHECK(probed > 0);
         ValidationOptions opt;
         opt.tolerance = {1e-4, 1e-3};
-        MESSAGE((plate ? "plate" : "truss") << " with elastic oracle tangent, Krylov at " << used << " increments\n"
+        MESSAGE((plate ? "plate" : "truss") << " with elastic oracle tangent, corrected at " << used + probed << " increments ("
+                                            << used << " GMRES, " << probed << " probed tangent)\n"
                                             << validateAgainstReruns(o, req, s, opt, ctl));
         for (int p : req.parameters) {
             CHECK(s.quality.at(DerivativeSpec::pure(p, 1)).status == QualityStatus::Validated);

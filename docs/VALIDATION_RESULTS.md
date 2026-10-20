@@ -252,6 +252,21 @@ Findings during these runs:
 - Element-matrix output in a model with `*EXPANSION` makes Abaqus 2024 repeat its first increment indefinitely. ABSS
   now takes the matrices from a separate job without `*EXPANSION`; tangent check 1.1e-10.
 
+### 3.7b A vendor crystal-plasticity UMAT (Linux library, no source)
+
+A vendor Ti-6242 library (Linux x86-64 `.so` with a deformation-gradient interface, 95 PROPS, 132 SDVs) ran inside
+Abaqus 2024 on Windows through the material bridge and the native ELF host:
+- outside Abaqus, the host reproduces the vendor's reference stress and finite-difference derivative exactly;
+- one C3D8 cube over 12 NLGEOM increments, with 56 PROPS as parameters: **56/56 Validated** against full reruns,
+  worst 1.6e-6.
+
+The library's tangent is not exactly consistent (tangent check 2e-3 to 7e-2). With 8 unknowns and 56 directions,
+the engine assembled the true tangent from 16 probes per increment instead of running GMRES for every direction,
+which cut the run from a projected 8 h to 106 min. Two coupled constants (raising either alone returns NaN state)
+were handled as a linked direction (`combo:`). The model, logs and results are in the verification package's
+`results/ti6242/` when built on the machine that holds them; the library and its constants are not in the
+repository.
+
 ### 3.8 Wall time: ABSS against finite differences of full Abaqus reruns
 
 Same machine and licence server, 3 Abaqus jobs at a time for both methods. "One full run" is the measured end-to-end
