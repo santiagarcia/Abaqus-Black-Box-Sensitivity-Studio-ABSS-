@@ -15,6 +15,8 @@ mkdir -p "$stage/abss-src"
 # Source only: never build trees, distributions or private validation material (third-party proprietary models).
 ( cd "$ROOT" && tar -cf - --exclude='*/__pycache__' \
     CMakeLists.txt cmake include src apps tests tools examples docs packaging scripts README.md ) | tar -xf - -C "$stage/abss-src"
+# Shell scripts must have LF line endings on Linux, whatever the checkout did on Windows.
+find "$stage/abss-src" -name '*.sh' -exec sed -i 's/\r$//' {} +
 cat >"$RUN" <<'HEADER'
 #!/usr/bin/env bash
 # ABSS - Abaqus Black-Box Sensitivity Studio: installer for Linux workstations and HPC clusters.
