@@ -252,6 +252,41 @@ Findings during these runs:
 - Element-matrix output in a model with `*EXPANSION` makes Abaqus 2024 repeat its first increment indefinitely. ABSS
   now takes the matrices from a separate job without `*EXPANSION`; tangent check 1.1e-10.
 
+### 3.8 Wall time: ABSS against finite differences of full Abaqus reruns
+
+Same machine and licence server, 3 Abaqus jobs at a time for both methods. "One full run" is the measured end-to-end
+wall time of one complete Abaqus analysis of the model. Central finite differences need 2 full runs per parameter
+at order 1 (4 at order 2), plus the nominal run. ABSS time is the engine wall time plus its nominal run.
+
+| Case | Params | Increments | One full run | FD wall | ABSS wall | ABSS / FD | GMRES increments |
+|---|---|---|---|---|---|---|---|
+| Truss, order 2 | 3 | 1 | 23 s | 115 s | 145 s | 1.3 | 0 |
+| Part/instance block | 3 | 1 | 19 s | 57 s | 120 s | 2.1 | 0 |
+| Two parts, NLGEOM | 3 | 2 | 23 s | 69 s | 246 s | 3.6 | 0 |
+| BC released in step 2 | 2 | 4 | 19 s | 57 s | 356 s | 6.2 | 0 |
+| `*VISCO` creep | 2 | 4 | 20 s | 60 s | 391 s | 6.5 | 0 |
+| Thermal stress | 2 | 4 | 17 s | 51 s | 495 s | 9.7 | 0 |
+| Follower pressure, NLGEOM | 2 | 4 | 19 s | 57 s | 981 s | 17 | 6 |
+| TIE + coupling | 3 | 2 | 21 s | 63 s | 2308 s | 37 | 5 |
+| Contact | 2 | 4 | 16 s | 48 s | 1780 s | 37 | 6 |
+| Shell, large rotations | 2 | 4 | 19 s | 57 s | 2149 s | 38 | 6 |
+| Implicit dynamics | 2 | 6 | 23 s | 69 s | 2515 s | 37 | 8 |
+| J2 plasticity | 3 | 20 | 20 s | 60 s | 3664 s | 61 | 14 |
+
+**On these models ABSS is 1.3–61 times slower than full-rerun finite differences.** The models are tiny: every
+Abaqus job costs about 15–20 s of start-up and under 1 s of solving. Full-rerun FD needs 2 jobs per parameter.
+ABSS needs several single-increment restart jobs per increment (probes and commits for each branch), and each pays
+the start-up. Where Abaqus's element matrices are not the tangent (plasticity, constraints, contact, shells,
+dynamics), every GMRES operator application costs 2 more jobs (17–61×).
+
+Cost model: ABSS ≈ N_inc · (2P + 3 + 2·n_GMRES) · t_job, with t_job ≈ start-up + restart I/O + one residual
+assembly; full-rerun FD ≈ 2P · (start-up + N_inc · k_Newton · t_iteration). ABSS can only be cheaper when one
+Newton iteration of the full model costs more than an Abaqus start-up plus a restart, i.e. for large models. That
+crossover has not been measured. What ABSS adds is per-increment, history-consistent derivatives with built-in
+consistency checks; on the models here, full-rerun FD gave the same values much faster. Planned: estimate both
+costs before a run and choose the cheaper method automatically (the full-rerun FD machinery already exists for
+validation).
+
 ## 4. Performance (measured with `abss-cli bench --n 400`, 24 threads)
 | Kernel | Serial | Kokkos OpenMP | Speedup |
 |---|---|---|---|

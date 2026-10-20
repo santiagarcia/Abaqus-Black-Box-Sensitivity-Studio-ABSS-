@@ -31,6 +31,7 @@ Everything runs locally. Nothing is uploaded anywhere.
 | **Real Abaqus 2024**: material bridge for compiled materials Abaqus cannot load (Linux `.so` under WSL, or a `.dll` with its own interface) | **Validated** with a Windows test library (1.5e-6); the Linux/WSL path awaits WSL on the test machine | §3.6 |
 | **Real Abaqus 2024**: implicit `*DYNAMIC` (HHT), NLGEOM; derivatives w.r.t. E and density | **Validated** (8e-9, 9e-9) | §3.6 |
 | **Real Abaqus 2024, verification package**: TIE + coupling, large-rotation shell, contact, released BCs, thermal stress with step temperatures, `*VISCO` creep, follower pressure, implicit dynamics, UMAT, UEL, bridge, assemblies, includes, plasticity | **16 models, 39 derivatives, all Validated** (worst 4.3e-4, most 1e-7..1e-10) | VALIDATION_RESULTS §3.7, `dist\ABSS-Verification` |
+| Speed | On the small verification models ABSS is **1.3–61× slower** than finite differences of full Abaqus reruns (start-up overhead of many single-increment jobs); large-model crossover not yet measured | VALIDATION_RESULTS §3.8 |
 | *EQUATION, *MPC, distributing coupling, rigid bodies, non-TABULAR amplitudes other than SMOOTH STEP | **Implemented**, unit-tested, guarded by the run-time replay check; not yet run on Abaqus | ABAQUS_REQUIRED_TESTS C5, C11 |
 | RIKS, explicit dynamics, heat transfer, dynamics combined with constraints | **Refused with the reason** | KNOWN_LIMITATIONS |
 

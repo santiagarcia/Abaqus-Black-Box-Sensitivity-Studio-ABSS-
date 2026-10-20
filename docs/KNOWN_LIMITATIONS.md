@@ -80,6 +80,10 @@ hidden behind fabricated output.
   Verified with the vendor Ti-6242 library: the README's 12-increment uniaxial path gives the stress
   [1931.1772, 1473.682, 2457.898, 0, 0, 0] and dσ_zz/dPROPS[43] = 0.5965045 at h = 1e-3…1e-5, both identical to the
   Linux reference values. The bridge was validated in Abaqus with a Windows test library at 1.5e-6.
+- **Speed against plain finite differences.** On the 12 verification models where both methods were timed, ABSS
+  was 1.3–61 times slower than finite differences of full Abaqus reruns (VALIDATION_RESULTS §3.8). Abaqus start-up
+  dominates small models, and ABSS runs many single-increment jobs. ABSS can only pay off on large models where a
+  full analysis is far more expensive than a job start-up; that has not been measured yet.
 - **Cost.** Every probe and commit is an Abaqus job (about 13 s of start-up each on the development PC). One
   increment at order K with P parameters needs about `2 + P·2M·(K+1)` jobs (plus tangent checks and Krylov
   operator applications), run up to `--jobs N` at a time. Large models with many increments are expensive; the app

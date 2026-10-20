@@ -227,6 +227,19 @@ derivative at every increment and every node or integration point against centra
 <code>results/SUMMARY.md</code> and the full logs next to it.</p>
 <!--RESULTS_TABLE-->
 
+<h3>How long it takes, compared with plain finite differences</h3>
+<p>Measured on the same machine, with 3 Abaqus jobs at a time for both methods. On these small models,
+<strong>ABSS was 1.3 to 61 times slower</strong> than finite differences of complete Abaqus re-analyses. Examples:</p>
+<ul>
+  <li>Truss at order 2: 145 s against 115 s.</li>
+  <li>Thermal stress: 495 s against 51 s.</li>
+  <li>J2 plasticity: 3,664 s against 60 s.</li>
+</ul>
+<p>Every Abaqus job costs 15 to 20 s of start-up here, and less than a second of solving. ABSS runs several
+single-increment restart jobs per increment, while finite differences need two full jobs per parameter. ABSS can
+only be faster on large models, where one full analysis costs far more than a job start-up; that has not been
+measured yet. The full table and the cost model are in <code>docs/VALIDATION_RESULTS.md</code> §3.8.</p>
+
 <h2 id="package">8. What is in this package</h2>
 <table>
 <tr><th>Folder</th><th>Contents</th></tr>
