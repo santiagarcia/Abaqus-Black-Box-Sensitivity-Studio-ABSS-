@@ -154,6 +154,7 @@ private:
     QWidget* abaqusBox_ = nullptr;
     QLineEdit* userSub_ = nullptr;
     QSpinBox* jobs_ = nullptr;
+    QCheckBox* batch_ = nullptr;
     QLabel* userSubNote_ = nullptr;
     QCheckBox* tangent_;
     QDoubleSpinBox* step_;

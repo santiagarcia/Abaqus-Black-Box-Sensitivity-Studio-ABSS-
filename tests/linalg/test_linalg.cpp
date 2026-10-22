@@ -76,3 +76,33 @@ TEST_CASE("Kokkos kernels agree with the serial reference") {
     CHECK(par::dot(x, y1, false) == doctest::Approx(par::dot(x, y1, true)));
     CHECK(par::normInf(y1, false) == doctest::Approx(par::normInf(y1, true)));
 }
+
+TEST_CASE("Column colouring recovers a sparse matrix exactly from grouped column differences") {
+    const auto A = laplace2d(12, 0.3);  // nonsymmetric values, symmetric pattern
+    const auto pat = symmetricColumnPattern(A);
+    std::int32_t nc = 0;
+    const auto colour = columnColouring(pat, &nc);
+    // No two columns of one colour share a row.
+    for (std::int32_t r = 0; r < A.rows; ++r) {
+        std::vector<int> seen(static_cast<size_t>(nc), 0);
+        for (auto k = A.rowPtr[static_cast<size_t>(r)]; k < A.rowPtr[static_cast<size_t>(r) + 1]; ++k)
+            CHECK(++seen[static_cast<size_t>(colour[static_cast<size_t>(A.colIdx[static_cast<size_t>(k)])])] == 1);
+    }
+    CHECK(nc <= 13);  // 5-point stencil: distance-2 neighbourhood of 13 nodes
+    CHECK(nc < A.cols / 10);
+    // Recover A from nc products A * (sum of the unit vectors of one colour).
+    std::vector<Triplet> t;
+    for (std::int32_t c = 0; c < nc; ++c) {
+        std::vector<double> e(static_cast<size_t>(A.cols), 0.0);
+        for (size_t q = 0; q < e.size(); ++q) e[q] = colour[q] == c ? 1.0 : 0.0;
+        const auto y = A.multiply(e);
+        for (size_t q = 0; q < e.size(); ++q)
+            if (colour[q] == c)
+                for (auto s : pat[q]) t.push_back({s, static_cast<std::int32_t>(q), y[static_cast<size_t>(s)]});
+    }
+    const auto B = CsrMatrix::fromTriplets(A.rows, A.cols, t);
+    double worst = 0;
+    for (std::int32_t r = 0; r < A.rows; ++r)
+        for (std::int32_t c = 0; c < A.cols; ++c) worst = std::max(worst, std::abs(A.get(r, c) - B.get(r, c)));
+    CHECK(worst == 0.0);
+}

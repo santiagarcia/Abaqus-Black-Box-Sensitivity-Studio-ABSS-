@@ -1,0 +1,154 @@
+{
+  "batch_branches": false,
+  "command": "C:/Users/vfn333/AppData/Local/abss_bench_bin/v5\\abss-cli.exe fafd benchmarks/nasa_stri/decks/A_48x6x6_inc4.inp --params mat:M01:elastic:E,mat:M02:elastic:E,mat:M03:elastic:E,mat:M04:elastic:E --jobs 8 --scratch C:\\Users\\vfn333\\AppData\\Local\\Temp\\abss_bench\\A48x6x6_inc4_P4__fafd_j8_r2 --out benchmarks\\nasa_stri\\results\\A_mesh_j8\\A48x6x6_inc4_P4__fafd_j8_r2.abss --profile benchmarks\\nasa_stri\\results\\A_mesh_j8\\A48x6x6_inc4_P4__fafd_j8_r2.json.partial",
+  "compute_backend": "Kokkos 5.2.2 OpenMP (24 threads)",
+  "dofs": 7203,
+  "elapsed_seconds": {
+    "grid_setup": 36.340862,
+    "nominal": 31.3999087,
+    "sensitivity": 22.1563226,
+    "serialize": 0.0694589,
+    "setup": 0.0050807,
+    "total": 90.0298708
+  },
+  "elements": 1728,
+  "fafd_analyses": 8,
+  "fafd_failed": 0,
+  "fafd_nominal_analyses": 1,
+  "free_dofs": 7056,
+  "fuse_commit_probe": true,
+  "increments": 4,
+  "inp": "C:\\Users\\vfn333\\Documents\\GitHub\\Abaqus-Black-Box-Sensitivity-Studio-ABSS-\\benchmarks\\nasa_stri\\decks\\A_48x6x6_inc4.inp",
+  "inp_sha256": "ac11aeede9c0f1f5a1917466a4197da8c308e45966b05251ed3423e7c70f7a89",
+  "material_points": 13824,
+  "max_concurrent_jobs": 8,
+  "max_order": 1,
+  "method": "fafd",
+  "nodes": 2401,
+  "overlap_waves": true,
+  "parallel_branches": false,
+  "parameters": [
+    {
+      "id": "mat:M01:elastic:E",
+      "nominal": 70000.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M02:elastic:E",
+      "nominal": 70700.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M03:elastic:E",
+      "nominal": 71400.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M04:elastic:E",
+      "nominal": 72100.0,
+      "step": -1.0
+    }
+  ],
+  "profile": {
+    "job.cleanup": {
+      "count": 9,
+      "seconds": 0.047607
+    },
+    "job.parse_results": {
+      "count": 10,
+      "seconds": 3.920701
+    },
+    "job.phase.analysis": {
+      "count": 10,
+      "seconds": 72.0
+    },
+    "job.phase.driver_and_licence": {
+      "count": 10,
+      "seconds": 122.817238
+    },
+    "job.phase.input_processing": {
+      "count": 10,
+      "seconds": 34.0
+    },
+    "job.phase.wrapup": {
+      "count": 10,
+      "seconds": 9.257505
+    },
+    "job.process": {
+      "count": 10,
+      "seconds": 238.074743
+    },
+    "job.wait_slot": {
+      "count": 10,
+      "seconds": 1e-06
+    },
+    "jobs.fafd.analysis": {
+      "count": 8,
+      "seconds": 171.787319
+    },
+    "jobs.fafd.nominal": {
+      "count": 1,
+      "seconds": 30.978145
+    },
+    "jobs.nominal": {
+      "count": 1,
+      "seconds": 35.309278
+    },
+    "nominal.parse_element_matrices": {
+      "count": 1,
+      "seconds": 0.38477
+    },
+    "phase.nominal": {
+      "count": 1,
+      "seconds": 36.340636
+    },
+    "stage.fafd_analyses": {
+      "count": 1,
+      "seconds": 22.15632
+    }
+  },
+  "quality": {
+    "du/dM01: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM02: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM03: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM04: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    }
+  },
+  "suppress_odb_output": true,
+  "tangent_check": true,
+  "user_subroutine": "",
+  "driver": {
+    "exit_code": 0,
+    "process_wall_seconds": 93.89702081680298,
+    "repeat": 2,
+    "case": "A48x6x6_inc4_P4",
+    "started": "2026-10-21T15:04:53"
+  }
+}

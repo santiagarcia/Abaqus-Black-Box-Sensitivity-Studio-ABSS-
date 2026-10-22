@@ -1,0 +1,911 @@
+{
+  "batch_branches": false,
+  "command": "C:/Users/vfn333/AppData/Local/abss_bench_bin/v5\\abss-cli.exe run benchmarks/nasa_stri/decks/A_64x8x8_inc4.inp --params mat:M01:elastic:E,mat:M02:elastic:E,mat:M03:elastic:E,mat:M04:elastic:E,mat:M05:elastic:E,mat:M06:elastic:E,mat:M07:elastic:E,mat:M08:elastic:E,mat:M09:elastic:E,mat:M10:elastic:E,mat:M11:elastic:E,mat:M12:elastic:E,mat:M13:elastic:E,mat:M14:elastic:E,mat:M15:elastic:E,mat:M16:elastic:E,mat:M01:elastic:nu,mat:M02:elastic:nu,mat:M03:elastic:nu,mat:M04:elastic:nu,mat:M05:elastic:nu,mat:M06:elastic:nu,mat:M07:elastic:nu,mat:M08:elastic:nu,mat:M09:elastic:nu,mat:M10:elastic:nu,mat:M11:elastic:nu,mat:M12:elastic:nu,mat:M13:elastic:nu,mat:M14:elastic:nu,mat:M15:elastic:nu,mat:M16:elastic:nu,load:BEND:dsload:TOPF:P --jobs 8 --scratch C:\\Users\\vfn333\\AppData\\Local\\Temp\\abss_bench\\A64x8x8_inc4_P33__abss_j8_r1 --out benchmarks\\nasa_stri\\results\\A_params_j8\\A64x8x8_inc4_P33__abss_j8_r1.abss --profile benchmarks\\nasa_stri\\results\\A_params_j8\\A64x8x8_inc4_P33__abss_j8_r1.json.partial",
+  "compute_backend": "Kokkos 5.2.2 OpenMP (24 threads)",
+  "dofs": 15795,
+  "elapsed_seconds": {
+    "nominal": 36.7458814,
+    "sensitivity": 944.1152619,
+    "serialize": 14.4376405,
+    "setup": 0.0086139,
+    "total": 995.3213363
+  },
+  "elements": 4096,
+  "engine_seconds": 937.7467197,
+  "frames": [
+    {
+      "assembled_tangent_check": -1.0,
+      "commit_residual": [
+        1.0066477566380848e-05,
+        9.996596066548986e-06,
+        1.0049057850052478e-05,
+        1.0043937065346867e-05,
+        1.0041748626628102e-05,
+        1.004074070103835e-05,
+        1.0038678796824462e-05,
+        1.0035763055476467e-05,
+        1.0035777246352357e-05,
+        1.0017831088715707e-05,
+        1.001426686900177e-05,
+        1.0006839474453385e-05,
+        9.990078718729866e-06,
+        1.0057676249501862e-05,
+        1.0044078725130889e-05,
+        1.2042778507279918e-05,
+        3.341332753437399e-06,
+        1.92500535780683e-06,
+        1.927548600197367e-06,
+        1.9500576342295616e-06,
+        1.9751423719413742e-06,
+        2.0009703023018165e-06,
+        2.0332667625554884e-06,
+        2.0700757641412013e-06,
+        2.1035387894811857e-06,
+        2.1570585496175225e-06,
+        2.198248206493472e-06,
+        2.247704001640527e-06,
+        2.3678487638291466e-06,
+        2.6378681249165915e-06,
+        3.3964592826690958e-06,
+        1.1541959110150794e-05,
+        8.441907083728667e-06
+      ],
+      "frame": 1,
+      "krylov": false,
+      "krylov_converged": true,
+      "krylov_matvecs": 0,
+      "krylov_residual": 0.0,
+      "probed_tangent": false,
+      "reprobe_passes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "solve_residual": 9.563905222469814e-10,
+      "solver": "Eigen SimplicialLDLT",
+      "tangent_check": 3.241862764161409e-10,
+      "tangent_colours": 0
+    },
+    {
+      "assembled_tangent_check": -1.0,
+      "commit_residual": [
+        1.0066413918092985e-05,
+        9.996682447238542e-06,
+        1.0049073717990025e-05,
+        1.0043409414971765e-05,
+        1.0041312991279446e-05,
+        1.00406849993977e-05,
+        1.0038461051790205e-05,
+        1.0034918207427327e-05,
+        1.0029600717410655e-05,
+        1.0022824466997625e-05,
+        1.001646934281624e-05,
+        9.998380875706604e-06,
+        9.983916852974785e-06,
+        9.99517859893033e-06,
+        1.0098254140870883e-05,
+        1.2501169207281229e-05,
+        3.34131749991711e-06,
+        1.9249068769116844e-06,
+        1.927757612680993e-06,
+        1.950043346211541e-06,
+        1.975515127279176e-06,
+        2.0018473241117027e-06,
+        2.0314588376431233e-06,
+        2.0675661832251517e-06,
+        2.1045901264973224e-06,
+        2.145428995705388e-06,
+        2.205463762897494e-06,
+        2.250693075708733e-06,
+        2.377910339231928e-06,
+        2.5428343078324336e-06,
+        3.138027427181892e-06,
+        8.052753784623982e-06,
+        5.729967139404434e-06
+      ],
+      "frame": 2,
+      "krylov": false,
+      "krylov_converged": true,
+      "krylov_matvecs": 0,
+      "krylov_residual": 0.0,
+      "probed_tangent": false,
+      "reprobe_passes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "solve_residual": 7.943859743230581e-10,
+      "solver": "Eigen SimplicialLDLT",
+      "tangent_check": 2.955485778829552e-10,
+      "tangent_colours": 0
+    },
+    {
+      "assembled_tangent_check": -1.0,
+      "commit_residual": [
+        1.0066463927722995e-05,
+        9.996665776955602e-06,
+        1.0049064902454401e-05,
+        1.0043456452785363e-05,
+        1.0041637016834151e-05,
+        1.0040148006744556e-05,
+        1.0038141369856616e-05,
+        1.003533635644326e-05,
+        1.0029579114019131e-05,
+        1.0017332086036192e-05,
+        1.0019385532915663e-05,
+        1.0009477674259305e-05,
+        9.975950440490017e-06,
+        1.0007865575748413e-05,
+        1.0017721411051589e-05,
+        1.0894312404451383e-05,
+        3.341325126729748e-06,
+        1.924884992433694e-06,
+        1.9274882882754344e-06,
+        1.9501469348803734e-06,
+        1.975555164967717e-06,
+        2.0021835155109935e-06,
+        2.0308950830684195e-06,
+        2.065080370653165e-06,
+        2.103520888331277e-06,
+        2.1464876353915345e-06,
+        2.196870986574639e-06,
+        2.247198271776455e-06,
+        2.397916993328953e-06,
+        2.4706707301689477e-06,
+        3.0938903304905625e-06,
+        9.235918588330223e-06,
+        4.730862014376492e-06
+      ],
+      "frame": 3,
+      "krylov": false,
+      "krylov_converged": true,
+      "krylov_matvecs": 0,
+      "krylov_residual": 0.0,
+      "probed_tangent": false,
+      "reprobe_passes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "solve_residual": 8.791775571937597e-10,
+      "solver": "Eigen SimplicialLDLT",
+      "tangent_check": 1.9377677326141107e-10,
+      "tangent_colours": 0
+    },
+    {
+      "assembled_tangent_check": -1.0,
+      "commit_residual": [
+        1.0066400279450383e-05,
+        9.99665062262806e-06,
+        1.0049137188451274e-05,
+        1.0043765270520458e-05,
+        1.0041842231431586e-05,
+        1.0039849518452901e-05,
+        1.0038632141151771e-05,
+        1.003361897362854e-05,
+        1.0028823098432538e-05,
+        1.001186439456313e-05,
+        1.0013054065402529e-05,
+        1.0011397594231076e-05,
+        9.992763347771481e-06,
+        1.0015400206508556e-05,
+        9.967174453402316e-06,
+        1.1473242435476371e-05,
+        3.34131749989999e-06,
+        1.9248959347255386e-06,
+        1.9274331755937507e-06,
+        1.9498790321586195e-06,
+        1.9755027025630053e-06,
+        2.0028900078821892e-06,
+        2.032123692061818e-06,
+        2.0650708584986655e-06,
+        2.10638408224386e-06,
+        2.15106087833553e-06,
+        2.205097454895797e-06,
+        2.2540003659866476e-06,
+        2.3832443549683984e-06,
+        2.4330563552851564e-06,
+        2.860623412456219e-06,
+        7.427459553250867e-06,
+        4.248212565749744e-06
+      ],
+      "frame": 4,
+      "krylov": false,
+      "krylov_converged": true,
+      "krylov_matvecs": 0,
+      "krylov_residual": 0.0,
+      "probed_tangent": false,
+      "reprobe_passes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "solve_residual": 8.611771713419427e-10,
+      "solver": "Eigen SimplicialLDLT",
+      "tangent_check": 2.434931422753728e-10,
+      "tangent_colours": 0
+    }
+  ],
+  "free_dofs": 15552,
+  "fuse_commit_probe": true,
+  "increments": 4,
+  "inp": "C:\\Users\\vfn333\\Documents\\GitHub\\Abaqus-Black-Box-Sensitivity-Studio-ABSS-\\benchmarks\\nasa_stri\\decks\\A_64x8x8_inc4.inp",
+  "inp_sha256": "c66360070243e011c3cfabc166042f7afac1fc14a531a2d2129838173eccc60a",
+  "material_points": 32768,
+  "max_concurrent_jobs": 8,
+  "max_order": 1,
+  "method": "abss",
+  "nodes": 5265,
+  "oracle_evaluations": 544,
+  "overlap_waves": true,
+  "parallel_branches": true,
+  "parameters": [
+    {
+      "id": "mat:M01:elastic:E",
+      "nominal": 70000.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M02:elastic:E",
+      "nominal": 70700.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M03:elastic:E",
+      "nominal": 71400.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M04:elastic:E",
+      "nominal": 72100.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M05:elastic:E",
+      "nominal": 72800.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M06:elastic:E",
+      "nominal": 73500.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M07:elastic:E",
+      "nominal": 74200.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M08:elastic:E",
+      "nominal": 74900.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M09:elastic:E",
+      "nominal": 75600.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M10:elastic:E",
+      "nominal": 76300.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M11:elastic:E",
+      "nominal": 77000.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M12:elastic:E",
+      "nominal": 77700.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M13:elastic:E",
+      "nominal": 78400.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M14:elastic:E",
+      "nominal": 79100.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M15:elastic:E",
+      "nominal": 79800.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M16:elastic:E",
+      "nominal": 80500.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M01:elastic:nu",
+      "nominal": 0.3,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M02:elastic:nu",
+      "nominal": 0.302,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M03:elastic:nu",
+      "nominal": 0.304,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M04:elastic:nu",
+      "nominal": 0.306,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M05:elastic:nu",
+      "nominal": 0.308,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M06:elastic:nu",
+      "nominal": 0.31,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M07:elastic:nu",
+      "nominal": 0.312,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M08:elastic:nu",
+      "nominal": 0.314,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M09:elastic:nu",
+      "nominal": 0.316,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M10:elastic:nu",
+      "nominal": 0.318,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M11:elastic:nu",
+      "nominal": 0.32,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M12:elastic:nu",
+      "nominal": 0.322,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M13:elastic:nu",
+      "nominal": 0.324,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M14:elastic:nu",
+      "nominal": 0.326,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M15:elastic:nu",
+      "nominal": 0.328,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M16:elastic:nu",
+      "nominal": 0.33,
+      "step": -1.0
+    },
+    {
+      "id": "load:BEND:dsload:TOPF:P",
+      "nominal": 1.0,
+      "step": -1.0
+    }
+  ],
+  "profile": {
+    "engine.direct_solve": {
+      "count": 4,
+      "seconds": 1.336393
+    },
+    "engine.direct_solve_rhs": {
+      "count": 132,
+      "seconds": 0.0
+    },
+    "engine.factorize": {
+      "count": 4,
+      "seconds": 2.463319
+    },
+    "engine.fused_probes_used": {
+      "count": 207,
+      "seconds": 0.0
+    },
+    "engine.tangent_assembly": {
+      "count": 4,
+      "seconds": 0.627749
+    },
+    "job.cleanup": {
+      "count": 75,
+      "seconds": 0.127949
+    },
+    "job.input_generation": {
+      "count": 343,
+      "seconds": 22.165831
+    },
+    "job.parse_results": {
+      "count": 344,
+      "seconds": 378.853294
+    },
+    "job.phase.analysis": {
+      "count": 344,
+      "seconds": 3279.0
+    },
+    "job.phase.driver_and_licence": {
+      "count": 344,
+      "seconds": 2217.530419
+    },
+    "job.phase.input_processing": {
+      "count": 344,
+      "seconds": 1140.0
+    },
+    "job.phase.wrapup": {
+      "count": 344,
+      "seconds": 416.682043
+    },
+    "job.process": {
+      "count": 344,
+      "seconds": 7053.212461
+    },
+    "job.wait_slot": {
+      "count": 344,
+      "seconds": 26521.356219
+    },
+    "jobs.commit.branch": {
+      "count": 66,
+      "seconds": 1500.184877
+    },
+    "jobs.commit.branch_fused": {
+      "count": 198,
+      "seconds": 4127.952416
+    },
+    "jobs.commit.replay": {
+      "count": 1,
+      "seconds": 24.505174
+    },
+    "jobs.commit.replay_fused": {
+      "count": 3,
+      "seconds": 63.67908
+    },
+    "jobs.commit.replay_fused_sibling": {
+      "count": 6,
+      "seconds": 131.071393
+    },
+    "jobs.nominal": {
+      "count": 1,
+      "seconds": 34.334755
+    },
+    "jobs.probe.branch": {
+      "count": 66,
+      "seconds": 1114.058298
+    },
+    "jobs.probe.replay_and_tangent_check": {
+      "count": 3,
+      "seconds": 57.426468
+    },
+    "nominal.parse_element_matrices": {
+      "count": 1,
+      "seconds": 0.841782
+    },
+    "phase.nominal": {
+      "count": 1,
+      "seconds": 36.745876
+    },
+    "stage.commit_wave": {
+      "count": 4,
+      "seconds": 780.203975
+    },
+    "stage.probe_wave": {
+      "count": 4,
+      "seconds": 149.957871
+    }
+  },
+  "quality": {
+    "du/dM01: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1.01e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM01: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 3.34e-06 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM02: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM02: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1.93e-06 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM03: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM03: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1.93e-06 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM04: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM04: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1.95e-06 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM05: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM05: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1.98e-06 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM06: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM06: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 2e-06 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM07: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM07: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 2.03e-06 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM08: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM08: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 2.07e-06 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM09: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM09: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 2.11e-06 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM10: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM10: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 2.16e-06 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM11: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM11: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 2.21e-06 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM12: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM12: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 2.25e-06 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM13: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 9.99e-06 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM13: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 2.4e-06 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM14: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1.01e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM14: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 2.64e-06 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM15: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1.01e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM15: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 3.4e-06 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM16: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1.25e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM16: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1.15e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dPressure P on TOPF (BEND)": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 8.44e-06 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    }
+  },
+  "suppress_odb_output": true,
+  "tangent_check": true,
+  "user_subroutine": "",
+  "driver": {
+    "exit_code": 0,
+    "process_wall_seconds": 1000.2973721027374,
+    "repeat": 1,
+    "case": "A64x8x8_inc4_P33",
+    "started": "2026-10-21T17:35:58"
+  }
+}

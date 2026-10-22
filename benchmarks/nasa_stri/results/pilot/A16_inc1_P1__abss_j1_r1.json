@@ -1,0 +1,165 @@
+{
+  "command": "C:/Users/vfn333/AppData/Local/abss_bench_bin/v1\\abss-cli.exe run benchmarks/nasa_stri/decks/A_16x2x2_inc1.inp --params mat:M01:elastic:E --jobs 1 --scratch C:\\Users\\vfn333\\AppData\\Local\\Temp\\abss_bench\\A16_inc1_P1__abss_j1_r1 --out benchmarks\\nasa_stri\\results\\pilot\\A16_inc1_P1__abss_j1_r1.abss --profile benchmarks\\nasa_stri\\results\\pilot\\A16_inc1_P1__abss_j1_r1.json.partial",
+  "compute_backend": "Kokkos 5.2.2 OpenMP (24 threads)",
+  "dofs": 459,
+  "elapsed_seconds": {
+    "nominal": 19.7572324,
+    "sensitivity": 162.9025944,
+    "serialize": 0.0028765,
+    "setup": 0.0007179,
+    "total": 182.6729364
+  },
+  "elements": 64,
+  "engine_seconds": 162.8965243,
+  "frames": [
+    {
+      "commit_residual": [
+        1.0100543612962223e-05
+      ],
+      "frame": 1,
+      "krylov": false,
+      "krylov_converged": true,
+      "krylov_matvecs": 0,
+      "krylov_residual": 0.0,
+      "probed_tangent": false,
+      "reprobe_passes": [
+        0
+      ],
+      "solve_residual": 8.882165103830419e-14,
+      "solver": "Eigen SimplicialLDLT",
+      "tangent_check": 9.856261232728327e-11
+    }
+  ],
+  "free_dofs": 432,
+  "increments": 1,
+  "inp": "C:\\Users\\vfn333\\Documents\\GitHub\\Abaqus-Black-Box-Sensitivity-Studio-ABSS-\\benchmarks\\nasa_stri\\decks\\A_16x2x2_inc1.inp",
+  "inp_sha256": "fe2a4cad3bcdd9bbc6f2b69e50f807acf8405da7cc8c8e3a899f6991bf6cba20",
+  "material_points": 512,
+  "max_concurrent_jobs": 1,
+  "max_order": 1,
+  "method": "abss",
+  "nodes": 153,
+  "oracle_evaluations": 8,
+  "overlap_waves": true,
+  "parallel_branches": false,
+  "parameters": [
+    {
+      "id": "mat:M01:elastic:E",
+      "nominal": 70000.0,
+      "step": -1.0
+    }
+  ],
+  "profile": {
+    "engine.direct_solve": {
+      "count": 1,
+      "seconds": 2.2e-05
+    },
+    "engine.direct_solve_rhs": {
+      "count": 1,
+      "seconds": 0.0
+    },
+    "engine.factorize": {
+      "count": 1,
+      "seconds": 0.001148
+    },
+    "engine.tangent_assembly": {
+      "count": 1,
+      "seconds": 0.002071
+    },
+    "job.cleanup": {
+      "count": 5,
+      "seconds": 0.005006
+    },
+    "job.input_generation": {
+      "count": 8,
+      "seconds": 0.006453
+    },
+    "job.parse_results": {
+      "count": 9,
+      "seconds": 0.016272
+    },
+    "job.phase.analysis": {
+      "count": 9,
+      "seconds": 39.0
+    },
+    "job.phase.driver_and_licence": {
+      "count": 9,
+      "seconds": 112.455072
+    },
+    "job.phase.input_processing": {
+      "count": 9,
+      "seconds": 25.0
+    },
+    "job.phase.wrapup": {
+      "count": 9,
+      "seconds": 6.104947
+    },
+    "job.process": {
+      "count": 9,
+      "seconds": 182.560019
+    },
+    "job.wait_slot": {
+      "count": 9,
+      "seconds": 62.943992
+    },
+    "jobs.commit.branch": {
+      "count": 2,
+      "seconds": 40.998638
+    },
+    "jobs.commit.replay": {
+      "count": 1,
+      "seconds": 22.362006
+    },
+    "jobs.nominal": {
+      "count": 1,
+      "seconds": 19.728817
+    },
+    "jobs.probe.branch": {
+      "count": 2,
+      "seconds": 41.528883
+    },
+    "jobs.probe.replay_and_tangent_check": {
+      "count": 3,
+      "seconds": 57.941674
+    },
+    "nominal.parse_element_matrices": {
+      "count": 1,
+      "seconds": 0.003268
+    },
+    "phase.nominal": {
+      "count": 1,
+      "seconds": 19.757226
+    },
+    "stage.branch": {
+      "count": 1,
+      "seconds": 41.535555
+    },
+    "stage.commit_wave": {
+      "count": 1,
+      "seconds": 63.375607
+    },
+    "stage.probe_wave": {
+      "count": 1,
+      "seconds": 99.48004
+    }
+  },
+  "quality": {
+    "du/dM01: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1.01e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 9.856261232728327e-11
+    }
+  },
+  "tangent_check": true,
+  "user_subroutine": "",
+  "driver": {
+    "exit_code": 0,
+    "process_wall_seconds": 183.98357558250427,
+    "repeat": 1,
+    "case": "A16_inc1_P1",
+    "started": "2026-10-21T11:51:30"
+  }
+}

@@ -1,0 +1,48 @@
+[
+ {
+  "id": "A16x2x2_inc4_P4",
+  "deck": "benchmarks/nasa_stri/decks/A_16x2x2_inc4.inp",
+  "params": [
+   "mat:M01:elastic:E",
+   "mat:M02:elastic:E",
+   "mat:M03:elastic:E",
+   "mat:M04:elastic:E"
+  ],
+  "methods": [
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   1
+  ],
+  "repeats": 1,
+  "bin": "%BIN%",
+  "extra_abss_batch": [
+   "--batch"
+  ]
+ },
+ {
+  "id": "A64x8x8_inc4_P4",
+  "deck": "benchmarks/nasa_stri/decks/A_64x8x8_inc4.inp",
+  "params": [
+   "mat:M01:elastic:E",
+   "mat:M02:elastic:E",
+   "mat:M03:elastic:E",
+   "mat:M04:elastic:E"
+  ],
+  "methods": [
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   1
+  ],
+  "repeats": 1,
+  "bin": "%BIN%",
+  "extra_abss_batch": [
+   "--batch"
+  ]
+ }
+]

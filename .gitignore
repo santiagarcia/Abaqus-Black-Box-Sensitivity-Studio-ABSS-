@@ -42,3 +42,7 @@ dist/
 # Proprietary third-party material packages and models built on them (never commit)
 ti6242_ravi_package.zip
 validation/private/
+
+# NASA STRI campaign: generated decks (reproducible with benchmarks/nasa_stri/gen_models.py)
+benchmarks/nasa_stri/decks/
+benchmarks/nasa_stri/results/**/*.abss

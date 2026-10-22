@@ -43,6 +43,13 @@ struct SensitivityRequest {
     double asymmetryThreshold = 0.01;
     int maxReprobePasses = 8;
     bool parallelBranches = false;      ///< evaluate branches concurrently (oracle must allow it)
+    /// With parallelBranches: run the solve-independent probes of an increment (replay, tangent check, order-1 branch
+    /// probes) as one wave and all commits as one wave. false reproduces the earlier stage-by-stage order (same
+    /// evaluations, more sequential waves); kept for before/after measurements.
+    bool overlapWaves = true;
+    /// Oracle evaluations that can run at once (Abaqus job slots); used by the cost model that chooses between an
+    /// assembled true tangent and GMRES.
+    int concurrency = 1;
     /// Matrix-free Krylov refinement when the oracle tangent is not the consistent tangent (Abaqus returns the
     /// elastic-modulus stiffness under built-in plasticity: docs/council/scout_abaqus2024.md). Operator K_true v is
     /// the central FD of probes on the nominal replay branch; the oracle tangent's factorization preconditions GMRES.
@@ -72,7 +79,9 @@ struct FrameDiagnostics {
     int krylovMatvecs = 0;               ///< operator applications (2 oracle probes each)
     double krylovResidual = 0;           ///< worst final relative residual over right-hand sides
     bool krylovConverged = true;         ///< false = engine failure at this increment (reported, never hidden)
-    bool probedTangent = false;          ///< true tangent assembled from probes (few unknowns, many directions)
+    bool probedTangent = false;          ///< true tangent assembled from probes (column groups) instead of GMRES
+    int tangentColours = 0;              ///< column groups of the tangent pattern (2 probes each when assembled)
+    double assembledTangentCheck = -1;   ///< assembled tangent vs the tangent-check probe pair (-1 = not assembled)
     std::string solver;
 };
 

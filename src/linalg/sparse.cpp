@@ -237,6 +237,45 @@ double CsrMatrix::get(std::int32_t r, std::int32_t c) const {
     return (it != e && *it == c) ? values[static_cast<size_t>(it - colIdx.begin())] : 0.0;
 }
 
+std::vector<std::vector<std::int32_t>> symmetricColumnPattern(const CsrMatrix& a) {
+    if (a.rows != a.cols) throw std::invalid_argument("symmetricColumnPattern: square matrix required");
+    std::vector<std::vector<std::int32_t>> p(static_cast<size_t>(a.cols));
+    for (std::int32_t r = 0; r < a.rows; ++r) {
+        p[static_cast<size_t>(r)].push_back(r);
+        for (auto k = a.rowPtr[static_cast<size_t>(r)]; k < a.rowPtr[static_cast<size_t>(r) + 1]; ++k) {
+            const auto c = a.colIdx[static_cast<size_t>(k)];
+            p[static_cast<size_t>(c)].push_back(r);  // A(r, c): row r in column c
+            p[static_cast<size_t>(r)].push_back(c);  // A^T
+        }
+    }
+    for (auto& v : p) {
+        std::sort(v.begin(), v.end());
+        v.erase(std::unique(v.begin(), v.end()), v.end());
+    }
+    return p;
+}
+
+std::vector<std::int32_t> columnColouring(const std::vector<std::vector<std::int32_t>>& pattern, std::int32_t* nColours) {
+    // With a symmetric pattern, columns q and q' share a row iff they are within distance 2 in the adjacency graph.
+    const size_t n = pattern.size();
+    std::vector<std::int32_t> colour(n, -1), stamp;
+    std::int32_t used = 0;
+    for (size_t q = 0; q < n; ++q) {
+        stamp.assign(static_cast<size_t>(used) + 1, -1);
+        for (auto s : pattern[q])
+            for (auto q2 : pattern[static_cast<size_t>(s)]) {
+                const auto c = colour[static_cast<size_t>(q2)];
+                if (c >= 0) stamp[static_cast<size_t>(c)] = static_cast<std::int32_t>(q);
+            }
+        std::int32_t c = 0;
+        while (c < used && stamp[static_cast<size_t>(c)] == static_cast<std::int32_t>(q)) ++c;
+        colour[q] = c;
+        used = std::max(used, c + 1);
+    }
+    if (nColours) *nColours = used;
+    return colour;
+}
+
 double CsrMatrix::maxAbs() const {
     double m = 0.0;
     for (double v : values) m = std::max(m, std::abs(v));

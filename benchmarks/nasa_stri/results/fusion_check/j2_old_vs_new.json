@@ -1,0 +1,146 @@
+[
+  {
+    "derivative": "d/dSTEEL: E",
+    "field": "U",
+    "frames_missing": 1,
+    "max_abs_error": 0.0,
+    "parameter_ids": [
+      "mat:STEEL:elastic:E"
+    ],
+    "ref_max_abs": 1.2802925631986983e-08,
+    "scaled_error": 0.0,
+    "values_compared": 160
+  },
+  {
+    "derivative": "d/dSTEEL: E",
+    "field": "RF",
+    "frames_missing": 1,
+    "max_abs_error": 0.0,
+    "parameter_ids": [
+      "mat:STEEL:elastic:E"
+    ],
+    "ref_max_abs": 0.012169981056729284,
+    "scaled_error": 0.0,
+    "values_compared": 160
+  },
+  {
+    "derivative": "d/dSTEEL: E",
+    "field": "S",
+    "frames_missing": 1,
+    "max_abs_error": 0.0,
+    "parameter_ids": [
+      "mat:STEEL:elastic:E"
+    ],
+    "ref_max_abs": 0.0024339962113728575,
+    "scaled_error": 0.0,
+    "values_compared": 240
+  },
+  {
+    "derivative": "d/dSTEEL: E",
+    "field": "E",
+    "frames_missing": 1,
+    "max_abs_error": 0.0,
+    "parameter_ids": [
+      "mat:STEEL:elastic:E"
+    ],
+    "ref_max_abs": 1.2802925634805909e-09,
+    "scaled_error": 0.0,
+    "values_compared": 240
+  },
+  {
+    "derivative": "d/dSTEEL: E",
+    "field": "PEEQ",
+    "frames_missing": 1,
+    "max_abs_error": 0.0,
+    "parameter_ids": [
+      "mat:STEEL:elastic:E"
+    ],
+    "ref_max_abs": 6.401462829003918e-09,
+    "scaled_error": 0.0,
+    "values_compared": 80
+  },
+  {
+    "derivative": "d/dSTEEL: E",
+    "field": "S_Mises",
+    "frames_missing": 1,
+    "max_abs_error": 0.0,
+    "parameter_ids": [
+      "mat:STEEL:elastic:E"
+    ],
+    "ref_max_abs": 0.002433996211365752,
+    "scaled_error": 0.0,
+    "values_compared": 80
+  },
+  {
+    "derivative": "d/dSTEEL: sigma_y(eps_p=0)",
+    "field": "U",
+    "frames_missing": 1,
+    "max_abs_error": 0.0,
+    "parameter_ids": [
+      "mat:STEEL:plastic:sigma_y:1"
+    ],
+    "ref_max_abs": 9.60827419120569e-06,
+    "scaled_error": 0.0,
+    "values_compared": 160
+  },
+  {
+    "derivative": "d/dSTEEL: sigma_y(eps_p=0)",
+    "field": "RF",
+    "frames_missing": 1,
+    "max_abs_error": 0.0,
+    "parameter_ids": [
+      "mat:STEEL:plastic:sigma_y:1"
+    ],
+    "ref_max_abs": 4.804137110431839,
+    "scaled_error": 0.0,
+    "values_compared": 160
+  },
+  {
+    "derivative": "d/dSTEEL: sigma_y(eps_p=0)",
+    "field": "S",
+    "frames_missing": 1,
+    "max_abs_error": 0.0,
+    "parameter_ids": [
+      "mat:STEEL:plastic:sigma_y:1"
+    ],
+    "ref_max_abs": 0.9608274220795465,
+    "scaled_error": 0.0,
+    "values_compared": 240
+  },
+  {
+    "derivative": "d/dSTEEL: sigma_y(eps_p=0)",
+    "field": "E",
+    "frames_missing": 1,
+    "max_abs_error": 0.0,
+    "parameter_ids": [
+      "mat:STEEL:plastic:sigma_y:1"
+    ],
+    "ref_max_abs": 9.60827419168274e-07,
+    "scaled_error": 0.0,
+    "values_compared": 240
+  },
+  {
+    "derivative": "d/dSTEEL: sigma_y(eps_p=0)",
+    "field": "PEEQ",
+    "frames_missing": 1,
+    "max_abs_error": 0.0,
+    "parameter_ids": [
+      "mat:STEEL:plastic:sigma_y:1"
+    ],
+    "ref_max_abs": 4.804137110434731e-06,
+    "scaled_error": 0.0,
+    "values_compared": 80
+  },
+  {
+    "derivative": "d/dSTEEL: sigma_y(eps_p=0)",
+    "field": "S_Mises",
+    "frames_missing": 1,
+    "max_abs_error": 0.0,
+    "parameter_ids": [
+      "mat:STEEL:plastic:sigma_y:1"
+    ],
+    "ref_max_abs": 0.9608274221022839,
+    "scaled_error": 0.0,
+    "values_compared": 80
+  }
+]

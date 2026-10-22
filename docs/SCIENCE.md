@@ -161,8 +161,14 @@ cantilever length parameter the error at the default step went from 2.1 to 9.6e-
 
 A derivative series is **Validated** only after it has been compared, at **every** increment and for **every**
 field, against the central FD of full re-equilibrated reruns at `a ± m h`.
-- **Error metric.** Max absolute difference divided by `max(|reference|, floor_k · max|F_nominal| / |a|^k)`.
-  - `floor = 1e-4` for orders 1–2 and `1e-3` for orders ≥3. Below that, the change to the Taylor term is negligible.
+- **Error metric.** It is evaluated per field, over every increment and every component. It is the maximum
+  absolute difference divided by `max(max|reference over the field|, floor_k · max|F_nominal| / |a|^k)`. This is a
+  field-scaled error, not a pointwise relative error.
+  - `floor_k = 5e-2` for orders 1–3 and `1e-1` for orders ≥ 4 (`validation.cpp`).
+  - This replaced an earlier 1e-4, because nearly-zero derivatives could otherwise never pass. Their size sits below
+    the scheme's own truncation error (≈ h_rel · max|F| / |a|^k).
+  - Consequence: at tolerance 1e-3, any absolute error below 5e-5 · max|F| / |a| passes, even on components whose
+    reference is much smaller.
 - **Tolerance.** 1e-3 (order 1) or 1e-2 (order 2) by default; the tests use 1e-4 and 1e-3.
 - **Orders ≥ 3.** These are labelled **Experimental** even when they pass.
 - **Mixed.** Validated against four-corner reruns.

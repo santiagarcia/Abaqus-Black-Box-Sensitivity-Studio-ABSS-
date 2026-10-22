@@ -1,0 +1,90 @@
+{
+ "reference": "A16_inc1_P1__fafd_j1_r1.abss",
+ "test": "A16_inc1_P1__abss_j1_r1.abss",
+ "rows": [
+  {
+   "parameter_id": "mat:M01:elastic:E",
+   "field": "U",
+   "values_compared": 459,
+   "frames_missing": 0,
+   "max_ref": 6.050083053654731e-06,
+   "max_err": 2.57825507701836e-13,
+   "nominal_field_max": 1.951952120543634,
+   "parameter_scale": 70000.0,
+   "natural_scale": 2.7885030293480487e-05,
+   "err_natural": 9.246018562228908e-09,
+   "err_scaled_floor": 4.261520138076269e-08,
+   "err_rel_ref": 4.261520138076269e-08
+  },
+  {
+   "parameter_id": "mat:M01:elastic:E",
+   "field": "RF",
+   "values_compared": 459,
+   "frames_missing": 0,
+   "max_ref": 0.007176243082312794,
+   "max_err": 3.622387469734249e-10,
+   "nominal_field_max": 2434.384149182208,
+   "parameter_scale": 70000.0,
+   "natural_scale": 0.03477691641688869,
+   "err_natural": 1.0416068596510506e-08,
+   "err_scaled_floor": 5.047749119120988e-08,
+   "err_rel_ref": 5.047749119120988e-08
+  },
+  {
+   "parameter_id": "mat:M01:elastic:E",
+   "field": "S",
+   "values_compared": 3072,
+   "frames_missing": 0,
+   "max_ref": 0.00032667567615314586,
+   "max_err": 3.3760930547499166e-11,
+   "nominal_field_max": 188.2649447710164,
+   "parameter_scale": 70000.0,
+   "natural_scale": 0.00268949921101452,
+   "err_natural": 1.2552868730816259e-08,
+   "err_scaled_floor": 1.0334693707551098e-07,
+   "err_rel_ref": 1.0334693707551098e-07
+  },
+  {
+   "parameter_id": "mat:M01:elastic:E",
+   "field": "E",
+   "values_compared": 3072,
+   "frames_missing": 0,
+   "max_ref": 3.520157194143898e-08,
+   "max_err": 4.813857712010089e-16,
+   "nominal_field_max": 0.002670384615927645,
+   "parameter_scale": 70000.0,
+   "natural_scale": 3.8148351656109214e-08,
+   "err_natural": 1.2618782995933667e-08,
+   "err_scaled_floor": 1.367512144065151e-08,
+   "err_rel_ref": 1.367512144065151e-08
+  },
+  {
+   "parameter_id": "mat:M01:elastic:E",
+   "field": "PEEQ",
+   "values_compared": 512,
+   "frames_missing": 0,
+   "max_ref": 0.0,
+   "max_err": 0.0,
+   "nominal_field_max": 0.0,
+   "parameter_scale": 70000.0,
+   "natural_scale": 0.0,
+   "err_natural": 0.0,
+   "err_scaled_floor": 0.0,
+   "err_rel_ref": 0.0
+  },
+  {
+   "parameter_id": "mat:M01:elastic:E",
+   "field": "S_Mises",
+   "values_compared": 512,
+   "frames_missing": 0,
+   "max_ref": 0.00035582572169801097,
+   "max_err": 3.4426810631860844e-11,
+   "nominal_field_max": 195.48089970056287,
+   "parameter_scale": 70000.0,
+   "natural_scale": 0.0027925842814366126,
+   "err_natural": 1.2327939701125285e-08,
+   "err_scaled_floor": 9.675188872680445e-08,
+   "err_rel_ref": 9.675188872680445e-08
+  }
+ ]
+}

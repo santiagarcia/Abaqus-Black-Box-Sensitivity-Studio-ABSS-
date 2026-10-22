@@ -1,0 +1,140 @@
+[
+ {
+  "id": "A16x2x2_inc4_P4",
+  "deck": "benchmarks/nasa_stri/decks/A_16x2x2_inc4.inp",
+  "params": [
+   "mat:M01:elastic:E",
+   "mat:M02:elastic:E",
+   "mat:M03:elastic:E",
+   "mat:M04:elastic:E"
+  ],
+  "methods": [
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   8
+  ],
+  "repeats": 2,
+  "bin": "%BIN%",
+  "extra_abss_batch": [
+   "--batch"
+  ]
+ },
+ {
+  "id": "A32x4x4_inc4_P4",
+  "deck": "benchmarks/nasa_stri/decks/A_32x4x4_inc4.inp",
+  "params": [
+   "mat:M01:elastic:E",
+   "mat:M02:elastic:E",
+   "mat:M03:elastic:E",
+   "mat:M04:elastic:E"
+  ],
+  "methods": [
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   8
+  ],
+  "repeats": 2,
+  "bin": "%BIN%",
+  "extra_abss_batch": [
+   "--batch"
+  ]
+ },
+ {
+  "id": "A48x6x6_inc4_P4",
+  "deck": "benchmarks/nasa_stri/decks/A_48x6x6_inc4.inp",
+  "params": [
+   "mat:M01:elastic:E",
+   "mat:M02:elastic:E",
+   "mat:M03:elastic:E",
+   "mat:M04:elastic:E"
+  ],
+  "methods": [
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   8
+  ],
+  "repeats": 2,
+  "bin": "%BIN%",
+  "extra_abss_batch": [
+   "--batch"
+  ]
+ },
+ {
+  "id": "A64x8x8_inc4_P4",
+  "deck": "benchmarks/nasa_stri/decks/A_64x8x8_inc4.inp",
+  "params": [
+   "mat:M01:elastic:E",
+   "mat:M02:elastic:E",
+   "mat:M03:elastic:E",
+   "mat:M04:elastic:E"
+  ],
+  "methods": [
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   8
+  ],
+  "repeats": 2,
+  "bin": "%BIN%",
+  "extra_abss_batch": [
+   "--batch"
+  ]
+ },
+ {
+  "id": "A96x12x12_inc4_P4",
+  "deck": "benchmarks/nasa_stri/decks/A_96x12x12_inc4.inp",
+  "params": [
+   "mat:M01:elastic:E",
+   "mat:M02:elastic:E",
+   "mat:M03:elastic:E",
+   "mat:M04:elastic:E"
+  ],
+  "methods": [
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   8
+  ],
+  "repeats": 2,
+  "bin": "%BIN%",
+  "extra_abss_batch": [
+   "--batch"
+  ]
+ },
+ {
+  "id": "A128x16x16_inc4_P4",
+  "deck": "benchmarks/nasa_stri/decks/A_128x16x16_inc4.inp",
+  "params": [
+   "mat:M01:elastic:E",
+   "mat:M02:elastic:E",
+   "mat:M03:elastic:E",
+   "mat:M04:elastic:E"
+  ],
+  "methods": [
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   8
+  ],
+  "repeats": 2,
+  "bin": "%BIN%",
+  "extra_abss_batch": [
+   "--batch"
+  ]
+ }
+]

@@ -127,7 +127,11 @@ std::vector<FilIncrement> readFil(const std::string& path) {
             // PE records carry an 8-character yield flag ("YES"/"NO") before PEEQ: keep numeric tokens only.
             for (size_t k = 2; k < t.size(); ++k)
                 if (!std::holds_alternative<std::string>(t[k])) v.push_back(num(t[k]));
-            cur->values[it->second] = std::move(v);
+            // A long SDV list is written as several consecutive key-5 records for the same point: concatenate them
+            // (keeping only the last record lost every variable but the last chunk).
+            auto& dst = cur->values[it->second];
+            if (key == 5 && !dst.empty()) dst.insert(dst.end(), v.begin(), v.end());
+            else dst = std::move(v);
         }
     }
     return incs;

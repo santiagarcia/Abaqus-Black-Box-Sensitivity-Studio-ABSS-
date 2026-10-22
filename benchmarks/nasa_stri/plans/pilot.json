@@ -1,0 +1,13 @@
+[
+  {"id": "c3d8_E_nu", "deck": "examples/models/c3d8_block.inp",
+   "params": ["mat:ALU:elastic:E", "mat:ALU:elastic:nu"],
+   "methods": ["abss", "abss_legacy", "fafd"], "extra_abss_legacy": ["--no-overlap"],
+   "jobs": [8], "repeats": 1, "bin": "%BIN%"},
+  {"id": "A16_inc1_P1", "deck": "benchmarks/nasa_stri/decks/A_16x2x2_inc1.inp",
+   "params": ["mat:M01:elastic:E"], "methods": ["abss", "fafd"], "jobs": [1], "repeats": 1, "bin": "%BIN%"},
+  {"id": "A32_inc4_P4", "deck": "benchmarks/nasa_stri/decks/A_32x4x4_inc4.inp",
+   "params": ["mat:M01:elastic:E", "mat:M02:elastic:E", "mat:M03:elastic:E", "mat:M04:elastic:E"],
+   "methods": ["abss", "fafd"], "jobs": [8], "repeats": 1, "bin": "%BIN%"},
+  {"id": "B16_inc4_P1", "deck": "benchmarks/nasa_stri/decks/B_16x2x2_inc4.inp",
+   "params": ["mat:M01:plastic:sigma_y:1"], "methods": ["abss", "fafd"], "jobs": [8], "repeats": 1, "bin": "%BIN%"}
+]

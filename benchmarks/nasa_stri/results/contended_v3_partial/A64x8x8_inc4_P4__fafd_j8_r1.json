@@ -1,0 +1,147 @@
+{
+  "command": "C:/Users/vfn333/AppData/Local/abss_bench_bin/v3\\abss-cli.exe fafd benchmarks/nasa_stri/decks/A_64x8x8_inc4.inp --params mat:M01:elastic:E,mat:M02:elastic:E,mat:M03:elastic:E,mat:M04:elastic:E --jobs 8 --scratch C:\\Users\\vfn333\\AppData\\Local\\Temp\\abss_bench\\A64x8x8_inc4_P4__fafd_j8_r1 --out benchmarks\\nasa_stri\\results\\A_mesh_j8\\A64x8x8_inc4_P4__fafd_j8_r1.abss --profile benchmarks\\nasa_stri\\results\\A_mesh_j8\\A64x8x8_inc4_P4__fafd_j8_r1.json.partial",
+  "compute_backend": "Kokkos 5.2.2 OpenMP (24 threads)",
+  "dofs": 15795,
+  "elapsed_seconds": {
+    "nominal": 31.4031255,
+    "sensitivity": 20.8090611,
+    "serialize": 0.1614649,
+    "setup": 0.0069918,
+    "total": 52.4237668
+  },
+  "elements": 4096,
+  "fafd_analyses": 8,
+  "fafd_failed": 0,
+  "free_dofs": 15552,
+  "fuse_commit_probe": true,
+  "increments": 4,
+  "inp": "C:\\Users\\vfn333\\Documents\\GitHub\\Abaqus-Black-Box-Sensitivity-Studio-ABSS-\\benchmarks\\nasa_stri\\decks\\A_64x8x8_inc4.inp",
+  "inp_sha256": "c66360070243e011c3cfabc166042f7afac1fc14a531a2d2129838173eccc60a",
+  "material_points": 32768,
+  "max_concurrent_jobs": 8,
+  "max_order": 1,
+  "method": "fafd",
+  "nodes": 5265,
+  "overlap_waves": true,
+  "parallel_branches": false,
+  "parameters": [
+    {
+      "id": "mat:M01:elastic:E",
+      "nominal": 70000.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M02:elastic:E",
+      "nominal": 70700.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M03:elastic:E",
+      "nominal": 71400.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M04:elastic:E",
+      "nominal": 72100.0,
+      "step": -1.0
+    }
+  ],
+  "profile": {
+    "job.cleanup": {
+      "count": 8,
+      "seconds": 0.105709
+    },
+    "job.parse_results": {
+      "count": 9,
+      "seconds": 9.48695
+    },
+    "job.phase.analysis": {
+      "count": 9,
+      "seconds": 91.0
+    },
+    "job.phase.driver_and_licence": {
+      "count": 9,
+      "seconds": 51.355223
+    },
+    "job.phase.input_processing": {
+      "count": 9,
+      "seconds": 24.0
+    },
+    "job.phase.wrapup": {
+      "count": 9,
+      "seconds": 12.368544
+    },
+    "job.process": {
+      "count": 9,
+      "seconds": 178.723767
+    },
+    "job.wait_slot": {
+      "count": 9,
+      "seconds": 1e-06
+    },
+    "jobs.fafd.analysis": {
+      "count": 8,
+      "seconds": 149.828774
+    },
+    "jobs.nominal": {
+      "count": 1,
+      "seconds": 28.894994
+    },
+    "nominal.parse_element_matrices": {
+      "count": 1,
+      "seconds": 0.905239
+    },
+    "phase.nominal": {
+      "count": 1,
+      "seconds": 31.403111
+    },
+    "stage.fafd_analyses": {
+      "count": 1,
+      "seconds": 20.809059
+    }
+  },
+  "quality": {
+    "du/dM01: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM02: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM03: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM04: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    }
+  },
+  "suppress_odb_output": true,
+  "tangent_check": true,
+  "user_subroutine": "",
+  "driver": {
+    "exit_code": 0,
+    "process_wall_seconds": 54.757890939712524,
+    "repeat": 1,
+    "case": "A64x8x8_inc4_P4",
+    "started": "2026-10-21T12:28:57"
+  }
+}

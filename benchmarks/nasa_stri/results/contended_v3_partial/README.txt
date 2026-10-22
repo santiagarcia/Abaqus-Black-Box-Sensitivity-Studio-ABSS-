@@ -1,0 +1,1 @@
+﻿Partial first repeat of A_mesh_j8 with the v3 binary, 12:12-12:30 on 2026-10-21. NOT used for headline results: the runs overlapped verification jobs on the same machine and licence server (contended). Kept for transparency.

@@ -55,6 +55,7 @@ struct RunSettings {
     std::string abaqusCommand;     ///< user override for the Abaqus launcher (empty = auto-detect)
     std::string userSubroutine;    ///< UMAT/UEL object, library or source passed to Abaqus as user= (empty = none)
     int concurrentJobs = 2;        ///< simultaneous Abaqus jobs (licence permitting)
+    bool batchBranches = false;    ///< replicated branches: several history branches per Abaqus job
 };
 
 struct CostEstimate {

@@ -1,7 +1,13 @@
 #include "abss/sensitivity/engine.hpp"
 
+#include "abss/core/profile.hpp"
+
 #include <algorithm>
+#include <array>
+#include <atomic>
 #include <cmath>
+#include <future>
+#include <mutex>
 #include <sstream>
 
 namespace abss {
@@ -126,34 +132,91 @@ std::string validateAgainstReruns(Oracle& oracle, const SensitivityRequest& req,
     for (int m = -M; m <= M; ++m) offsets.push_back(m);
     const size_t nAll = store.parameters.size();
 
-    std::vector<FrameFields> nominalFields;
-    if (oracle.solvePerturbed(std::vector<double>(nAll, 0.0), &nominalFields).empty()) {
-        summary << "Validation skipped: nominal rerun failed.\n";
-        return summary.str();
-    }
-    const size_t nFrames = nominalFields.size();
+    // Every reference rerun is independent (its own deck and history), so the whole set runs as one wave limited only
+    // by the oracle's job slots. The zero-offset rerun is not a duplicate of the nominal analysis: it uses the same
+    // fixed time grid and tight controls as the perturbed reruns, so the FD stencil differences consistent solutions.
     std::vector<double> hOf(nAll, 0.0);
-
     for (size_t j = 0; j < req.parameters.size(); ++j) {
-        if (ctl.cancel) break;
         const int pi = req.parameters[j];
         const auto& p = store.parameters.at(static_cast<size_t>(pi));
         const double hEngine = j < req.absoluteSteps.size() && req.absoluteSteps[j] > 0
                                    ? req.absoluteSteps[j]
                                    : defaultRelativeStep(K) * (p.absoluteStep() / p.relativeStep);
-        const double hv = hEngine * opt.stepFactor;
-        hOf[static_cast<size_t>(pi)] = hv;
+        hOf[static_cast<size_t>(pi)] = hEngine * opt.stepFactor;
+    }
+    std::vector<std::vector<double>> deltas{std::vector<double>(nAll, 0.0)};
+    std::vector<std::vector<size_t>> pureRun(req.parameters.size(), std::vector<size_t>(offsets.size(), 0));
+    for (size_t j = 0; j < req.parameters.size(); ++j)
+        for (size_t o = 0; o < offsets.size(); ++o) {
+            if (offsets[o] == 0) continue;
+            std::vector<double> delta(nAll, 0.0);
+            const auto pi = static_cast<size_t>(req.parameters[j]);
+            delta[pi] = offsets[o] * hOf[pi];
+            pureRun[j][o] = deltas.size();
+            deltas.push_back(std::move(delta));
+        }
+    std::vector<std::array<size_t, 4>> mixedRun;
+    for (const auto& [a0, b0] : req.mixedPairs) {
+        const auto a = static_cast<size_t>(std::min(a0, b0)), b = static_cast<size_t>(std::max(a0, b0));
+        std::array<size_t, 4> idx{};
+        int c = 0;
+        for (int sa : {+1, -1})
+            for (int sb : {+1, -1}) {
+                std::vector<double> delta(nAll, 0.0);
+                delta[a] = sa * hOf[a];
+                delta[b] = sb * hOf[b];
+                idx[static_cast<size_t>(c++)] = deltas.size();
+                deltas.push_back(std::move(delta));
+            }
+        mixedRun.push_back(idx);
+    }
+    std::vector<std::vector<FrameFields>> runAll(deltas.size());
+    std::vector<char> runOk(deltas.size(), 0);
+    {
+        prof::Scope ws("stage.validation_reruns");
+        std::atomic<size_t> done{0};
+        std::mutex progressMutex;  // callers' progress callbacks need not be thread-safe
+        auto one = [&](size_t t) {
+            if (ctl.cancel) return;
+            prof::Activity act(t == 0 ? "validation.zero_offset_rerun" : "validation.rerun");
+            runOk[t] = !oracle.solvePerturbed(deltas[t], &runAll[t]).empty();
+            if (ctl.progress) {
+                std::lock_guard<std::mutex> lk(progressMutex);
+                ctl.progress("Validation reruns", double(++done) / double(deltas.size()));
+            }
+        };
+        const bool par = req.parallelBranches && oracle.capabilities().canRunInParallel && deltas.size() > 1;
+        if (!par) {
+            for (size_t t = 0; t < deltas.size(); ++t) one(t);
+        } else {
+            std::vector<std::future<void>> fut;
+            for (size_t t = 0; t < deltas.size(); ++t) fut.push_back(std::async(std::launch::async, one, t));
+            for (auto& x : fut) x.get();
+        }
+    }
+    if (ctl.cancel) {
+        summary << "Validation stopped (cancelled); no derivative was graded.\n";
+        return summary.str();
+    }
+    if (!runOk[0]) {
+        summary << "Validation skipped: nominal rerun failed.\n";
+        return summary.str();
+    }
+    const std::vector<FrameFields>& nominalFields = runAll[0];
+    const size_t nFrames = nominalFields.size();
+    auto good = [&](size_t t) { return runOk[t] && runAll[t].size() == nFrames; };
+
+    for (size_t j = 0; j < req.parameters.size(); ++j) {
+        if (ctl.cancel) break;
+        const int pi = req.parameters[j];
+        const auto& p = store.parameters.at(static_cast<size_t>(pi));
+        const double hv = hOf[static_cast<size_t>(pi)];
         std::vector<std::vector<FrameFields>> runs(offsets.size());
         bool ok = true;
         for (size_t o = 0; o < offsets.size(); ++o) {
-            if (offsets[o] == 0) {
-                runs[o] = nominalFields;
-                continue;
-            }
-            std::vector<double> delta(nAll, 0.0);
-            delta[static_cast<size_t>(pi)] = offsets[o] * hv;
-            if (oracle.solvePerturbed(delta, &runs[o]).empty() || runs[o].size() != nFrames) ok = false;
-            if (ctl.progress) ctl.progress("Validation reruns (" + p.name + ")", double(o + 1) / offsets.size());
+            const size_t t = offsets[o] == 0 ? 0 : pureRun[j][o];
+            if (!good(t)) ok = false;
+            else runs[o] = runAll[t];
         }
         for (int k = 1; k <= K; ++k) {
             auto& q = store.quality[DerivativeSpec::pure(pi, k)];
@@ -179,21 +242,17 @@ std::string validateAgainstReruns(Oracle& oracle, const SensitivityRequest& req,
     }
 
     // Mixed second derivatives: 4-corner central FD of full reruns at (a +- h_a, b +- h_b).
-    for (const auto& [a0, b0] : req.mixedPairs) {
+    for (size_t mp = 0; mp < req.mixedPairs.size(); ++mp) {
         if (ctl.cancel) break;
+        const auto [a0, b0] = req.mixedPairs[mp];
         const int a = std::min(a0, b0), b = std::max(a0, b0);
         const double ha = hOf[static_cast<size_t>(a)], hb = hOf[static_cast<size_t>(b)];
         std::vector<FrameFields> c[4];
         bool ok = true;
-        int idx = 0;
-        for (int sa : {+1, -1})
-            for (int sb : {+1, -1}) {
-                std::vector<double> delta(nAll, 0.0);
-                delta[static_cast<size_t>(a)] = sa * ha;
-                delta[static_cast<size_t>(b)] = sb * hb;
-                if (oracle.solvePerturbed(delta, &c[idx]).empty() || c[idx].size() != nFrames) ok = false;
-                ++idx;
-            }
+        for (size_t idx = 0; idx < 4; ++idx) {
+            if (!good(mixedRun[mp][idx])) ok = false;
+            else c[idx] = runAll[mixedRun[mp][idx]];
+        }
         const DerivativeSpec spec{{a, b}};
         auto& q = store.quality[spec];
         const std::string label = "mixed " + store.parameters[static_cast<size_t>(a)].name + "," +

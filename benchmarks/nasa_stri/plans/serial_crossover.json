@@ -1,0 +1,133 @@
+﻿[
+    {
+        "id":  "A16x2x2_inc4_P1",
+        "deck":  "benchmarks/nasa_stri/decks/A_16x2x2_inc4.inp",
+        "params":  [
+                       "mat:M01:elastic:E"
+                   ],
+        "methods":  [
+                        "abss_batch",
+                        "fafd"
+                    ],
+        "jobs":  [
+                     1
+                 ],
+        "repeats":  3,
+        "bin":  "C:/Users/vfn333/AppData/Local/abss_bench_bin/v7",
+        "extra_abss_batch":  [
+                                 "--batch"
+                             ]
+    },
+    {
+        "id":  "A16x2x2_inc4_P2",
+        "deck":  "benchmarks/nasa_stri/decks/A_16x2x2_inc4.inp",
+        "params":  [
+                       "mat:M01:elastic:E",
+                       "mat:M02:elastic:E"
+                   ],
+        "methods":  [
+                        "abss_batch",
+                        "fafd"
+                    ],
+        "jobs":  [
+                     1
+                 ],
+        "repeats":  3,
+        "bin":  "C:/Users/vfn333/AppData/Local/abss_bench_bin/v7",
+        "extra_abss_batch":  [
+                                 "--batch"
+                             ]
+    },
+    {
+        "id":  "A16x2x2_inc4_P4",
+        "deck":  "benchmarks/nasa_stri/decks/A_16x2x2_inc4.inp",
+        "params":  [
+                       "mat:M01:elastic:E",
+                       "mat:M02:elastic:E",
+                       "mat:M03:elastic:E",
+                       "mat:M04:elastic:E"
+                   ],
+        "methods":  [
+                        "abss_batch",
+                        "fafd"
+                    ],
+        "jobs":  [
+                     1
+                 ],
+        "repeats":  3,
+        "bin":  "C:/Users/vfn333/AppData/Local/abss_bench_bin/v7",
+        "extra_abss_batch":  [
+                                 "--batch"
+                             ]
+    },
+    {
+        "id":  "A16x2x2_inc4_P8",
+        "deck":  "benchmarks/nasa_stri/decks/A_16x2x2_inc4.inp",
+        "params":  [
+                       "mat:M01:elastic:E",
+                       "mat:M02:elastic:E",
+                       "mat:M03:elastic:E",
+                       "mat:M04:elastic:E",
+                       "mat:M05:elastic:E",
+                       "mat:M06:elastic:E",
+                       "mat:M07:elastic:E",
+                       "mat:M08:elastic:E"
+                   ],
+        "methods":  [
+                        "abss_batch",
+                        "fafd"
+                    ],
+        "jobs":  [
+                     1
+                 ],
+        "repeats":  3,
+        "bin":  "C:/Users/vfn333/AppData/Local/abss_bench_bin/v7",
+        "extra_abss_batch":  [
+                                 "--batch"
+                             ]
+    },
+    {
+        "id":  "A32x4x4_inc4_P4",
+        "deck":  "benchmarks/nasa_stri/decks/A_32x4x4_inc4.inp",
+        "params":  [
+                       "mat:M01:elastic:E",
+                       "mat:M02:elastic:E",
+                       "mat:M03:elastic:E",
+                       "mat:M04:elastic:E"
+                   ],
+        "methods":  [
+                        "abss_batch",
+                        "fafd"
+                    ],
+        "jobs":  [
+                     1
+                 ],
+        "repeats":  3,
+        "bin":  "C:/Users/vfn333/AppData/Local/abss_bench_bin/v7",
+        "extra_abss_batch":  [
+                                 "--batch"
+                             ]
+    },
+    {
+        "id":  "A64x8x8_inc4_P4",
+        "deck":  "benchmarks/nasa_stri/decks/A_64x8x8_inc4.inp",
+        "params":  [
+                       "mat:M01:elastic:E",
+                       "mat:M02:elastic:E",
+                       "mat:M03:elastic:E",
+                       "mat:M04:elastic:E"
+                   ],
+        "methods":  [
+                        "abss_batch",
+                        "fafd"
+                    ],
+        "jobs":  [
+                     1
+                 ],
+        "repeats":  3,
+        "bin":  "C:/Users/vfn333/AppData/Local/abss_bench_bin/v7",
+        "extra_abss_batch":  [
+                                 "--batch"
+                             ]
+    }
+]

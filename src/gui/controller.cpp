@@ -397,6 +397,14 @@ CostEstimate Controller::estimate(const RunSettings& s) const {
     } else if (inp) {
         c.lines << QString("Model evaluations: about %1 per increment (residual probes and branch commits)")
                        .arg(num(double(estimateOracleEvaluations(1, P, K, c.halfWidth, s.tangentCheck))));
+        // Measured: each Abaqus job costs ~15-20 s of start-up and licence checkout before any work, so the job
+        // count matters more than the evaluation count on small and medium models.
+        if (s.batchBranches)
+            c.lines << QString("Abaqus jobs: about %1 per increment (branches share jobs), plus extra jobs at increments "
+                               "where the tangent must be corrected").arg(std::max(1, s.concurrentJobs));
+        else
+            c.lines << QString("Abaqus jobs: about %1 per increment, plus extra jobs at increments where the tangent must "
+                               "be corrected").arg(num(double(2 * std::max(1, c.halfWidth) * P + 3)));
     } else {
         c.lines << QString("Model evaluations: about %1 (residual probes and branch commits)").arg(num(double(c.engineEvaluations)));
     }
@@ -468,6 +476,7 @@ RunOutcome Controller::executeRun(Source src, DemoModel demo, const QString& inp
             if (model) cfg.parameters = model->parameters;
             cfg.userSubroutine = s.userSubroutine;
             cfg.maxConcurrentJobs = std::max(1, s.concurrentJobs);
+            cfg.batchBranches = s.batchBranches;
             cfg.log = ctl.log;
             cfg.cancel = &ctl.cancel;
             oracle = makeAbaqusOracle(cfg);
@@ -487,6 +496,7 @@ RunOutcome Controller::executeRun(Source src, DemoModel demo, const QString& inp
             req.maxOrder = s.maxOrder;
             req.tangentCheck = s.tangentCheck;
             req.parallelBranches = src == Source::Inp && s.concurrentJobs > 1;
+            req.concurrency = src == Source::Inp ? std::max(1, s.concurrentJobs) : 1;
             if (s.relativeStep > 0)
                 for (int p : s.parameters) {
                     const double a = std::abs(store->parameters.at(static_cast<size_t>(p)).nominal);

@@ -1,5 +1,6 @@
 #include "abss/sensitivity/engine.hpp"
 
+#include "abss/core/profile.hpp"
 #include "abss/linalg/parallel.hpp"
 
 #include <algorithm>
@@ -7,6 +8,7 @@
 #include <chrono>
 #include <cmath>
 #include <future>
+#include <mutex>
 #include <sstream>
 #include <stdexcept>
 
@@ -154,6 +156,32 @@ SensitivityReport runSensitivities(Oracle& oracle, const std::vector<std::vector
     std::vector<std::vector<std::string>> engineIssues(nD);
     double worstReplay = 0;           // max over increments of |r0 at free DOFs| / |reactions| (nominal replay)
     std::vector<int> replayBad;       // increments where the replay does not reproduce equilibrium
+    // Residuals at u*_{i+1} evaluated by the commit jobs of increment i (HistoryBranch::commitAndProbe).
+    std::vector<std::vector<std::vector<double>>> fusedProbe(nD, std::vector<std::vector<double>>(off.size()));
+    std::vector<std::vector<char>> haveFused(nD, std::vector<char>(off.size(), 0));
+    double gmresMatvecsPerRhs = 0;  // measured on the latest GMRES increment (cost model for the assembled tangent)
+    std::vector<std::vector<double>> fusedBase;  // replay-branch residuals at baseProbeStates(i + 1), in that order
+    // States probed on the replay branch at increment j: u*_j (replay check, r0) and, with the tangent check, the pair
+    // u*_j +- eps v (v fixed, eps relative to max |u*_j| on the free DOFs of increment j).
+    auto baseProbeStates = [&](int j, std::vector<double>& v, double& eps) {
+        const auto Fj = oracle.freeIndicesAt(j);
+        const auto& u = uNominal[static_cast<size_t>(j)];
+        std::vector<std::vector<double>> s{u};
+        if (!req.tangentCheck) return s;
+        v.assign(Fj.size(), 0.0);
+        for (size_t q = 0; q < Fj.size(); ++q) v[q] = std::sin(1.0 + 0.7 * double(q)) + 0.5;
+        double uMax = 1e-12;
+        for (auto f : Fj) uMax = std::max(uMax, std::abs(u[static_cast<size_t>(f)]));
+        eps = 1e-6 * uMax;
+        std::vector<double> up = u, um = u;
+        for (size_t q = 0; q < Fj.size(); ++q) {
+            up[static_cast<size_t>(Fj[q])] += eps * v[q];
+            um[static_cast<size_t>(Fj[q])] -= eps * v[q];
+        }
+        s.push_back(std::move(up));
+        s.push_back(std::move(um));
+        return s;
+    };
 
     for (int i = 1; i <= nFrames; ++i) {
         if (ctl.cancel) {
@@ -165,9 +193,104 @@ SensitivityReport runSensitivities(Oracle& oracle, const std::vector<std::vector
         diag.frame = i;
         const auto F = oracle.freeIndicesAt(i);  // unknowns of this increment (BC sets may change between steps)
         const auto& uS = uNominal[static_cast<size_t>(i)];
-        // Measured nominal residual g(0) on the replay branch (never assumed zero).
-        const auto r0 = base->residuals(i, {uS}).at(0);
-        ++evals;
+        // wk[d][k]: k-th derivative of u w.r.t. t along direction d (full length; free entries meaningful).
+        std::vector<std::vector<std::vector<double>>> wk(nD, std::vector<std::vector<double>>(static_cast<size_t>(K) + 1));
+        auto predictor = [&](size_t d, int m, int upTo) {
+            std::vector<double> u = uS;
+            for (int l = 1; l <= upTo; ++l) {
+                const double c = std::pow(double(m), l) / factorial(l);
+                const auto& x = wk[d][static_cast<size_t>(l)];
+                for (auto f : F) u[static_cast<size_t>(f)] += c * x[static_cast<size_t>(f)];
+            }
+            return u;
+        };
+        auto probeAll = [&](int upTo, const std::vector<size_t>& which, const char* activity) {
+            prof::Scope ws(std::string("stage.") + activity);
+            std::vector<std::vector<std::vector<double>>> r(nD, std::vector<std::vector<double>>(off.size()));
+            std::vector<WaveRequest> wave;
+            for (size_t d : which)
+                for (size_t b = 0; b < off.size(); ++b) {
+                    WaveRequest w;
+                    w.branch = br[d][b].get();
+                    w.activity = std::string("probe.") + activity;
+                    w.probes = {predictor(d, off[b], upTo)};
+                    wave.push_back(std::move(w));
+                }
+            oracle.runWave(i, wave, req.parallelBranches);
+            size_t t = 0;
+            for (size_t d : which)
+                for (size_t b = 0; b < off.size(); ++b) r[d][b] = std::move(wave[t++].residuals.at(0));
+            evals += static_cast<long long>(wave.size());
+            return r;
+        };
+        std::vector<size_t> allDirs(nD);
+        for (size_t d = 0; d < nD; ++d) allDirs[d] = d;
+
+        // Probe wave: every evaluation of this increment that needs no solve runs as one concurrent wave (the oracle's
+        // job slots bound the concurrency): the replay probe r0 = g(0) (measured, never assumed zero), the tangent-check
+        // pair u* +- eps v, and the order-1 branch probes (their predictor is u* itself).
+        std::vector<double> vTC;
+        double epsTC = 0;
+        auto baseUs = baseProbeStates(i, vTC, epsTC);
+        // Residuals that the previous increment's commit jobs already evaluated on exactly this history
+        // (commitAndProbe) are used as they are; only the rest is probed.
+        std::vector<std::vector<double>> baseProbes;  // [0] = r0, [1], [2] = tangent-check pair (when requested)
+        std::vector<std::vector<std::vector<double>>> firstBranchProbes(nD, std::vector<std::vector<double>>(off.size()));
+        const size_t baseReused = std::min(fusedBase.size(), baseUs.size());
+        {
+            prof::Scope ws("stage.probe_wave");
+            baseUs.erase(baseUs.begin(), baseUs.begin() + static_cast<std::ptrdiff_t>(baseReused));
+            std::vector<WaveRequest> wave;
+            if (!baseUs.empty()) {
+                WaveRequest w;
+                w.branch = base.get();
+                w.activity = baseReused ? "probe.tangent_check" : req.tangentCheck ? "probe.replay_and_tangent_check"
+                                                                                   : "probe.replay";
+                w.probes = baseUs;
+                wave.push_back(std::move(w));
+            }
+            const bool baseInWave = !wave.empty();
+            std::vector<std::pair<size_t, size_t>> todo;
+            for (size_t d = 0; d < nD; ++d)
+                for (size_t b = 0; b < off.size(); ++b) {
+                    if (haveFused[d][b]) {
+                        firstBranchProbes[d][b] = std::move(fusedProbe[d][b]);
+                        continue;
+                    }
+                    todo.emplace_back(d, b);
+                    WaveRequest w;
+                    w.branch = br[d][b].get();
+                    w.activity = "probe.branch";
+                    w.probes = {predictor(d, off[b], 0)};
+                    wave.push_back(std::move(w));
+                }
+            if ((req.parallelBranches && req.overlapWaves) || oracle.batchesWaves()) {
+                oracle.runWave(i, wave, req.parallelBranches);
+            } else if (!wave.empty()) {  // earlier order: the replay branch first, then the perturbed branches
+                std::vector<WaveRequest> first(std::make_move_iterator(wave.begin()), std::make_move_iterator(wave.begin() + 1));
+                std::vector<WaveRequest> rest(std::make_move_iterator(wave.begin() + 1), std::make_move_iterator(wave.end()));
+                oracle.runWave(i, first, false);
+                oracle.runWave(i, rest, req.parallelBranches);
+                wave.clear();
+                wave.push_back(std::move(first[0]));
+                for (auto& w : rest) wave.push_back(std::move(w));
+            }
+            if (baseInWave) {
+                baseProbes = std::move(wave[0].residuals);
+                evals += static_cast<long long>(baseUs.size());
+            }
+            for (size_t t = 0; t < todo.size(); ++t) {
+                const auto [d, b] = todo[t];
+                firstBranchProbes[d][b] = std::move(wave[t + (baseInWave ? 1 : 0)].residuals.at(0));
+                ++evals;
+            }
+            const long long reused = static_cast<long long>(nD * off.size() - todo.size() + baseReused);
+            if (reused) prof::add("engine.fused_probes_used", 0.0, reused);
+        }
+        baseProbes.insert(baseProbes.begin(), std::make_move_iterator(fusedBase.begin()),
+                          std::make_move_iterator(fusedBase.begin() + static_cast<std::ptrdiff_t>(baseReused)));
+        fusedBase.clear();
+        const std::vector<double> r0 = baseProbes.at(0);
         {
             // Replay check: at the converged nominal state the free-DOF residual must vanish (to the nominal solver
             // tolerance). A large value means the oracle does not reproduce this analysis (unsupported semantics).
@@ -181,13 +304,23 @@ SensitivityReport runSensitivities(Oracle& oracle, const std::vector<std::vector
             }
         }
 
-        auto KFF = oracle.tangent(i).submatrix(F, F);
+        CsrMatrix KFF;
+        {
+            prof::Scope s("engine.tangent_assembly");
+            KFF = oracle.tangent(i).submatrix(F, F);
+        }
         SolveReport srep;
-        auto fact = factorize(KFF, req.solver, &srep);
+        std::unique_ptr<Factorization> fact;
+        {
+            prof::Scope s("engine.factorize");
+            fact = factorize(KFF, req.solver, &srep);
+        }
         if (!fact->ok()) throw std::runtime_error("Tangent factorization failed at increment " + std::to_string(i) + ": " + fact->message());
         diag.solver = srep.message;
 
         bool useKrylov = req.forceKrylov;
+        int gmresRhsThisIncrement = 0;
+        std::mutex diagMutex, factMutex;
         double uScale = 1e-12;
         for (auto f : F) uScale = std::max(uScale, std::abs(uS[static_cast<size_t>(f)]));
         // K_true v by central differences of frozen-history probes on the nominal replay branch.
@@ -201,17 +334,22 @@ SensitivityReport runSensitivities(Oracle& oracle, const std::vector<std::vector
                 up[static_cast<size_t>(F[q])] += eps * vF[q];
                 um[static_cast<size_t>(F[q])] -= eps * vF[q];
             }
+            prof::Scope s("stage.gmres_matvec");
+            prof::Activity act("probe.gmres_matvec");
             const auto rr = base->residuals(i, {up, um});
             evals += 2;
             for (size_t q = 0; q < F.size(); ++q)
                 out[q] = -(rr[0][static_cast<size_t>(F[q])] - rr[1][static_cast<size_t>(F[q])]) / (2 * eps);
+            std::lock_guard<std::mutex> lk(diagMutex);
             diag.krylovMatvecs++;
             return out;
         };
-        // Right-preconditioned GMRES(m) with the oracle-tangent factorization as preconditioner.
+        // Right-preconditioned GMRES(m) with the oracle-tangent factorization as preconditioner. Right-hand sides are
+        // independent (same operator), so with concurrent jobs they are solved side by side (solveBlock).
         auto gmres = [&](const std::vector<double>& b) {
             const size_t n = F.size();
             auto prec = [&](std::vector<double> v) {
+                std::lock_guard<std::mutex> lk(factMutex);
                 fact->solve(v, 1);
                 return v;
             };
@@ -281,6 +419,7 @@ SensitivityReport runSensitivities(Oracle& oracle, const std::vector<std::vector
             const auto ax = applyTrue(x);
             double rn = 0;
             for (size_t q = 0; q < n; ++q) rn += (b[q] - ax[q]) * (b[q] - ax[q]);
+            std::lock_guard<std::mutex> lk(diagMutex);
             diag.krylovResidual = std::max(diag.krylovResidual, std::sqrt(rn) / bn);
             // The operator is a central difference of oracle probes, so GMRES stagnates at its noise floor (measured
             // ~1e-6 on a large-rotation shell). That floor is far below the derivative accuracy that matters; only a
@@ -291,11 +430,17 @@ SensitivityReport runSensitivities(Oracle& oracle, const std::vector<std::vector
 
         auto solveBlock = [&](const std::vector<std::vector<double>>& rhs) {
             if (useKrylov) {
+                prof::Scope s("stage.gmres_solve");
                 diag.krylovUsed = true;
-                std::vector<std::vector<double>> x;
-                for (const auto& b : rhs) x.push_back(gmres(b));
+                std::vector<std::vector<double>> x(rhs.size());
+                forEachMaybeParallel(rhs.size(), req.parallelBranches && req.overlapWaves,
+                                     [&](size_t c) { x[c] = gmres(rhs[c]); });
+                prof::add("engine.gmres_rhs", 0.0, static_cast<long long>(rhs.size()));
+                gmresRhsThisIncrement += static_cast<int>(rhs.size());
                 return x;
             }
+            prof::Scope s("engine.direct_solve");
+            prof::add("engine.direct_solve_rhs", 0.0, static_cast<long long>(rhs.size()));
             std::vector<double> block(F.size() * rhs.size());
             for (size_t c = 0; c < rhs.size(); ++c) std::copy(rhs[c].begin(), rhs[c].end(), block.begin() + static_cast<std::ptrdiff_t>(c * F.size()));
             fact->solve(block, static_cast<int>(rhs.size()));
@@ -314,22 +459,11 @@ SensitivityReport runSensitivities(Oracle& oracle, const std::vector<std::vector
         };
 
         if (req.tangentCheck) {
-            std::vector<double> vF(F.size());
-            for (size_t q = 0; q < F.size(); ++q) vF[q] = std::sin(1.0 + 0.7 * double(q)) + 0.5;
-            double uMax = 1e-12;
-            for (auto f : F) uMax = std::max(uMax, std::abs(uS[static_cast<size_t>(f)]));
-            const double eps = 1e-6 * uMax;
-            std::vector<double> up = uS, um = uS;
-            for (size_t q = 0; q < F.size(); ++q) {
-                up[static_cast<size_t>(F[q])] += eps * vF[q];
-                um[static_cast<size_t>(F[q])] -= eps * vF[q];
-            }
-            const auto rr = base->residuals(i, {up, um});
-            evals += 2;
-            const auto Kv = KFF.multiply(vF);
+            const auto& rr = baseProbes;  // [1] = r(u* + eps v), [2] = r(u* - eps v)
+            const auto Kv = KFF.multiply(vTC);
             double num = 0, den = 0;
             for (size_t q = 0; q < F.size(); ++q) {
-                const double fd = -(rr[0][static_cast<size_t>(F[q])] - rr[1][static_cast<size_t>(F[q])]) / (2 * eps);
+                const double fd = -(rr[1][static_cast<size_t>(F[q])] - rr[2][static_cast<size_t>(F[q])]) / (2 * epsTC);
                 num = std::max(num, std::abs(Kv[q] - fd));
                 den = std::max(den, std::abs(Kv[q]));
             }
@@ -337,59 +471,108 @@ SensitivityReport runSensitivities(Oracle& oracle, const std::vector<std::vector
             maxTangentErr = std::max(maxTangentErr, diag.tangentCheckError);
             if (diag.tangentCheckError > req.krylovTrigger) useKrylov = true;
         }
-        // Inconsistent tangent with few unknowns and many directions: assembling the true tangent column by column from
-        // frozen-history probes (2 per free DOF, once per increment) is cheaper than GMRES, which costs ~2 probes per
-        // iteration for EVERY direction. Exact to the same finite-difference accuracy as GMRES's operator.
-        if (useKrylov && !req.forceKrylov && F.size() <= 4 * nD) {
-            std::vector<std::vector<double>> us;
-            us.reserve(2 * F.size());
-            const double eps = 1e-6 * uScale;
-            for (size_t q = 0; q < F.size(); ++q)
-                for (double s : {1.0, -1.0}) {
-                    auto u = uS;
-                    u[static_cast<size_t>(F[q])] += s * eps;
-                    us.push_back(std::move(u));
+        // Inconsistent tangent: either assemble the true tangent from frozen-history probes, or let GMRES apply it
+        // matrix-free. Assembly groups structurally orthogonal columns (Curtis-Powell-Reid colouring of the oracle
+        // tangent's pattern): 2 probes per colour, all independent, once per increment, however many directions.
+        // GMRES costs ~2 probes per iteration for EVERY right-hand side, iterations in sequence. The choice uses the
+        // estimated Abaqus job rounds (job slots = req.concurrency) with the GMRES iteration count measured on earlier
+        // increments. The assembled tangent is verified against the tangent-check probe pair; on disagreement (e.g.
+        // couplings outside the element pattern) GMRES is used.
+        if (useKrylov && !req.forceKrylov) {
+            // Grouping needs the complete coupling pattern. Without it (constraints, contact, DOFs without element
+            // stiffness) every column is probed on its own and every row is read: exact, but 2 probes per free DOF.
+            const bool grouped = oracle.tangentPatternComplete(i);
+            std::vector<std::vector<std::int32_t>> pat;
+            std::vector<std::int32_t> colour;
+            std::int32_t nc = 0;
+            if (grouped) {
+                pat = symmetricColumnPattern(KFF);
+                colour = columnColouring(pat, &nc);
+            } else {
+                nc = static_cast<std::int32_t>(F.size());
+                std::vector<std::int32_t> all(F.size());
+                for (size_t q = 0; q < F.size(); ++q) all[q] = static_cast<std::int32_t>(q);
+                pat.assign(F.size(), all);
+                colour = all;
+            }
+            const double C = std::max(1, req.concurrency);
+            const double ppe = std::max(1, oracle.replayProbesPerEvaluation());  // probes one evaluation holds
+            const double rhsCount = double(nD) * K;
+            const double itEst = gmresMatvecsPerRhs > 0 ? gmresMatvecsPerRhs : 12.0;
+            const bool rhsConcurrent = req.parallelBranches && req.overlapWaves;
+            const double perProduct = std::ceil(2.0 / ppe);  // evaluations per GMRES operator application
+            const double gmresRounds = itEst * (rhsConcurrent ? std::ceil(perProduct * rhsCount / C) : rhsCount * std::ceil(perProduct / C));
+            const double colouredRounds = std::ceil(std::ceil(2.0 * nc / ppe) / C);
+            diag.tangentColours = nc;
+            if (colouredRounds <= gmresRounds) {
+                std::vector<std::vector<double>> us;
+                us.reserve(2 * static_cast<size_t>(nc));
+                const double eps = 1e-6 * uScale;
+                for (std::int32_t c = 0; c < nc; ++c)
+                    for (double s : {1.0, -1.0}) {
+                        auto u = uS;
+                        for (size_t q = 0; q < F.size(); ++q)
+                            if (colour[q] == c) u[static_cast<size_t>(F[q])] += s * eps;
+                        us.push_back(std::move(u));
+                    }
+                std::vector<std::vector<double>> rr;
+                {
+                    prof::Scope ws("stage.tangent_columns");
+                    prof::Activity act("probe.tangent_colour");
+                    rr = base->residuals(i, us);
                 }
-            const auto rr = base->residuals(i, us);
-            evals += static_cast<long long>(us.size());
-            std::vector<Triplet> t;
-            for (size_t q = 0; q < F.size(); ++q)
-                for (size_t r = 0; r < F.size(); ++r) {
-                    const double v = -(rr[2 * q][static_cast<size_t>(F[r])] - rr[2 * q + 1][static_cast<size_t>(F[r])]) / (2 * eps);
-                    if (v != 0.0) t.push_back({static_cast<std::int32_t>(r), static_cast<std::int32_t>(q), v});
+                evals += static_cast<long long>(us.size());
+                std::vector<Triplet> t;
+                for (size_t q = 0; q < F.size(); ++q) {
+                    const auto c = static_cast<size_t>(colour[q]);
+                    for (auto s : pat[q]) {
+                        const auto g = static_cast<size_t>(F[static_cast<size_t>(s)]);
+                        const double v = -(rr[2 * c][g] - rr[2 * c + 1][g]) / (2 * eps);
+                        if (v != 0.0) t.push_back({s, static_cast<std::int32_t>(q), v});
+                    }
                 }
-            KFF = CsrMatrix::fromTriplets(static_cast<std::int32_t>(F.size()), static_cast<std::int32_t>(F.size()), std::move(t));
-            SolveReport probeRep;
-            auto probeFact = factorize(KFF, req.solver, &probeRep);
-            if (probeFact->ok()) {
-                fact = std::move(probeFact);
-                useKrylov = false;
-                diag.probedTangent = true;
-                diag.solver = probeRep.message + " (true tangent assembled from " + std::to_string(us.size()) + " probes)";
+                auto Ktrue = CsrMatrix::fromTriplets(static_cast<std::int32_t>(F.size()), static_cast<std::int32_t>(F.size()), std::move(t));
+                // Independent check: the assembled tangent must reproduce the tangent-check probe pair ROW BY ROW, each
+                // row measured against its own size sum_c |K_qc v_c| (floored at 1e-3 of the largest row, below which
+                // finite-difference noise dominates), so that small rows cannot hide errors behind large ones.
+                bool agrees = true;
+                if (req.tangentCheck) {
+                    const auto Kv = Ktrue.multiply(vTC);
+                    std::vector<double> rowSize(F.size(), 0.0);
+                    for (std::int32_t r = 0; r < Ktrue.rows; ++r)
+                        for (auto k = Ktrue.rowPtr[static_cast<size_t>(r)]; k < Ktrue.rowPtr[static_cast<size_t>(r) + 1]; ++k)
+                            rowSize[static_cast<size_t>(r)] += std::abs(Ktrue.values[static_cast<size_t>(k)] * vTC[static_cast<size_t>(Ktrue.colIdx[static_cast<size_t>(k)])]);
+                    const double floor = 1e-3 * std::max(1e-300, *std::max_element(rowSize.begin(), rowSize.end()));
+                    double worst = 0;
+                    for (size_t q = 0; q < F.size(); ++q) {
+                        const double fd = -(baseProbes[1][static_cast<size_t>(F[q])] - baseProbes[2][static_cast<size_t>(F[q])]) / (2 * epsTC);
+                        worst = std::max(worst, std::abs(Kv[q] - fd) / std::max(rowSize[q], floor));
+                    }
+                    diag.assembledTangentCheck = worst;
+                    agrees = diag.assembledTangentCheck <= 1e-4;
+                    if (!agrees)
+                        log("Increment " + std::to_string(i) + ": tangent assembled from " + std::to_string(us.size()) +
+                            " probes disagrees with the check probes (" + fmt(diag.assembledTangentCheck) +
+                            "); using GMRES instead.");
+                }
+                SolveReport probeRep;
+                std::unique_ptr<Factorization> probeFact;
+                if (agrees) {
+                    prof::Scope s("engine.factorize");
+                    probeFact = factorize(Ktrue, req.solver, &probeRep);
+                }
+                if (probeFact && probeFact->ok()) {
+                    KFF = std::move(Ktrue);
+                    fact = std::move(probeFact);
+                    useKrylov = false;
+                    diag.probedTangent = true;
+                    diag.solver = probeRep.message + " (true tangent assembled from " + std::to_string(us.size()) +
+                                  " probes, " + (grouped ? std::to_string(nc) + " column groups)" : std::string("one column each)"));
+                }
             }
         }
 
-        // wk[d][k]: k-th derivative of u w.r.t. t along direction d (full length; free entries meaningful).
-        std::vector<std::vector<std::vector<double>>> wk(nD, std::vector<std::vector<double>>(static_cast<size_t>(K) + 1));
         std::vector<std::vector<double>> rhsNorm(nD, std::vector<double>(static_cast<size_t>(K) + 1, 0.0));
-        auto predictor = [&](size_t d, int m, int upTo) {
-            std::vector<double> u = uS;
-            for (int l = 1; l <= upTo; ++l) {
-                const double c = std::pow(double(m), l) / factorial(l);
-                const auto& x = wk[d][static_cast<size_t>(l)];
-                for (auto f : F) u[static_cast<size_t>(f)] += c * x[static_cast<size_t>(f)];
-            }
-            return u;
-        };
-        auto probeAll = [&](int upTo, const std::vector<size_t>& which) {
-            std::vector<std::vector<std::vector<double>>> r(nD, std::vector<std::vector<double>>(off.size()));
-            forEachMaybeParallel(which.size() * off.size(), req.parallelBranches, [&](size_t t) {
-                const size_t d = which[t / off.size()], b = t % off.size();
-                r[d][b] = br[d][b]->residuals(i, {predictor(d, off[b], upTo)}).at(0);
-                ++evals;
-            });
-            return r;
-        };
         auto stencilF = [&](int k, const std::vector<std::vector<double>>& rd) {
             std::vector<double> out(F.size(), 0.0);
             for (size_t q = 0; q < F.size(); ++q) {
@@ -405,8 +588,6 @@ SensitivityReport runSensitivities(Oracle& oracle, const std::vector<std::vector
             if (!add) tgt.assign(ndof, 0.0);
             for (size_t q = 0; q < F.size(); ++q) tgt[static_cast<size_t>(F[q])] += x[q];
         };
-        std::vector<size_t> allDirs(nD);
-        for (size_t d = 0; d < nD; ++d) allDirs[d] = d;
         diag.asymmetry.assign(nD, 0.0);
         diag.reprobePasses.assign(nD, 0);
         diag.reprobeConverged.assign(nD, true);
@@ -414,7 +595,7 @@ SensitivityReport runSensitivities(Oracle& oracle, const std::vector<std::vector
 
         for (int k = 1; k <= K; ++k) {
             if (ctl.cancel) break;
-            const auto r = probeAll(k - 1, allDirs);
+            const auto r = k == 1 ? std::move(firstBranchProbes) : probeAll(k - 1, allDirs, "branch");
             std::vector<std::vector<double>> rhs(nD);
             for (size_t d = 0; d < nD; ++d) {
                 rhs[d] = stencilF(k, r[d]);
@@ -454,7 +635,7 @@ SensitivityReport runSensitivities(Oracle& oracle, const std::vector<std::vector
                         need.push_back(d);
                 const int passes = std::max(req.defectCorrectionPasses, need.empty() ? 0 : req.maxReprobePasses);
                 for (int pass = 0; pass < passes && !need.empty(); ++pass) {
-                    const auto rc = probeAll(1, need);
+                    const auto rc = probeAll(1, need, "reprobe");
                     std::vector<std::vector<double>> drhs;
                     for (size_t d : need) drhs.push_back(stencilF(1, rc[d]));
                     const auto dx = solveBlock(drhs);
@@ -479,16 +660,62 @@ SensitivityReport runSensitivities(Oracle& oracle, const std::vector<std::vector
             break;
         }
 
+        if (gmresRhsThisIncrement > 0) gmresMatvecsPerRhs = double(diag.krylovMatvecs) / gmresRhsThisIncrement;
         // Commit every branch with the full order-K predictor; differentiate committed fields.
-        const auto f0 = base->commit(i, uS, nullptr);
-        ++evals;
+        // Commit wave: the replay branch and every perturbed branch commit concurrently (independent histories).
+        FrameFields f0;
         std::vector<std::vector<FrameFields>> fd(nD, std::vector<FrameFields>(off.size()));
         diag.commitResidual.assign(nD, 0.0);
-        forEachMaybeParallel(nD * off.size(), req.parallelBranches, [&](size_t t) {
-            const size_t d = t / off.size(), b = t % off.size();
-            fd[d][b] = br[d][b]->commit(i, predictor(d, off[b], K), nullptr);
-            ++evals;
-        });
+        {
+            prof::Scope ws("stage.commit_wave");
+            // The next increment's order-1 probes (and the replay probe) are at u*_{i+1} on the history these commits
+            // create: where the oracle supports it, the commit job evaluates that residual too.
+            // On the replay branch, with concurrent jobs, the next tangent-check pair also rides along (sibling jobs that
+            // replay this commit): the next increment then needs no separate probe wave. Serially that saves nothing.
+            const bool more = i < nFrames;
+            std::vector<double> vNext;
+            double epsNext = 0;
+            auto baseNext = more ? baseProbeStates(i + 1, vNext, epsNext) : std::vector<std::vector<double>>{};
+            if (!(req.parallelBranches && req.overlapWaves) && !oracle.batchesWaves() && baseNext.size() > 1) baseNext.resize(1);
+            for (auto& row : haveFused) std::fill(row.begin(), row.end(), 0);
+            fusedBase.clear();
+            // wave[0] = replay branch, then the perturbed branches in (d, b) order
+            std::vector<WaveRequest> wave(nD * off.size() + 1);
+            wave[0].branch = base.get();
+            wave[0].activity = "commit.replay";
+            wave[0].commit = true;
+            wave[0].commitU = uS;
+            wave[0].nextProbes = baseNext;
+            for (size_t d = 0; d < nD; ++d)
+                for (size_t b = 0; b < off.size(); ++b) {
+                    auto& w = wave[1 + d * off.size() + b];
+                    w.branch = br[d][b].get();
+                    w.activity = "commit.branch";
+                    w.commit = true;
+                    w.commitU = predictor(d, off[b], K);
+                    if (more) w.nextProbes = {uNominal[static_cast<size_t>(i) + 1]};
+                }
+            if (req.overlapWaves || oracle.batchesWaves()) {
+                oracle.runWave(i, wave, req.parallelBranches);
+            } else {  // earlier order: replay commit alone, then the branch commits
+                std::vector<WaveRequest> first(std::make_move_iterator(wave.begin()), std::make_move_iterator(wave.begin() + 1));
+                std::vector<WaveRequest> rest(std::make_move_iterator(wave.begin() + 1), std::make_move_iterator(wave.end()));
+                oracle.runWave(i, first, false);
+                oracle.runWave(i, rest, req.parallelBranches);
+                wave.clear();
+                wave.push_back(std::move(first[0]));
+                for (auto& w : rest) wave.push_back(std::move(w));
+            }
+            for (const auto& w : wave) evals += 1 + static_cast<long long>(w.nextResiduals.size());
+            f0 = std::move(wave[0].fields);
+            fusedBase = std::move(wave[0].nextResiduals);
+            for (size_t d = 0; d < nD; ++d)
+                for (size_t b = 0; b < off.size(); ++b) {
+                    auto& w = wave[1 + d * off.size() + b];
+                    fd[d][b] = std::move(w.fields);
+                    if (!w.nextResiduals.empty()) fusedProbe[d][b] = std::move(w.nextResiduals[0]), haveFused[d][b] = 1;
+                }
+        }
         // t-derivatives of every field along every direction: D^k_t F
         std::vector<std::vector<std::vector<std::vector<double>>>> dF(
             nD, std::vector<std::vector<std::vector<double>>>(static_cast<size_t>(K) + 1, std::vector<std::vector<double>>(nFields)));

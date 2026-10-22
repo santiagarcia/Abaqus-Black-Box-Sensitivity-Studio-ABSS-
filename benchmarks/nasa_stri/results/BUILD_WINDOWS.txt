@@ -1,0 +1,3 @@
+﻿build window 13:12:15-13:13:06
+build window 16:16:15-16:16:34 (v7: SDV reader fix)
+window 16:16:43-16:17:27 (SDV check, 3 Ti jobs, 2 slots)

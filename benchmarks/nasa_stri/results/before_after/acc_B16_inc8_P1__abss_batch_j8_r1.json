@@ -1,0 +1,90 @@
+{
+ "reference": "B16_inc8_P1__fafd_j8_r1.abss",
+ "test": "B16_inc8_P1__abss_batch_j8_r1.abss",
+ "rows": [
+  {
+   "parameter_id": "mat:M01:plastic:sigma_y:1",
+   "field": "U",
+   "values_compared": 3672,
+   "frames_missing": 0,
+   "max_ref": 0.000710563895438554,
+   "max_err": 1.1603900024019509e-11,
+   "nominal_field_max": 6.0,
+   "parameter_scale": 250.0,
+   "natural_scale": 0.024,
+   "err_natural": 4.834958343341462e-10,
+   "err_scaled_floor": 9.669916686682923e-09,
+   "err_rel_ref": 1.6330551127787994e-08
+  },
+  {
+   "parameter_id": "mat:M01:plastic:sigma_y:1",
+   "field": "RF",
+   "values_compared": 3672,
+   "frames_missing": 0,
+   "max_ref": 5.752821905189194,
+   "max_err": 5.727633833885193e-08,
+   "nominal_field_max": 4273.883279258072,
+   "parameter_scale": 250.0,
+   "natural_scale": 17.09553311703229,
+   "err_natural": 3.3503686575171782e-09,
+   "err_scaled_floor": 9.956216146233762e-09,
+   "err_rel_ref": 9.956216146233762e-09
+  },
+  {
+   "parameter_id": "mat:M01:plastic:sigma_y:1",
+   "field": "S",
+   "values_compared": 24576,
+   "frames_missing": 0,
+   "max_ref": 0.42245469152840087,
+   "max_err": 1.4655896052317985e-08,
+   "nominal_field_max": 322.9081200847687,
+   "parameter_scale": 250.0,
+   "natural_scale": 1.2916324803390749,
+   "err_natural": 1.1346800483424333e-08,
+   "err_scaled_floor": 3.469223172618665e-08,
+   "err_rel_ref": 3.469223172618665e-08
+  },
+  {
+   "parameter_id": "mat:M01:plastic:sigma_y:1",
+   "field": "E",
+   "values_compared": 24576,
+   "frames_missing": 0,
+   "max_ref": 2.4211411000729655e-05,
+   "max_err": 4.218986271453673e-13,
+   "nominal_field_max": 0.008646119839084941,
+   "parameter_scale": 250.0,
+   "natural_scale": 3.4584479356339764e-05,
+   "err_natural": 1.2199074122190827e-08,
+   "err_scaled_floor": 1.7425610887884752e-08,
+   "err_rel_ref": 1.7425610887884752e-08
+  },
+  {
+   "parameter_id": "mat:M01:plastic:sigma_y:1",
+   "field": "PEEQ",
+   "values_compared": 4096,
+   "frames_missing": 0,
+   "max_ref": 3.066517668393054e-05,
+   "max_err": 3.3235653812413446e-13,
+   "nominal_field_max": 0.004600914254479034,
+   "parameter_scale": 250.0,
+   "natural_scale": 1.8403657017916136e-05,
+   "err_natural": 1.8059266036124352e-08,
+   "err_scaled_floor": 1.0838239790684106e-08,
+   "err_rel_ref": 1.0838239790684106e-08
+  },
+  {
+   "parameter_id": "mat:M01:plastic:sigma_y:1",
+   "field": "S_Mises",
+   "values_compared": 4096,
+   "frames_missing": 0,
+   "max_ref": 0.6903708546960843,
+   "max_err": 1.2644022717722692e-08,
+   "nominal_field_max": 321.51529202567605,
+   "parameter_scale": 250.0,
+   "natural_scale": 1.286061168102704,
+   "err_natural": 9.831587354725999e-09,
+   "err_scaled_floor": 1.831482692485455e-08,
+   "err_rel_ref": 1.831482692485455e-08
+  }
+ ]
+}

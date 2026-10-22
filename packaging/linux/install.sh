@@ -223,8 +223,10 @@ module load abaqus 2>/dev/null || true          # EDIT: your site's Abaqus modul
 MODEL=model.inp                                  # EDIT
 PARAMS="mat:STEEL:elastic:E"                     # EDIT: ids from `abss-cli inspect $MODEL`
 JOBS=$(( SLURM_CPUS_PER_TASK / 2 ))             # concurrent Abaqus jobs (licence permitting)
-abss-cli run "$MODEL" --params "$PARAMS" --order 1 --jobs "$JOBS" --validate \
-         --scratch "${TMPDIR:-/tmp}/abss_$SLURM_JOB_ID" --out "abss_$SLURM_JOB_ID.abss"
+# --batch: several history branches per Abaqus job (far fewer jobs; flat decks, falls back automatically otherwise)
+abss-cli run "$MODEL" --params "$PARAMS" --order 1 --jobs "$JOBS" --batch --validate \
+         --scratch "${TMPDIR:-/tmp}/abss_$SLURM_JOB_ID" --out "abss_$SLURM_JOB_ID.abss" \
+         --profile "abss_$SLURM_JOB_ID.profile.json"
 EOF
 chmod +x "$PREFIX/share/abss/hpc/abss_slurm.sh"
 # Desktop entry

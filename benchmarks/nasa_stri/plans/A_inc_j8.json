@@ -1,0 +1,71 @@
+[
+ {
+  "id": "A32x4x4_inc1_P4",
+  "deck": "benchmarks/nasa_stri/decks/A_32x4x4_inc1.inp",
+  "params": [
+   "mat:M01:elastic:E",
+   "mat:M02:elastic:E",
+   "mat:M03:elastic:E",
+   "mat:M04:elastic:E"
+  ],
+  "methods": [
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   8
+  ],
+  "repeats": 1,
+  "bin": "%BIN%",
+  "extra_abss_batch": [
+   "--batch"
+  ]
+ },
+ {
+  "id": "A32x4x4_inc4_P4",
+  "deck": "benchmarks/nasa_stri/decks/A_32x4x4_inc4.inp",
+  "params": [
+   "mat:M01:elastic:E",
+   "mat:M02:elastic:E",
+   "mat:M03:elastic:E",
+   "mat:M04:elastic:E"
+  ],
+  "methods": [
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   8
+  ],
+  "repeats": 1,
+  "bin": "%BIN%",
+  "extra_abss_batch": [
+   "--batch"
+  ]
+ },
+ {
+  "id": "A32x4x4_inc16_P4",
+  "deck": "benchmarks/nasa_stri/decks/A_32x4x4_inc16.inp",
+  "params": [
+   "mat:M01:elastic:E",
+   "mat:M02:elastic:E",
+   "mat:M03:elastic:E",
+   "mat:M04:elastic:E"
+  ],
+  "methods": [
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   8
+  ],
+  "repeats": 1,
+  "bin": "%BIN%",
+  "extra_abss_batch": [
+   "--batch"
+  ]
+ }
+]

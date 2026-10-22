@@ -73,6 +73,16 @@ struct AbaqusRunConfig {
     std::vector<ParameterInfo> parameters;   ///< discovered/selected parameters (index = delta index)
     std::string userSubroutine;              ///< UMAT/UEL: folder or standardU.dll, .obj/.o, or .f/.for/.f90/.c/.cpp
     bool keepJobFiles = false;
+    /// A branch commit job also evaluates the next increment's residual at a known state (one Abaqus job instead of
+    /// two). The probe step writes no restart data and the next job restarts from the end of the commit step, so the
+    /// branch history is unchanged (verified bitwise-equivalent to a separate probe job, docs/PERFORMANCE.md).
+    bool fuseCommitProbe = true;
+    /// Branch jobs write no ODB field/history output (ABSS reads the .fil results file only).
+    bool suppressOdbOutput = true;
+    /// Replicated branches: every history branch is a disjoint copy of the model in ONE Abaqus job and restart chain,
+    /// so a whole wave of probes or commits costs one job instead of one per branch (bitwise-identical results,
+    /// docs/PERFORMANCE.md). Flat decks with the supported keywords only; otherwise branches run as separate jobs.
+    bool batchBranches = false;
     std::function<void(const std::string&)> log;
     std::atomic<bool>* cancel = nullptr;
 };

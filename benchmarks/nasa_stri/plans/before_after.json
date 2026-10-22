@@ -1,0 +1,82 @@
+[
+ {
+  "id": "c3d8_E_nu",
+  "deck": "examples/models/c3d8_block.inp",
+  "params": [
+   "mat:ALU:elastic:E",
+   "mat:ALU:elastic:nu"
+  ],
+  "methods": [
+   "abss_before",
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   8
+  ],
+  "repeats": 1,
+  "bin": "C:/Users/vfn333/AppData/Local/abss_bench_bin/v6",
+  "extra_abss_batch": [
+   "--batch"
+  ],
+  "bin_abss_before": "%BIN_V1%",
+  "extra_abss_before": [
+   "--no-overlap"
+  ]
+ },
+ {
+  "id": "A16_inc4_P4",
+  "deck": "benchmarks/nasa_stri/decks/A_16x2x2_inc4.inp",
+  "params": [
+   "mat:M01:elastic:E",
+   "mat:M02:elastic:E",
+   "mat:M03:elastic:E",
+   "mat:M04:elastic:E"
+  ],
+  "methods": [
+   "abss_before",
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   8,
+   1
+  ],
+  "repeats": 1,
+  "bin": "C:/Users/vfn333/AppData/Local/abss_bench_bin/v6",
+  "extra_abss_batch": [
+   "--batch"
+  ],
+  "bin_abss_before": "%BIN_V1%",
+  "extra_abss_before": [
+   "--no-overlap"
+  ]
+ },
+ {
+  "id": "B16_inc8_P1",
+  "deck": "benchmarks/nasa_stri/decks/B_16x2x2_inc8.inp",
+  "params": [
+   "mat:M01:plastic:sigma_y:1"
+  ],
+  "methods": [
+   "abss_before",
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   8
+  ],
+  "repeats": 1,
+  "bin": "C:/Users/vfn333/AppData/Local/abss_bench_bin/v6",
+  "extra_abss_batch": [
+   "--batch"
+  ],
+  "bin_abss_before": "%BIN_V1%",
+  "extra_abss_before": [
+   "--no-overlap"
+  ]
+ }
+]

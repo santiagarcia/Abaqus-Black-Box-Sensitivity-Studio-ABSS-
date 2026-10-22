@@ -260,6 +260,12 @@ Abaqus 2024 on Windows through the material bridge and the native ELF host:
 - one C3D8 cube over 12 NLGEOM increments, with 56 PROPS as parameters: **56/56 Validated** against full reruns,
   worst 1.6e-6.
 
+> **Erratum (2026-10-21).** That validation covered U, RF, S, LE and S_Mises only. The `.fil` reader of that version
+> kept only the last of the consecutive records in which Abaqus writes a long SDV list. The SDV field therefore held
+> SDV79–132, which are zero for this material, so "SDV 0" in the logs compared zeros with zeros. The reader has
+> since been fixed and now reads all 132 SDVs (`src/oracle/abaqus_files.cpp`). The corrected SDV sensitivities are
+> re-checked against full-analysis finite differences in `benchmarks/nasa_stri` (family C).
+
 The library's tangent is not exactly consistent (tangent check 2e-3 to 7e-2). With 8 unknowns and 56 directions,
 the engine assembled the true tangent from 16 probes per increment instead of running GMRES for every direction,
 which cut the run from a projected 8 h to 106 min. Two coupled constants (raising either alone returns NaN state)

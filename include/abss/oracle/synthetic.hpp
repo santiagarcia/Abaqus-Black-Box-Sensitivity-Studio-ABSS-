@@ -6,6 +6,7 @@
 #include "abss/oracle/oracle.hpp"
 
 #include <array>
+#include <atomic>
 #include <functional>
 #include <memory>
 #include <string>
@@ -119,7 +120,7 @@ private:
     DofMap dofs_;
     std::vector<std::vector<double>> uNominal_;
     std::vector<Model::State> stateNominal_;  ///< committed state after each frame (index 0 = initial)
-    long long evaluations_ = 0;
+    std::atomic<long long> evaluations_{0};
 };
 
 // ---- Bundled models -------------------------------------------------------------------------------------------

@@ -80,14 +80,26 @@ hidden behind fabricated output.
   Verified with the vendor Ti-6242 library: the README's 12-increment uniaxial path gives the stress
   [1931.1772, 1473.682, 2457.898, 0, 0, 0] and dσ_zz/dPROPS[43] = 0.5965045 at h = 1e-3…1e-5, both identical to the
   Linux reference values. The bridge was validated in Abaqus with a Windows test library at 1.5e-6.
-- **Speed against plain finite differences.** On the 12 verification models where both methods were timed, ABSS
-  was 1.3–61 times slower than finite differences of full Abaqus reruns (VALIDATION_RESULTS §3.8). Abaqus start-up
-  dominates small models, and ABSS runs many single-increment jobs. ABSS can only pay off on large models where a
-  full analysis is far more expensive than a job start-up; that has not been measured yet.
-- **Cost.** Every probe and commit is an Abaqus job (about 13 s of start-up each on the development PC). One
-  increment at order K with P parameters needs about `2 + P·2M·(K+1)` jobs (plus tangent checks and Krylov
-  operator applications), run up to `--jobs N` at a time. Large models with many increments are expensive; the app
-  shows the job count before Run.
+- **Speed against full-analysis finite differences (FAFD).** The benchmark campaign is `benchmarks/nasa_stri`
+  (REPORT.md). It used equal job slots and 1 CPU per job for both methods. Measured:
+  - **8 slots:** FAFD was faster in every case: elastic meshes up to 111k free DOFs, P = 1–33, and J2 plasticity.
+    It was 3–10× faster on elastic models and 20–100× on plastic ones.
+  - **1 slot (one Abaqus job at a time):** replicated ABSS (`--batch`) was faster on small meshes from P ≈ 4 upward,
+    because its job count does not grow with P.
+  - **Mesh size does not help ABSS.** Every ABSS job reads and writes the full restart state, and that grows faster
+    than an elastic FAFD solve.
+
+  The earlier timings of the 12 verification models (1.3–61× slower; VALIDATION_RESULTS §3.8) used the original job
+  schedule.
+- **Cost.** Each Abaqus job costs about 11 s of fixed overhead (driver, licence, input processing, wrap-up) plus
+  Abaqus/Standard's own time, about 16 s in total on small models (measured over 6,065 jobs).
+  Order 1 with P parameters needs about 2P + 3 job evaluations per increment, plus 2 per GMRES product or per
+  column group when the tangent must be corrected.
+  - Each branch's commit and its next probe share a job.
+  - With `--batch`, a whole wave costs one job per slot, independent of P.
+
+  The app shows the job count before Run. Inconsistent tangents (plasticity) are the most expensive case:
+  measured 73–151 GMRES products per run on the J2 cantilever.
 
 ## Mathematics
 - **Non-smooth events.** Yield onset or reversal and contact changes make derivatives one-sided or nonexistent.

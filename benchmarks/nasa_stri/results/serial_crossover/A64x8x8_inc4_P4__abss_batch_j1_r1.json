@@ -1,0 +1,286 @@
+{
+  "batch_branches": true,
+  "command": "C:/Users/vfn333/AppData/Local/abss_bench_bin/v7\\abss-cli.exe run benchmarks/nasa_stri/decks/A_64x8x8_inc4.inp --params mat:M01:elastic:E,mat:M02:elastic:E,mat:M03:elastic:E,mat:M04:elastic:E --jobs 1 --scratch C:\\Users\\vfn333\\AppData\\Local\\Temp\\abss_bench\\A64x8x8_inc4_P4__abss_batch_j1_r1 --out benchmarks\\nasa_stri\\results\\serial_crossover\\A64x8x8_inc4_P4__abss_batch_j1_r1.abss --profile benchmarks\\nasa_stri\\results\\serial_crossover\\A64x8x8_inc4_P4__abss_batch_j1_r1.json.partial --batch",
+  "compute_backend": "Kokkos 5.2.2 OpenMP (24 threads)",
+  "dofs": 15795,
+  "elapsed_seconds": {
+    "nominal": 23.8170023,
+    "sensitivity": 320.2171471,
+    "serialize": 0.1432566,
+    "setup": 0.0077971,
+    "total": 344.1865511
+  },
+  "elements": 4096,
+  "engine_seconds": 319.819169,
+  "frames": [
+    {
+      "assembled_tangent_check": -1.0,
+      "commit_residual": [
+        1.0066477566380848e-05,
+        9.996596066548986e-06,
+        1.0049057850052478e-05,
+        1.0043937065346867e-05
+      ],
+      "frame": 1,
+      "krylov": false,
+      "krylov_converged": true,
+      "krylov_matvecs": 0,
+      "krylov_residual": 0.0,
+      "probed_tangent": false,
+      "reprobe_passes": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "solve_residual": 1.116601296878528e-12,
+      "solver": "Eigen SimplicialLDLT",
+      "tangent_check": 3.241862764161409e-10,
+      "tangent_colours": 0
+    },
+    {
+      "assembled_tangent_check": -1.0,
+      "commit_residual": [
+        1.0066413918092985e-05,
+        9.996682447238542e-06,
+        1.0049073717990025e-05,
+        1.0043409414971765e-05
+      ],
+      "frame": 2,
+      "krylov": false,
+      "krylov_converged": true,
+      "krylov_matvecs": 0,
+      "krylov_residual": 0.0,
+      "probed_tangent": false,
+      "reprobe_passes": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "solve_residual": 1.0722036310195679e-12,
+      "solver": "Eigen SimplicialLDLT",
+      "tangent_check": 2.955485778829552e-10,
+      "tangent_colours": 0
+    },
+    {
+      "assembled_tangent_check": -1.0,
+      "commit_residual": [
+        1.0066463927722995e-05,
+        9.996665776955602e-06,
+        1.0049064902454401e-05,
+        1.0043456452785363e-05
+      ],
+      "frame": 3,
+      "krylov": false,
+      "krylov_converged": true,
+      "krylov_matvecs": 0,
+      "krylov_residual": 0.0,
+      "probed_tangent": false,
+      "reprobe_passes": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "solve_residual": 1.2786527773787786e-12,
+      "solver": "Eigen SimplicialLDLT",
+      "tangent_check": 1.9377677326141107e-10,
+      "tangent_colours": 0
+    },
+    {
+      "assembled_tangent_check": -1.0,
+      "commit_residual": [
+        1.0066400279450383e-05,
+        9.99665062262806e-06,
+        1.0049137188451274e-05,
+        1.0043765270520458e-05
+      ],
+      "frame": 4,
+      "krylov": false,
+      "krylov_converged": true,
+      "krylov_matvecs": 0,
+      "krylov_residual": 0.0,
+      "probed_tangent": false,
+      "reprobe_passes": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "solve_residual": 1.3141709101126222e-12,
+      "solver": "Eigen SimplicialLDLT",
+      "tangent_check": 2.434931422753728e-10,
+      "tangent_colours": 0
+    }
+  ],
+  "free_dofs": 15552,
+  "fuse_commit_probe": true,
+  "increments": 4,
+  "inp": "C:\\Users\\vfn333\\Documents\\GitHub\\Abaqus-Black-Box-Sensitivity-Studio-ABSS-\\benchmarks\\nasa_stri\\decks\\A_64x8x8_inc4.inp",
+  "inp_sha256": "c66360070243e011c3cfabc166042f7afac1fc14a531a2d2129838173eccc60a",
+  "material_points": 32768,
+  "max_concurrent_jobs": 1,
+  "max_order": 1,
+  "method": "abss",
+  "nodes": 5265,
+  "oracle_evaluations": 80,
+  "overlap_waves": true,
+  "parallel_branches": false,
+  "parameters": [
+    {
+      "id": "mat:M01:elastic:E",
+      "nominal": 70000.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M02:elastic:E",
+      "nominal": 70700.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M03:elastic:E",
+      "nominal": 71400.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M04:elastic:E",
+      "nominal": 72100.0,
+      "step": -1.0
+    }
+  ],
+  "profile": {
+    "engine.direct_solve": {
+      "count": 4,
+      "seconds": 0.164017
+    },
+    "engine.direct_solve_rhs": {
+      "count": 16,
+      "seconds": 0.0
+    },
+    "engine.factorize": {
+      "count": 4,
+      "seconds": 2.635902
+    },
+    "engine.fused_probes_used": {
+      "count": 33,
+      "seconds": 0.0
+    },
+    "engine.tangent_assembly": {
+      "count": 4,
+      "seconds": 0.583137
+    },
+    "job.cleanup": {
+      "count": 1,
+      "seconds": 0.003885
+    },
+    "job.input_generation": {
+      "count": 5,
+      "seconds": 1.043253
+    },
+    "job.parse_results": {
+      "count": 6,
+      "seconds": 26.524352
+    },
+    "job.phase.analysis": {
+      "count": 6,
+      "seconds": 222.0
+    },
+    "job.phase.driver_and_licence": {
+      "count": 6,
+      "seconds": 45.089756
+    },
+    "job.phase.input_processing": {
+      "count": 6,
+      "seconds": 30.0
+    },
+    "job.phase.wrapup": {
+      "count": 6,
+      "seconds": 4.879962
+    },
+    "job.process": {
+      "count": 6,
+      "seconds": 301.969719
+    },
+    "job.wait_slot": {
+      "count": 6,
+      "seconds": 2e-06
+    },
+    "jobs.batch.commit": {
+      "count": 1,
+      "seconds": 67.899741
+    },
+    "jobs.batch.commit_fused": {
+      "count": 3,
+      "seconds": 192.443889
+    },
+    "jobs.batch.probe_wave": {
+      "count": 1,
+      "seconds": 20.391216
+    },
+    "jobs.nominal": {
+      "count": 1,
+      "seconds": 21.234873
+    },
+    "nominal.parse_element_matrices": {
+      "count": 1,
+      "seconds": 0.886149
+    },
+    "phase.nominal": {
+      "count": 1,
+      "seconds": 23.816998
+    },
+    "stage.commit_wave": {
+      "count": 4,
+      "seconds": 295.200739
+    },
+    "stage.probe_wave": {
+      "count": 4,
+      "seconds": 20.815681
+    }
+  },
+  "quality": {
+    "du/dM01: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1.01e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM02: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM03: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    },
+    "du/dM04: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 3.241862764161409e-10
+    }
+  },
+  "suppress_odb_output": true,
+  "tangent_check": true,
+  "user_subroutine": "",
+  "driver": {
+    "exit_code": 0,
+    "process_wall_seconds": 346.21200156211853,
+    "repeat": 1,
+    "case": "A64x8x8_inc4_P4",
+    "started": "2026-10-21T21:24:21"
+  }
+}

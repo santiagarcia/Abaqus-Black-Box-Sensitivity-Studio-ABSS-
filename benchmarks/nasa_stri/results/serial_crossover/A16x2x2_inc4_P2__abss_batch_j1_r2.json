@@ -1,0 +1,244 @@
+{
+  "batch_branches": true,
+  "command": "C:/Users/vfn333/AppData/Local/abss_bench_bin/v7\\abss-cli.exe run benchmarks/nasa_stri/decks/A_16x2x2_inc4.inp --params mat:M01:elastic:E,mat:M02:elastic:E --jobs 1 --scratch C:\\Users\\vfn333\\AppData\\Local\\Temp\\abss_bench\\A16x2x2_inc4_P2__abss_batch_j1_r2 --out benchmarks\\nasa_stri\\results\\serial_crossover\\A16x2x2_inc4_P2__abss_batch_j1_r2.abss --profile benchmarks\\nasa_stri\\results\\serial_crossover\\A16x2x2_inc4_P2__abss_batch_j1_r2.json.partial --batch",
+  "compute_backend": "Kokkos 5.2.2 OpenMP (24 threads)",
+  "dofs": 459,
+  "elapsed_seconds": {
+    "nominal": 13.9956962,
+    "sensitivity": 78.9786477,
+    "serialize": 0.0028781,
+    "setup": 0.0006463,
+    "total": 92.9899126
+  },
+  "elements": 64,
+  "engine_seconds": 78.9642288,
+  "frames": [
+    {
+      "assembled_tangent_check": -1.0,
+      "commit_residual": [
+        1.0100482977330741e-05,
+        9.956968664153723e-06
+      ],
+      "frame": 1,
+      "krylov": false,
+      "krylov_converged": true,
+      "krylov_matvecs": 0,
+      "krylov_residual": 0.0,
+      "probed_tangent": false,
+      "reprobe_passes": [
+        0,
+        0
+      ],
+      "solve_residual": 7.155077444716127e-14,
+      "solver": "Eigen SimplicialLDLT",
+      "tangent_check": 6.569802259801676e-11,
+      "tangent_colours": 0
+    },
+    {
+      "assembled_tangent_check": -1.0,
+      "commit_residual": [
+        1.0100432447833483e-05,
+        9.956948452343889e-06
+      ],
+      "frame": 2,
+      "krylov": false,
+      "krylov_converged": true,
+      "krylov_matvecs": 0,
+      "krylov_residual": 0.0,
+      "probed_tangent": false,
+      "reprobe_passes": [
+        0,
+        0
+      ],
+      "solve_residual": 1.1102706379785335e-13,
+      "solver": "Eigen SimplicialLDLT",
+      "tangent_check": 4.188555880662865e-11,
+      "tangent_colours": 0
+    },
+    {
+      "assembled_tangent_check": -1.0,
+      "commit_residual": [
+        1.0100452659540523e-05,
+        9.956961927101799e-06
+      ],
+      "frame": 3,
+      "krylov": false,
+      "krylov_converged": true,
+      "krylov_matvecs": 0,
+      "krylov_residual": 0.0,
+      "probed_tangent": false,
+      "reprobe_passes": [
+        0,
+        0
+      ],
+      "solve_residual": 6.003685671926593e-14,
+      "solver": "Eigen SimplicialLDLT",
+      "tangent_check": 4.446639423570601e-11,
+      "tangent_colours": 0
+    },
+    {
+      "assembled_tangent_check": -1.0,
+      "commit_residual": [
+        1.0100452659591557e-05,
+        9.956918134654292e-06
+      ],
+      "frame": 4,
+      "krylov": false,
+      "krylov_converged": true,
+      "krylov_matvecs": 0,
+      "krylov_residual": 0.0,
+      "probed_tangent": false,
+      "reprobe_passes": [
+        0,
+        0
+      ],
+      "solve_residual": 9.252255316310349e-14,
+      "solver": "Eigen SimplicialLDLT",
+      "tangent_check": 4.274160545133871e-11,
+      "tangent_colours": 0
+    }
+  ],
+  "free_dofs": 432,
+  "fuse_commit_probe": true,
+  "increments": 4,
+  "inp": "C:\\Users\\vfn333\\Documents\\GitHub\\Abaqus-Black-Box-Sensitivity-Studio-ABSS-\\benchmarks\\nasa_stri\\decks\\A_16x2x2_inc4.inp",
+  "inp_sha256": "9d1953aaf7a72539ed018c1c6b34e44d7aece5737be95962dd189c575131f67c",
+  "material_points": 512,
+  "max_concurrent_jobs": 1,
+  "max_order": 1,
+  "method": "abss",
+  "nodes": 153,
+  "oracle_evaluations": 48,
+  "overlap_waves": true,
+  "parallel_branches": false,
+  "parameters": [
+    {
+      "id": "mat:M01:elastic:E",
+      "nominal": 70000.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M02:elastic:E",
+      "nominal": 70700.0,
+      "step": -1.0
+    }
+  ],
+  "profile": {
+    "engine.direct_solve": {
+      "count": 4,
+      "seconds": 0.000177
+    },
+    "engine.direct_solve_rhs": {
+      "count": 8,
+      "seconds": 0.0
+    },
+    "engine.factorize": {
+      "count": 4,
+      "seconds": 0.003728
+    },
+    "engine.fused_probes_used": {
+      "count": 21,
+      "seconds": 0.0
+    },
+    "engine.tangent_assembly": {
+      "count": 4,
+      "seconds": 0.009989
+    },
+    "job.cleanup": {
+      "count": 1,
+      "seconds": 0.000954
+    },
+    "job.input_generation": {
+      "count": 5,
+      "seconds": 0.023326
+    },
+    "job.parse_results": {
+      "count": 6,
+      "seconds": 0.276488
+    },
+    "job.phase.analysis": {
+      "count": 6,
+      "seconds": 30.0
+    },
+    "job.phase.driver_and_licence": {
+      "count": 6,
+      "seconds": 40.978942
+    },
+    "job.phase.input_processing": {
+      "count": 6,
+      "seconds": 18.0
+    },
+    "job.phase.wrapup": {
+      "count": 6,
+      "seconds": 3.550403
+    },
+    "job.process": {
+      "count": 6,
+      "seconds": 92.529345
+    },
+    "job.wait_slot": {
+      "count": 6,
+      "seconds": 1e-06
+    },
+    "jobs.batch.commit": {
+      "count": 1,
+      "seconds": 18.083131
+    },
+    "jobs.batch.commit_fused": {
+      "count": 3,
+      "seconds": 46.229506
+    },
+    "jobs.batch.probe_wave": {
+      "count": 1,
+      "seconds": 14.261732
+    },
+    "jobs.nominal": {
+      "count": 1,
+      "seconds": 13.954976
+    },
+    "nominal.parse_element_matrices": {
+      "count": 1,
+      "seconds": 0.013432
+    },
+    "phase.nominal": {
+      "count": 1,
+      "seconds": 13.995694
+    },
+    "stage.commit_wave": {
+      "count": 4,
+      "seconds": 64.647762
+    },
+    "stage.probe_wave": {
+      "count": 4,
+      "seconds": 14.272493
+    }
+  },
+  "quality": {
+    "du/dM01: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1.01e-05 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 6.569802259801676e-11
+    },
+    "du/dM02: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 9.96e-06 (smooth: ~C h^1, h_rel = 1e-05)."
+      ],
+      "status": "Unverified",
+      "tangent_check": 6.569802259801676e-11
+    }
+  },
+  "suppress_odb_output": true,
+  "tangent_check": true,
+  "user_subroutine": "",
+  "driver": {
+    "exit_code": 0,
+    "process_wall_seconds": 94.66120624542236,
+    "repeat": 2,
+    "case": "A16x2x2_inc4_P2",
+    "started": "2026-10-21T21:37:06"
+  }
+}

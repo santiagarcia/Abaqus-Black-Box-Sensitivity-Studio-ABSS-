@@ -10,6 +10,7 @@
 #include <atomic>
 #include <functional>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -60,9 +61,38 @@ public:
     virtual FrameFields commit(int frame, const std::vector<double>& u, std::vector<double>* committedU) = 0;
     /// Residual of the most recent commit (predictor consistency diagnostic).
     virtual std::vector<double> lastCommitResidual() const = 0;
+    /// True when commitAndProbe(frame, ...) is available: the oracle can commit `frame` and, in the same evaluation,
+    /// return the residual of increment frame+1 at a given state without entering that state in the history.
+    virtual bool canFuseNextProbe(int frame) const {
+        (void)frame;
+        return false;
+    }
+    /// commit(frame, u) plus the residuals r_{frame+1}(uNext[k]) on the history this commit creates: exactly what a
+    /// later residuals(frame + 1, uNext) would return. Only when canFuseNextProbe(frame).
+    virtual FrameFields commitAndProbe(int frame, const std::vector<double>& u,
+                                       const std::vector<std::vector<double>>& uNext,
+                                       std::vector<std::vector<double>>& nextResiduals) {
+        (void)frame, (void)u, (void)uNext, (void)nextResiduals;
+        throw std::logic_error("commitAndProbe is not supported by this oracle");
+    }
 };
 
 using ProgressFn = std::function<void(const std::string& stage, double fraction)>;
+
+/// One branch's part of a wave: either residual probes at `frame`, or a commit of `frame` (optionally with residuals
+/// of frame+1 evaluated on the new history, as commitAndProbe does).
+struct WaveRequest {
+    HistoryBranch* branch = nullptr;
+    std::string activity;                       ///< profiling label of the evaluations this request causes
+    std::vector<std::vector<double>> probes;    ///< probe request: states at `frame`
+    bool commit = false;
+    std::vector<double> commitU;
+    std::vector<std::vector<double>> nextProbes;  ///< commit request: states at frame+1 to evaluate if possible
+    // results
+    std::vector<std::vector<double>> residuals;      ///< one per probe
+    FrameFields fields;                              ///< commit: committed fields
+    std::vector<std::vector<double>> nextResiduals;  ///< one per next probe, or empty when they were not evaluated
+};
 
 class Oracle {
 public:
@@ -86,6 +116,23 @@ public:
 
     /// Open a branch at parameter offsets delta (size = parameter count) from t = 0.
     virtual std::unique_ptr<HistoryBranch> openBranch(const std::vector<double>& delta) = 0;
+
+    /// Evaluate a wave of independent branch requests (all probes, or all commits, of one frame). The default runs each
+    /// request through its branch (commit, commitAndProbe where supported, or residuals), concurrently when asked;
+    /// an oracle may batch the whole wave into fewer evaluations. Results are identical either way.
+    virtual void runWave(int frame, std::vector<WaveRequest>& wave, bool concurrent);
+    /// True when runWave evaluates a whole wave in one batched evaluation (more probes per wave cost nothing extra).
+    virtual bool batchesWaves() const { return false; }
+    /// Residual probes of the replay (unperturbed) branch that one oracle evaluation (Abaqus job) can hold; used by the
+    /// engine's cost model.
+    virtual int replayProbesPerEvaluation() const { return 1; }
+    /// True when the sparsity pattern of the latest tangent(frame) contains every coupling of the true residual
+    /// Jacobian (no constraint condensation, contact or DOFs without element stiffness). Only then may the engine
+    /// assemble the true tangent from column-grouped probes.
+    virtual bool tangentPatternComplete(int frame) const {
+        (void)frame;
+        return true;
+    }
 
     /// Reference: fully re-equilibrated analysis at a + delta (used only for validation).
     /// Returns displacements per frame and fills `fields` per frame. Empty on failure (e.g. cutbacks).

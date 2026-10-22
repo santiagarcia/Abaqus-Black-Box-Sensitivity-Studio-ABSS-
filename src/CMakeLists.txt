@@ -4,6 +4,7 @@ add_library(abss_core STATIC
   core/parameter.cpp
   core/results.cpp
   core/project_io.cpp
+  core/profile.cpp
 )
 target_link_libraries(abss_core PUBLIC nlohmann_json::nlohmann_json)
 
@@ -33,6 +34,8 @@ endif()
 # abss-oracle: synthetic (demo) and Abaqus residual/tangent oracles
 add_library(abss_oracle STATIC
   oracle/dofmap.cpp
+  oracle/wave.cpp
+  oracle/abaqus_replica.cpp
   oracle/synthetic_fe.cpp
   oracle/synthetic_oracle.cpp
   oracle/abaqus_env.cpp

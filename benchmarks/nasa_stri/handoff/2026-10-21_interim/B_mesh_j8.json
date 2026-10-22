@@ -1,0 +1,71 @@
+[
+ {
+  "id": "B16x2x2_inc8_P4",
+  "deck": "benchmarks/nasa_stri/decks/B_16x2x2_inc8.inp",
+  "params": [
+   "mat:M01:plastic:sigma_y:1",
+   "mat:M02:plastic:sigma_y:1",
+   "mat:M03:plastic:sigma_y:1",
+   "mat:M04:plastic:sigma_y:1"
+  ],
+  "methods": [
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   8
+  ],
+  "repeats": 1,
+  "bin": "C:/Users/vfn333/AppData/Local/abss_bench_bin/v6",
+  "extra_abss_batch": [
+   "--batch"
+  ]
+ },
+ {
+  "id": "B32x4x4_inc8_P4",
+  "deck": "benchmarks/nasa_stri/decks/B_32x4x4_inc8.inp",
+  "params": [
+   "mat:M01:plastic:sigma_y:1",
+   "mat:M02:plastic:sigma_y:1",
+   "mat:M03:plastic:sigma_y:1",
+   "mat:M04:plastic:sigma_y:1"
+  ],
+  "methods": [
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   8
+  ],
+  "repeats": 1,
+  "bin": "C:/Users/vfn333/AppData/Local/abss_bench_bin/v6",
+  "extra_abss_batch": [
+   "--batch"
+  ]
+ },
+ {
+  "id": "B48x6x6_inc8_P4",
+  "deck": "benchmarks/nasa_stri/decks/B_48x6x6_inc8.inp",
+  "params": [
+   "mat:M01:plastic:sigma_y:1",
+   "mat:M02:plastic:sigma_y:1",
+   "mat:M03:plastic:sigma_y:1",
+   "mat:M04:plastic:sigma_y:1"
+  ],
+  "methods": [
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   8
+  ],
+  "repeats": 1,
+  "bin": "C:/Users/vfn333/AppData/Local/abss_bench_bin/v6",
+  "extra_abss_batch": [
+   "--batch"
+  ]
+ }
+]

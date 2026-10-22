@@ -1,0 +1,16 @@
+[
+ {"id": "A64x8x8_inc4_E1", "deck": "benchmarks/nasa_stri/decks/A_64x8x8_inc4.inp", "params": ["mat:M01:elastic:E"],
+  "methods": ["fafd_h1e-3", "fafd_h1e-4", "fafd_h1e-5", "fafd_h1e-6", "abss_h1e-4", "abss_h1e-5", "abss_h1e-6"],
+  "jobs": [8], "repeats": 1, "bin": "C:/Users/vfn333/AppData/Local/abss_bench_bin/v7",
+  "extra_fafd_h1e-3": ["--rel-step", "1e-3"], "extra_fafd_h1e-4": ["--rel-step", "1e-4"],
+  "extra_fafd_h1e-5": ["--rel-step", "1e-5"], "extra_fafd_h1e-6": ["--rel-step", "1e-6"],
+  "extra_abss_h1e-4": ["--rel-step", "1e-4", "--batch"], "extra_abss_h1e-5": ["--rel-step", "1e-5", "--batch"],
+  "extra_abss_h1e-6": ["--rel-step", "1e-6", "--batch"]},
+ {"id": "B16x2x2_inc8_SY1", "deck": "benchmarks/nasa_stri/decks/B_16x2x2_inc8.inp", "params": ["mat:M01:plastic:sigma_y:1"],
+  "methods": ["fafd_h1e-3", "fafd_h1e-4", "fafd_h1e-5", "fafd_h1e-6", "abss_h1e-4", "abss_h1e-5", "abss_h1e-6"],
+  "jobs": [8], "repeats": 1, "bin": "C:/Users/vfn333/AppData/Local/abss_bench_bin/v7",
+  "extra_fafd_h1e-3": ["--rel-step", "1e-3"], "extra_fafd_h1e-4": ["--rel-step", "1e-4"],
+  "extra_fafd_h1e-5": ["--rel-step", "1e-5"], "extra_fafd_h1e-6": ["--rel-step", "1e-6"],
+  "extra_abss_h1e-4": ["--rel-step", "1e-4", "--batch"], "extra_abss_h1e-5": ["--rel-step", "1e-5", "--batch"],
+  "extra_abss_h1e-6": ["--rel-step", "1e-6", "--batch"]}
+]

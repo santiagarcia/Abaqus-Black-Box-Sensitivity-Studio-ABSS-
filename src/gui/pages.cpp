@@ -915,6 +915,18 @@ SetupPage::SetupPage(Controller* c, QWidget* parent) : QWidget(parent), controll
     jobs_->setToolTip("How many Abaqus jobs ABSS may run at the same time. Each job takes licence tokens; a job that "
                       "cannot get a licence fails, so keep this within your licence.");
     abf->addRow("Simultaneous Abaqus jobs", jobs_);
+    batch_ = new QCheckBox("Run several history branches in each Abaqus job (far fewer jobs)");
+    batch_->setChecked(QSettings().value("abaqusBatch", false).toBool());
+    batch_->setToolTip("Every Abaqus job holds several branches as separate copies of the model, so each step of the "
+                       "method costs one job per simultaneous slot instead of one job per branch. Results are identical. "
+                       "Models with parts/instances, constraints, contact, user elements or dynamics run one branch per "
+                       "job automatically, and the log says so.");
+    abf->addRow(batch_);
+    connect(batch_, &QCheckBox::toggled, this, [this](bool on) {
+        QSettings().setValue("abaqusBatch", on);
+        updateCost();
+        emit settingsChanged();
+    });
     v->addWidget(abq);
     connect(browse, &QPushButton::clicked, this, [this]() {
         const QString f = QFileDialog::getOpenFileName(
@@ -1117,6 +1129,7 @@ RunSettings SetupPage::settings() const {
     s.abaqusCommand = QSettings().value("abaqusCommand").toString().toStdString();
     s.userSubroutine = userSub_->text().trimmed().toStdString();
     s.concurrentJobs = jobs_->value();
+    s.batchBranches = batch_->isChecked();
     return s;
 }
 

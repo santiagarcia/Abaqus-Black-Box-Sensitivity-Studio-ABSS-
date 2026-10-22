@@ -1,0 +1,132 @@
+[
+ {
+  "id": "A64x8x8_inc4_P1",
+  "deck": "benchmarks/nasa_stri/decks/A_64x8x8_inc4.inp",
+  "params": [
+   "mat:M01:elastic:E"
+  ],
+  "methods": [
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   8
+  ],
+  "repeats": 1,
+  "bin": "%BIN%",
+  "extra_abss_batch": [
+   "--batch"
+  ]
+ },
+ {
+  "id": "A64x8x8_inc4_P4",
+  "deck": "benchmarks/nasa_stri/decks/A_64x8x8_inc4.inp",
+  "params": [
+   "mat:M01:elastic:E",
+   "mat:M02:elastic:E",
+   "mat:M03:elastic:E",
+   "mat:M04:elastic:E"
+  ],
+  "methods": [
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   8
+  ],
+  "repeats": 1,
+  "bin": "%BIN%",
+  "extra_abss_batch": [
+   "--batch"
+  ]
+ },
+ {
+  "id": "A64x8x8_inc4_P16",
+  "deck": "benchmarks/nasa_stri/decks/A_64x8x8_inc4.inp",
+  "params": [
+   "mat:M01:elastic:E",
+   "mat:M02:elastic:E",
+   "mat:M03:elastic:E",
+   "mat:M04:elastic:E",
+   "mat:M05:elastic:E",
+   "mat:M06:elastic:E",
+   "mat:M07:elastic:E",
+   "mat:M08:elastic:E",
+   "mat:M09:elastic:E",
+   "mat:M10:elastic:E",
+   "mat:M11:elastic:E",
+   "mat:M12:elastic:E",
+   "mat:M13:elastic:E",
+   "mat:M14:elastic:E",
+   "mat:M15:elastic:E",
+   "mat:M16:elastic:E"
+  ],
+  "methods": [
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   8
+  ],
+  "repeats": 1,
+  "bin": "%BIN%",
+  "extra_abss_batch": [
+   "--batch"
+  ]
+ },
+ {
+  "id": "A64x8x8_inc4_P33",
+  "deck": "benchmarks/nasa_stri/decks/A_64x8x8_inc4.inp",
+  "params": [
+   "mat:M01:elastic:E",
+   "mat:M02:elastic:E",
+   "mat:M03:elastic:E",
+   "mat:M04:elastic:E",
+   "mat:M05:elastic:E",
+   "mat:M06:elastic:E",
+   "mat:M07:elastic:E",
+   "mat:M08:elastic:E",
+   "mat:M09:elastic:E",
+   "mat:M10:elastic:E",
+   "mat:M11:elastic:E",
+   "mat:M12:elastic:E",
+   "mat:M13:elastic:E",
+   "mat:M14:elastic:E",
+   "mat:M15:elastic:E",
+   "mat:M16:elastic:E",
+   "mat:M01:elastic:nu",
+   "mat:M02:elastic:nu",
+   "mat:M03:elastic:nu",
+   "mat:M04:elastic:nu",
+   "mat:M05:elastic:nu",
+   "mat:M06:elastic:nu",
+   "mat:M07:elastic:nu",
+   "mat:M08:elastic:nu",
+   "mat:M09:elastic:nu",
+   "mat:M10:elastic:nu",
+   "mat:M11:elastic:nu",
+   "mat:M12:elastic:nu",
+   "mat:M13:elastic:nu",
+   "mat:M14:elastic:nu",
+   "mat:M15:elastic:nu",
+   "mat:M16:elastic:nu",
+   "load:BEND:dsload:TOPF:P"
+  ],
+  "methods": [
+   "abss_batch",
+   "abss",
+   "fafd"
+  ],
+  "jobs": [
+   8
+  ],
+  "repeats": 1,
+  "bin": "%BIN%",
+  "extra_abss_batch": [
+   "--batch"
+  ]
+ }
+]

@@ -37,6 +37,15 @@ public:
     double get(std::int32_t r, std::int32_t c) const;
 };
 
+/// Rows that may be nonzero in each column of a structurally symmetric matrix: pattern(A) united with pattern(A^T),
+/// plus the diagonal. Index lists are sorted.
+std::vector<std::vector<std::int32_t>> symmetricColumnPattern(const CsrMatrix& a);
+
+/// Curtis-Powell-Reid column grouping: greedy distance-2 colouring of the pattern so that no two columns of one colour
+/// share a row. Perturbing all columns of a colour together and differencing recovers each of their entries exactly
+/// (sparse Jacobian estimation). Returns the colour of every column (0-based); *nColours is set when given.
+std::vector<std::int32_t> columnColouring(const std::vector<std::vector<std::int32_t>>& pattern, std::int32_t* nColours = nullptr);
+
 enum class SolverKind : std::uint8_t { Auto, EigenSparseLU, EigenLDLT, Umfpack, KokkosCG, DenseLU };
 const char* solverName(SolverKind k);
 

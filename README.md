@@ -149,8 +149,21 @@ GUI: **File → Open** an `.inp`, select parameters, then Run. CLI:
   are checked against the deck. Linux libraries that read input files, or need imports the ELF host does not
   provide, run under WSL instead (administrator: `wsl --install -d Ubuntu`, then in Ubuntu
   `sudo apt install python3 liblapack3 libblas3 libgfortran5`).
-- **Cost.** Every probe and commit is a short Abaqus job (about 13 s of start-up on the development PC). `--jobs N`
-  runs N at once (licence permitting). See SCIENCE.md §8 for the job anatomy.
+- **Cost.** Every probe and commit is evaluated by Abaqus jobs. Each job pays about 11 s of driver start-up, licence
+  checkout, input processing and wrap-up, plus Abaqus/Standard's own time (≈ 5 s on small models). That is about
+  16 s per job on small models, measured over 6,065 jobs on the development PC (docs/PERFORMANCE.md).
+  - `--jobs N` runs N jobs at once, licence permitting.
+  - Each branch's commit for an increment and its probe for the next increment share one job.
+  - `--batch` puts several history branches into each job as separate copies of the model. A step of the method
+    then costs one job per slot instead of one job per branch, with identical results. It applies to flat decks;
+    other decks fall back automatically, and the log says so.
+- **Baseline and diagnostics.**
+  - `abss-cli fafd <model.inp> --params ...` computes full-analysis central finite differences for comparison. This
+    is not ABSS, and its output is labelled FAFD.
+  - `abss-cli compare a.abss b.abss` reports field-by-field agreement.
+  - `--profile run.json` records where a run's time went.
+
+  The ABSS-vs-FAFD benchmark campaign is in `benchmarks/nasa_stri/`.
 
 ## Repository layout
 `include/abss`, `src/{core,inp,linalg,oracle,sensitivity,viz,gui}`, `apps/{abss,cli}`, `tests/{core,inp,linalg,oracle,sensitivity,gui,abaqus}`,

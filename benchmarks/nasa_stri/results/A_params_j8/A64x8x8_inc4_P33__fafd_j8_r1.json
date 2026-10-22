@@ -1,0 +1,531 @@
+{
+  "batch_branches": false,
+  "command": "C:/Users/vfn333/AppData/Local/abss_bench_bin/v5\\abss-cli.exe fafd benchmarks/nasa_stri/decks/A_64x8x8_inc4.inp --params mat:M01:elastic:E,mat:M02:elastic:E,mat:M03:elastic:E,mat:M04:elastic:E,mat:M05:elastic:E,mat:M06:elastic:E,mat:M07:elastic:E,mat:M08:elastic:E,mat:M09:elastic:E,mat:M10:elastic:E,mat:M11:elastic:E,mat:M12:elastic:E,mat:M13:elastic:E,mat:M14:elastic:E,mat:M15:elastic:E,mat:M16:elastic:E,mat:M01:elastic:nu,mat:M02:elastic:nu,mat:M03:elastic:nu,mat:M04:elastic:nu,mat:M05:elastic:nu,mat:M06:elastic:nu,mat:M07:elastic:nu,mat:M08:elastic:nu,mat:M09:elastic:nu,mat:M10:elastic:nu,mat:M11:elastic:nu,mat:M12:elastic:nu,mat:M13:elastic:nu,mat:M14:elastic:nu,mat:M15:elastic:nu,mat:M16:elastic:nu,load:BEND:dsload:TOPF:P --jobs 8 --scratch C:\\Users\\vfn333\\AppData\\Local\\Temp\\abss_bench\\A64x8x8_inc4_P33__fafd_j8_r1 --out benchmarks\\nasa_stri\\results\\A_params_j8\\A64x8x8_inc4_P33__fafd_j8_r1.abss --profile benchmarks\\nasa_stri\\results\\A_params_j8\\A64x8x8_inc4_P33__fafd_j8_r1.json.partial",
+  "compute_backend": "Kokkos 5.2.2 OpenMP (24 threads)",
+  "dofs": 15795,
+  "elapsed_seconds": {
+    "grid_setup": 29.6008526,
+    "nominal": 28.2742952,
+    "sensitivity": 189.5026298,
+    "serialize": 1.0819938,
+    "setup": 0.0076207,
+    "total": 248.7915426
+  },
+  "elements": 4096,
+  "fafd_analyses": 66,
+  "fafd_failed": 0,
+  "fafd_nominal_analyses": 1,
+  "free_dofs": 15552,
+  "fuse_commit_probe": true,
+  "increments": 4,
+  "inp": "C:\\Users\\vfn333\\Documents\\GitHub\\Abaqus-Black-Box-Sensitivity-Studio-ABSS-\\benchmarks\\nasa_stri\\decks\\A_64x8x8_inc4.inp",
+  "inp_sha256": "c66360070243e011c3cfabc166042f7afac1fc14a531a2d2129838173eccc60a",
+  "material_points": 32768,
+  "max_concurrent_jobs": 8,
+  "max_order": 1,
+  "method": "fafd",
+  "nodes": 5265,
+  "overlap_waves": true,
+  "parallel_branches": false,
+  "parameters": [
+    {
+      "id": "mat:M01:elastic:E",
+      "nominal": 70000.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M02:elastic:E",
+      "nominal": 70700.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M03:elastic:E",
+      "nominal": 71400.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M04:elastic:E",
+      "nominal": 72100.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M05:elastic:E",
+      "nominal": 72800.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M06:elastic:E",
+      "nominal": 73500.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M07:elastic:E",
+      "nominal": 74200.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M08:elastic:E",
+      "nominal": 74900.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M09:elastic:E",
+      "nominal": 75600.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M10:elastic:E",
+      "nominal": 76300.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M11:elastic:E",
+      "nominal": 77000.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M12:elastic:E",
+      "nominal": 77700.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M13:elastic:E",
+      "nominal": 78400.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M14:elastic:E",
+      "nominal": 79100.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M15:elastic:E",
+      "nominal": 79800.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M16:elastic:E",
+      "nominal": 80500.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M01:elastic:nu",
+      "nominal": 0.3,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M02:elastic:nu",
+      "nominal": 0.302,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M03:elastic:nu",
+      "nominal": 0.304,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M04:elastic:nu",
+      "nominal": 0.306,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M05:elastic:nu",
+      "nominal": 0.308,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M06:elastic:nu",
+      "nominal": 0.31,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M07:elastic:nu",
+      "nominal": 0.312,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M08:elastic:nu",
+      "nominal": 0.314,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M09:elastic:nu",
+      "nominal": 0.316,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M10:elastic:nu",
+      "nominal": 0.318,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M11:elastic:nu",
+      "nominal": 0.32,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M12:elastic:nu",
+      "nominal": 0.322,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M13:elastic:nu",
+      "nominal": 0.324,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M14:elastic:nu",
+      "nominal": 0.326,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M15:elastic:nu",
+      "nominal": 0.328,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M16:elastic:nu",
+      "nominal": 0.33,
+      "step": -1.0
+    },
+    {
+      "id": "load:BEND:dsload:TOPF:P",
+      "nominal": 1.0,
+      "step": -1.0
+    }
+  ],
+  "profile": {
+    "job.cleanup": {
+      "count": 67,
+      "seconds": 0.305387
+    },
+    "job.parse_results": {
+      "count": 68,
+      "seconds": 67.425317
+    },
+    "job.phase.analysis": {
+      "count": 68,
+      "seconds": 702.0
+    },
+    "job.phase.driver_and_licence": {
+      "count": 68,
+      "seconds": 520.171279
+    },
+    "job.phase.input_processing": {
+      "count": 68,
+      "seconds": 212.0
+    },
+    "job.phase.wrapup": {
+      "count": 68,
+      "seconds": 58.738486
+    },
+    "job.process": {
+      "count": 68,
+      "seconds": 1492.909766
+    },
+    "job.wait_slot": {
+      "count": 68,
+      "seconds": 5124.267148
+    },
+    "jobs.fafd.analysis": {
+      "count": 66,
+      "seconds": 1438.559607
+    },
+    "jobs.fafd.nominal": {
+      "count": 1,
+      "seconds": 27.370229
+    },
+    "jobs.nominal": {
+      "count": 1,
+      "seconds": 26.97993
+    },
+    "nominal.parse_element_matrices": {
+      "count": 1,
+      "seconds": 0.931239
+    },
+    "phase.nominal": {
+      "count": 1,
+      "seconds": 29.60084
+    },
+    "stage.fafd_analyses": {
+      "count": 1,
+      "seconds": 189.502626
+    }
+  },
+  "quality": {
+    "du/dM01: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM01: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM02: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM02: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM03: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM03: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM04: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM04: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM05: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM05: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM06: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM06: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM07: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM07: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM08: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM08: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM09: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM09: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM10: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM10: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM11: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM11: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM12: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM12: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM13: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM13: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM14: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM14: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM15: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM15: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM16: E": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dM16: nu": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    },
+    "du/dPressure P on TOPF (BEND)": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "FAFD baseline result (not computed by the ABSS engine)."
+      ],
+      "status": "Unverified",
+      "tangent_check": -1.0
+    }
+  },
+  "suppress_odb_output": true,
+  "tangent_check": true,
+  "user_subroutine": "",
+  "driver": {
+    "exit_code": 0,
+    "process_wall_seconds": 252.6457417011261,
+    "repeat": 1,
+    "case": "A64x8x8_inc4_P33",
+    "started": "2026-10-21T17:52:38"
+  }
+}

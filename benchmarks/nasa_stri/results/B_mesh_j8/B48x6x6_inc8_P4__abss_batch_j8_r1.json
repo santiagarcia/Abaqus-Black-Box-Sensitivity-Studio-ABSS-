@@ -1,0 +1,423 @@
+{
+  "batch_branches": true,
+  "command": "C:/Users/vfn333/AppData/Local/abss_bench_bin/v6\\abss-cli.exe run benchmarks/nasa_stri/decks/B_48x6x6_inc8.inp --params mat:M01:plastic:sigma_y:1,mat:M02:plastic:sigma_y:1,mat:M03:plastic:sigma_y:1,mat:M04:plastic:sigma_y:1 --jobs 8 --scratch C:\\Users\\vfn333\\AppData\\Local\\Temp\\abss_bench\\B48x6x6_inc8_P4__abss_batch_j8_r1 --out benchmarks\\nasa_stri\\results\\B_mesh_j8\\B48x6x6_inc8_P4__abss_batch_j8_r1.abss --profile benchmarks\\nasa_stri\\results\\B_mesh_j8\\B48x6x6_inc8_P4__abss_batch_j8_r1.json.partial --batch",
+  "compute_backend": "Kokkos 5.2.2 OpenMP (24 threads)",
+  "dofs": 7203,
+  "elapsed_seconds": {
+    "nominal": 22.9602146,
+    "sensitivity": 1708.1473727,
+    "serialize": 0.1362761,
+    "setup": 0.0036253,
+    "total": 1731.2579393
+  },
+  "elements": 1728,
+  "engine_seconds": 1704.3137954,
+  "frames": [
+    {
+      "assembled_tangent_check": -1.0,
+      "commit_residual": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "frame": 1,
+      "krylov": false,
+      "krylov_converged": true,
+      "krylov_matvecs": 0,
+      "krylov_residual": 0.0,
+      "probed_tangent": false,
+      "reprobe_passes": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "solve_residual": 0.0,
+      "solver": "Eigen SimplicialLDLT",
+      "tangent_check": 8.993998658303021e-11,
+      "tangent_colours": 0
+    },
+    {
+      "assembled_tangent_check": 0.006120060289691276,
+      "commit_residual": [
+        3.686170034111351e-06,
+        2.9404577110645004e-06,
+        0.00224766947078087,
+        0.0
+      ],
+      "frame": 2,
+      "krylov": true,
+      "krylov_converged": true,
+      "krylov_matvecs": 65,
+      "krylov_residual": 1.2651362977811264e-08,
+      "probed_tangent": false,
+      "reprobe_passes": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "solve_residual": 0.0,
+      "solver": "Eigen SimplicialLDLT",
+      "tangent_check": 0.10840898709486407,
+      "tangent_colours": 81
+    },
+    {
+      "assembled_tangent_check": 0.004065264436193488,
+      "commit_residual": [
+        1.112741384369491e-05,
+        5.779085297281798e-06,
+        6.048541866138312e-06,
+        1.1830736331347451e-05
+      ],
+      "frame": 3,
+      "krylov": true,
+      "krylov_converged": true,
+      "krylov_matvecs": 86,
+      "krylov_residual": 2.388842941650823e-08,
+      "probed_tangent": false,
+      "reprobe_passes": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "solve_residual": 0.0,
+      "solver": "Eigen SimplicialLDLT",
+      "tangent_check": 0.15592366079812664,
+      "tangent_colours": 81
+    },
+    {
+      "assembled_tangent_check": 1.7788425191824557e-07,
+      "commit_residual": [
+        9.105723822375374e-06,
+        4.769776179542154e-06,
+        6.839207143716135e-06,
+        9.270046039759052e-06
+      ],
+      "frame": 4,
+      "krylov": false,
+      "krylov_converged": true,
+      "krylov_matvecs": 0,
+      "krylov_residual": 0.0,
+      "probed_tangent": true,
+      "reprobe_passes": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "solve_residual": 1.0213405699946481e-13,
+      "solver": "SuiteSparse UMFPACK (true tangent assembled from 162 probes, 81 column groups)",
+      "tangent_check": 0.1702583995592146,
+      "tangent_colours": 81
+    },
+    {
+      "assembled_tangent_check": -1.0,
+      "commit_residual": [
+        2.1881928172583816e-06,
+        1.4009502736134034e-06,
+        2.103757963621933e-06,
+        3.1821542240332797e-06
+      ],
+      "frame": 5,
+      "krylov": false,
+      "krylov_converged": true,
+      "krylov_matvecs": 0,
+      "krylov_residual": 0.0,
+      "probed_tangent": false,
+      "reprobe_passes": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "solve_residual": 1.0239123379885602e-13,
+      "solver": "Eigen SimplicialLDLT",
+      "tangent_check": 7.342128027127544e-11,
+      "tangent_colours": 0
+    },
+    {
+      "assembled_tangent_check": -1.0,
+      "commit_residual": [
+        2.1881966987787013e-06,
+        1.400935295548038e-06,
+        2.103736031133012e-06,
+        3.182136376401325e-06
+      ],
+      "frame": 6,
+      "krylov": false,
+      "krylov_converged": true,
+      "krylov_matvecs": 0,
+      "krylov_residual": 0.0,
+      "probed_tangent": false,
+      "reprobe_passes": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "solve_residual": 8.330871468650293e-14,
+      "solver": "Eigen SimplicialLDLT",
+      "tangent_check": 8.192431459679344e-11,
+      "tangent_colours": 0
+    },
+    {
+      "assembled_tangent_check": -1.0,
+      "commit_residual": [
+        2.188198543572323e-06,
+        1.4010047135857684e-06,
+        2.103822082171881e-06,
+        3.182150652108997e-06
+      ],
+      "frame": 7,
+      "krylov": false,
+      "krylov_converged": true,
+      "krylov_matvecs": 0,
+      "krylov_residual": 0.0,
+      "probed_tangent": false,
+      "reprobe_passes": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "solve_residual": 9.441654331160492e-14,
+      "solver": "Eigen SimplicialLDLT",
+      "tangent_check": 5.565196718137112e-11,
+      "tangent_colours": 0
+    },
+    {
+      "assembled_tangent_check": -1.0,
+      "commit_residual": [
+        2.188199897839731e-06,
+        1.4009438106327632e-06,
+        2.103773732040241e-06,
+        3.182276057644654e-06
+      ],
+      "frame": 8,
+      "krylov": false,
+      "krylov_converged": true,
+      "krylov_matvecs": 0,
+      "krylov_residual": 0.0,
+      "probed_tangent": false,
+      "reprobe_passes": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "solve_residual": 1.1107828624899477e-13,
+      "solver": "Eigen SimplicialLDLT",
+      "tangent_check": 6.118327165702918e-11,
+      "tangent_colours": 0
+    }
+  ],
+  "free_dofs": 7007,
+  "fuse_commit_probe": true,
+  "increments": 8,
+  "inp": "C:\\Users\\vfn333\\Documents\\GitHub\\Abaqus-Black-Box-Sensitivity-Studio-ABSS-\\benchmarks\\nasa_stri\\decks\\B_48x6x6_inc8.inp",
+  "inp_sha256": "b17a4c2910bad78ef4b8cc81a95154ebdc7988b74ea197eb7b3ec147bd53d97f",
+  "material_points": 13824,
+  "max_concurrent_jobs": 8,
+  "max_order": 1,
+  "method": "abss",
+  "nodes": 2401,
+  "oracle_evaluations": 948,
+  "overlap_waves": true,
+  "parallel_branches": true,
+  "parameters": [
+    {
+      "id": "mat:M01:plastic:sigma_y:1",
+      "nominal": 250.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M02:plastic:sigma_y:1",
+      "nominal": 252.5,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M03:plastic:sigma_y:1",
+      "nominal": 255.0,
+      "step": -1.0
+    },
+    {
+      "id": "mat:M04:plastic:sigma_y:1",
+      "nominal": 257.5,
+      "step": -1.0
+    }
+  ],
+  "profile": {
+    "engine.direct_solve": {
+      "count": 6,
+      "seconds": 0.072133
+    },
+    "engine.direct_solve_rhs": {
+      "count": 24,
+      "seconds": 0.0
+    },
+    "engine.factorize": {
+      "count": 9,
+      "seconds": 0.928825
+    },
+    "engine.fused_probes_used": {
+      "count": 77,
+      "seconds": 0.0
+    },
+    "engine.gmres_rhs": {
+      "count": 8,
+      "seconds": 0.0
+    },
+    "engine.tangent_assembly": {
+      "count": 8,
+      "seconds": 0.431229
+    },
+    "job.cleanup": {
+      "count": 321,
+      "seconds": 1.938573
+    },
+    "job.input_generation": {
+      "count": 385,
+      "seconds": 28.119135
+    },
+    "job.parse_results": {
+      "count": 386,
+      "seconds": 364.583556
+    },
+    "job.phase.analysis": {
+      "count": 386,
+      "seconds": 3809.0
+    },
+    "job.phase.driver_and_licence": {
+      "count": 386,
+      "seconds": 2346.732656
+    },
+    "job.phase.input_processing": {
+      "count": 386,
+      "seconds": 1241.0
+    },
+    "job.phase.wrapup": {
+      "count": 386,
+      "seconds": 393.076064
+    },
+    "job.process": {
+      "count": 386,
+      "seconds": 7789.808721
+    },
+    "job.wait_slot": {
+      "count": 386,
+      "seconds": 9948.722548
+    },
+    "jobs.batch.commit": {
+      "count": 8,
+      "seconds": 165.170374
+    },
+    "jobs.batch.commit_fused": {
+      "count": 56,
+      "seconds": 1036.937639
+    },
+    "jobs.batch.probe.branch": {
+      "count": 6,
+      "seconds": 94.647677
+    },
+    "jobs.batch.probe.gmres_matvec": {
+      "count": 151,
+      "seconds": 2932.368794
+    },
+    "jobs.batch.probe.replay_and_tangent_check": {
+      "count": 1,
+      "seconds": 16.215373
+    },
+    "jobs.batch.probe.tangent_colour": {
+      "count": 162,
+      "seconds": 3507.779483
+    },
+    "jobs.batch.probe_wave": {
+      "count": 1,
+      "seconds": 15.684638
+    },
+    "jobs.nominal": {
+      "count": 1,
+      "seconds": 21.004742
+    },
+    "nominal.parse_element_matrices": {
+      "count": 1,
+      "seconds": 0.707671
+    },
+    "phase.nominal": {
+      "count": 1,
+      "seconds": 22.96021
+    },
+    "stage.commit_wave": {
+      "count": 8,
+      "seconds": 202.255467
+    },
+    "stage.gmres_matvec": {
+      "count": 151,
+      "seconds": 3053.767305
+    },
+    "stage.gmres_solve": {
+      "count": 2,
+      "seconds": 1016.025162
+    },
+    "stage.probe_wave": {
+      "count": 8,
+      "seconds": 16.330109
+    },
+    "stage.tangent_columns": {
+      "count": 3,
+      "seconds": 467.542808
+    }
+  },
+  "quality": {
+    "du/dM01: sigma_y(eps_p=0)": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1.11e-05 (smooth: ~C h^1, h_rel = 1e-05).",
+        "Oracle tangent inconsistent at 2 increment(s) (tangent check > 1e-05); solved matrix-free with GMRES preconditioned by it: 151 operator applications, worst relative residual 2.39e-08."
+      ],
+      "status": "Unverified",
+      "tangent_check": 0.1702583995592146
+    },
+    "du/dM02: sigma_y(eps_p=0)": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 5.78e-06 (smooth: ~C h^1, h_rel = 1e-05).",
+        "Oracle tangent inconsistent at 2 increment(s) (tangent check > 1e-05); solved matrix-free with GMRES preconditioned by it: 151 operator applications, worst relative residual 2.39e-08."
+      ],
+      "status": "Unverified",
+      "tangent_check": 0.1702583995592146
+    },
+    "du/dM03: sigma_y(eps_p=0)": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 0.00225 (smooth: ~C h^1, h_rel = 1e-05).",
+        "Oracle tangent inconsistent at 2 increment(s) (tangent check > 1e-05); solved matrix-free with GMRES preconditioned by it: 151 operator applications, worst relative residual 2.39e-08.",
+        "Predictor inconsistency at increment(s) 2 (above 50 h^p): a non-smooth event (yield onset/reversal, contact change) or a probe that left the true perturbed path. Values there may be one-sided or wrong, and later increments inherit the history error."
+      ],
+      "status": "Unverified",
+      "tangent_check": 0.1702583995592146
+    },
+    "du/dM04: sigma_y(eps_p=0)": {
+      "fd_rel_error": -1.0,
+      "notes": [
+        "Predictor consistency (commit residual / first-order load), worst over increments and branches: 1.18e-05 (smooth: ~C h^1, h_rel = 1e-05).",
+        "Oracle tangent inconsistent at 2 increment(s) (tangent check > 1e-05); solved matrix-free with GMRES preconditioned by it: 151 operator applications, worst relative residual 2.39e-08."
+      ],
+      "status": "Unverified",
+      "tangent_check": 0.1702583995592146
+    }
+  },
+  "suppress_odb_output": true,
+  "tangent_check": true,
+  "user_subroutine": "",
+  "driver": {
+    "exit_code": 0,
+    "process_wall_seconds": 1733.0185520648956,
+    "repeat": 1,
+    "case": "B48x6x6_inc8_P4",
+    "started": "2026-10-21T18:50:48"
+  }
+}

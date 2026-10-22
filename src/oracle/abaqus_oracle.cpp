@@ -15,7 +15,13 @@
 #include "abaqus_files.hpp"
 #include "abaqus_loads.hpp"
 #include "abaqus_process.hpp"
+#include "abaqus_replica.hpp"
+#include "abss/core/profile.hpp"
 #include "abss/inp/deck.hpp"
+
+#include <chrono>
+#include <ctime>
+#include <cstdio>
 
 #include <algorithm>
 #include <array>
@@ -91,6 +97,45 @@ std::vector<std::string> splitLines(const std::string& t) {
 const char* kTightControls =
     "*CONTROLS, PARAMETERS=FIELD, FIELD=GLOBAL\n1.E-8, 1.E-6\n"
     "*CONTROLS, PARAMETERS=TIME INCREMENTATION\n8, 20, 9, 30, 20, 8, 30, 5\n";
+
+/// Split one Abaqus job's wall time into phases from the timestamps its driver prints (1 s resolution):
+/// driver start-up + licence checkout (until the input file processor begins), input processing (pre.exe),
+/// analysis (standard.exe, including its setup), and wrap-up (results-database conversion until process exit).
+void recordAbaqusPhases(const std::string& out, std::chrono::system_clock::time_point start, double procWall) {
+    auto stampAfter = [&](const char* marker) -> std::optional<std::time_t> {
+        const auto p = out.find(marker);
+        if (p == std::string::npos) return std::nullopt;
+        const auto nl = out.find('\n', p);
+        if (nl == std::string::npos) return std::nullopt;
+        const auto e = out.find('\n', nl + 1);
+        const std::string line = out.substr(nl + 1, e == std::string::npos ? std::string::npos : e - nl - 1);
+        // "%m/%d/%Y %I:%M:%S %p", parsed by hand: libstdc++'s std::get_time ignores %p (PM times came out 12 h early).
+        int mo = 0, dd = 0, yy = 0, hh = 0, mi = 0, ss = 0;
+        char ampm[3] = {0, 0, 0};
+        if (std::sscanf(line.c_str(), "%d/%d/%d %d:%d:%d %2s", &mo, &dd, &yy, &hh, &mi, &ss, ampm) != 7) return std::nullopt;
+        const bool pm = ampm[0] == 'P' || ampm[0] == 'p';
+        if (hh == 12) hh = pm ? 12 : 0;
+        else if (pm) hh += 12;
+        std::tm tm{};
+        tm.tm_year = yy - 1900, tm.tm_mon = mo - 1, tm.tm_mday = dd, tm.tm_hour = hh, tm.tm_min = mi, tm.tm_sec = ss;
+        tm.tm_isdst = -1;
+        return std::mktime(&tm);
+    };
+    const auto tPre = stampAfter("Begin Analysis Input File Processor");
+    const auto tStd = stampAfter("Begin Abaqus/Standard Analysis");
+    const auto tWrap = stampAfter("Begin SIM Wrap-up");
+    if (!tPre || !tStd) return;
+    const double t0 = static_cast<double>(std::chrono::system_clock::to_time_t(start)) +
+                      std::chrono::duration<double>(start - std::chrono::system_clock::from_time_t(std::chrono::system_clock::to_time_t(start))).count();
+    const double tEnd = t0 + procWall;
+    const double a = std::max(0.0, static_cast<double>(*tPre) - t0), b = std::max(0.0, static_cast<double>(*tStd - *tPre));
+    const double c = tWrap ? std::max(0.0, static_cast<double>(*tWrap - *tStd)) : std::max(0.0, tEnd - static_cast<double>(*tStd));
+    const double d = tWrap ? std::max(0.0, tEnd - static_cast<double>(*tWrap)) : 0.0;
+    prof::add("job.phase.driver_and_licence", a);
+    prof::add("job.phase.input_processing", b);
+    prof::add("job.phase.analysis", c);
+    prof::add("job.phase.wrapup", d);
+}
 
 /// Expand every *INCLUDE card recursively into one text (paths relative to the including file). Data-only INPUT=
 /// options of other keywords (e.g. *NODE, INPUT=) stay as they are; they resolve next to the flattened file.
@@ -182,19 +227,29 @@ std::vector<std::string> tensorNames(const std::string& prefix, size_t n) {
 }
 
 class AbaqusOracle;
+class ReplicaGroup;
 
 // ---------------------------------------------------------------------------------------------------------------
 class AbaqusBranch final : public HistoryBranch {
+    friend class ReplicaGroup;
 public:
     AbaqusBranch(AbaqusOracle& o, std::vector<double> delta, int id);
     ~AbaqusBranch() override;
     std::vector<std::vector<double>> residuals(int frame, const std::vector<std::vector<double>>& u) override;
     FrameFields commit(int frame, const std::vector<double>& u, std::vector<double>* committedU) override;
     std::vector<double> lastCommitResidual() const override { return lastResidual_; }
+    bool canFuseNextProbe(int frame) const override;
+    FrameFields commitAndProbe(int frame, const std::vector<double>& u, const std::vector<std::vector<double>>& uNext,
+                               std::vector<std::vector<double>>& nextResiduals) override;
 
 private:
     std::string stepText(int frame, const std::vector<double>& u, bool commit) const;
-    abq::FilIncrement runIncrement(int frame, const std::vector<double>& u, bool commit, const std::string& job);
+    /// One Abaqus job: increment `frame` at u (commit or probe); with uNext, a commit followed by a probe step of
+    /// frame+1 (no restart data written for it), whose increment is returned in *nextInc.
+    abq::FilIncrement runIncrement(int frame, const std::vector<double>& u, bool commit, const std::string& job,
+                                   const std::vector<double>* uNext = nullptr, abq::FilIncrement* nextInc = nullptr);
+    FrameFields finishCommit(int frame, const abq::FilIncrement& inc, std::vector<double> written, const std::string& job,
+                             std::vector<double>* committedU);
 
     AbaqusOracle& o_;
     std::vector<double> delta_;
@@ -227,6 +282,24 @@ private:
 class AbaqusOracle final : public Oracle {
 public:
     explicit AbaqusOracle(AbaqusRunConfig cfg);
+    ~AbaqusOracle() override;
+    void runWave(int frame, std::vector<WaveRequest>& wave, bool concurrent) override;
+    bool batchesWaves() const override { return cfg_.batchBranches && !batchRefused_; }
+    int replayProbesPerEvaluation() const override { return batchesWaves() ? kReplayReplicas : 1; }
+    bool tangentPatternComplete(int) const override { return patternComplete_; }
+    std::atomic<bool> patternComplete_{false};
+    static constexpr int kReplayReplicas = 3;  ///< replay probe + tangent-check pair in one job
+    /// Replicated-branch group holding branch b (groups are formed at the first branch evaluation), or nullptr when
+    /// branches run as separate jobs (batching off or refused for this model). One group per job slot, so a wave
+    /// keeps every slot busy; the replay branch and its replicas are in group 0.
+    ReplicaGroup* group(const AbaqusBranch* b);
+    bool formGroups();
+    void forgetBranch(const AbaqusBranch* b);
+    std::vector<AbaqusBranch*> openBranches_;
+    std::mutex groupMutex_;
+    std::vector<std::unique_ptr<ReplicaGroup>> groups_;
+    std::map<const AbaqusBranch*, ReplicaGroup*> groupOf_;
+    std::atomic<bool> batchRefused_{false};
     OracleCapabilities capabilities() const override;
     std::vector<std::vector<double>> runNominal(ResultStore& store, const ProgressFn& progress) override;
     const DofMap& dofMap() const override { return dofs_; }
@@ -333,6 +406,49 @@ public:
     std::atomic<long long> jobCount_{0};
 };
 
+// ---------------------------------------------------------------------------------------------------------------
+/// Replicated history branches (AbaqusRunConfig::batchBranches): every branch of the run is a disjoint copy of the
+/// model in one Abaqus job and restart chain (abaqus_replica.hpp). The replay branch has 3 replicas (its probe and the
+/// tangent-check pair fit in one job), every perturbed branch 1. A probe wave costs ceil(probes / replicas) jobs; a
+/// commit wave costs one job that commits every copy and evaluates the next increment's probes in a second step.
+class ReplicaGroup {
+public:
+    ReplicaGroup(AbaqusOracle& o, const std::vector<AbaqusBranch*>& members, int index);
+    ~ReplicaGroup() {
+        if (!o_.cfg_.keepJobFiles) {
+            std::error_code ec;
+            fs::remove_all(dir_, ec);
+        }
+    }
+    bool contains(const AbaqusBranch* b) const { return copiesOf_.count(b) > 0; }
+    bool closed = false;  ///< set when a member branch is destroyed
+    std::vector<std::vector<double>> probe(int frame, AbaqusBranch* b, const std::vector<std::vector<double>>& us);
+    void runWave(int frame, const std::vector<WaveRequest*>& wave);
+
+private:
+    struct Copy {
+        AbaqusBranch* b;
+        int replica;
+    };
+    using Request = std::map<const AbaqusBranch*, const std::vector<std::vector<double>>*>;
+    std::map<const AbaqusBranch*, std::vector<std::vector<double>>> probeJobs(int frame, const Request& req);
+    std::string header(int frame, bool commitWritesRestart) const;
+    std::string step(int frame, const std::vector<const std::vector<double>*>& copyU, bool commit) const;
+    const std::vector<double>& hold(const AbaqusBranch* b) const;
+    void checkReplicas(const abq::FilIncrement& inc, const AbaqusBranch* b, const std::string& job) const;
+
+    AbaqusOracle& o_;
+    std::vector<Copy> copies_;
+    std::map<const AbaqusBranch*, std::vector<int>> copiesOf_;  ///< branch -> copy index of each replica
+    abq::ReplicaNumbering num_;
+    std::string modelData_;
+    fs::path dir_;
+    std::string lastCommitJob_;
+    int committed_ = 0;
+    std::atomic<int> counter_{0};
+    std::vector<double> zeros_;
+};
+
 AbaqusOracle::AbaqusOracle(AbaqusRunConfig cfg) : cfg_(std::move(cfg)) {
     if (cfg_.abaqusCommand.empty()) throw std::runtime_error("Abaqus command not configured");
     fs::create_directories(cfg_.scratchDir);
@@ -377,6 +493,7 @@ AbaqusOracle::AbaqusOracle(AbaqusRunConfig cfg) : cfg_(std::move(cfg)) {
                                      "(or source with a working Abaqus compiler) in the run settings.");
     abq::LoadEvaluator check(*deck_);  // throws on unsupported load/BC features
     if (!cfg_.userSubroutine.empty()) {
+        prof::Scope s("setup.user_subroutine");
         // Build (or accept a prebuilt) standardU.dll ONCE; every job then loads it without compiling.
         const auto lib = prepareUserSubroutine(cfg_.abaqusCommand, cfg_.userSubroutine,
                                                (fs::path(cfg_.scratchDir) / "usub_lib").string(),
@@ -529,6 +646,7 @@ OracleCapabilities AbaqusOracle::capabilities() const {
 
 void AbaqusOracle::cleanup(const fs::path& dir, const std::string& job) const {
     if (cfg_.keepJobFiles) return;
+    prof::Scope s("job.cleanup");
     std::error_code ec;
     for (const auto& e : fs::directory_iterator(dir, ec)) {
         const auto stem = e.path().stem().string();
@@ -593,7 +711,12 @@ abq::FilIncrement AbaqusOracle::runJob(const fs::path& dir, const std::string& j
             if (!fs::exists(envFile, ec)) writeText(envFile, "usub_lib_dir = r\"" + usubDir_ + "\"\n");
         }
     }
+    const std::string act = prof::activity().empty() ? std::string("unattributed") : prof::activity();
+    const auto tw0 = std::chrono::steady_clock::now();
     jobs_->acquire();
+    const auto tp0 = std::chrono::steady_clock::now();
+    const auto wall0 = std::chrono::system_clock::now();
+    prof::add("job.wait_slot", std::chrono::duration<double>(tp0 - tw0).count());
     detail::ProcessResult res;
     try {
         res = detail::runProcess(cfg_.abaqusCommand, args, dir.string(), 3600, cfg_.cancel);
@@ -603,6 +726,12 @@ abq::FilIncrement AbaqusOracle::runJob(const fs::path& dir, const std::string& j
     }
     jobs_->release();
     ++jobCount_;
+    {
+        const double procWall = std::chrono::duration<double>(std::chrono::steady_clock::now() - tp0).count();
+        prof::add("job.process", procWall);
+        prof::add("jobs." + act, procWall);
+        recordAbaqusPhases(res.output, wall0, procWall);
+    }
     if (res.cancelled) throw std::runtime_error("Cancelled");
     if (res.timedOut) throw std::runtime_error("Abaqus job '" + job + "' exceeded the time limit and was stopped");
     const std::string dat = readText(dir / (job + ".dat")) + readText(dir / (job + ".msg"));
@@ -616,7 +745,11 @@ abq::FilIncrement AbaqusOracle::runJob(const fs::path& dir, const std::string& j
     }
     if (dat.find("KEYWORD IS IGNORED IN A RESTART") != std::string::npos)
         throw std::runtime_error("Abaqus ignored a model keyword in restart job '" + job + "' (would silently change the model)");
-    auto incs = abq::readFil((dir / (job + ".fil")).string());
+    std::vector<abq::FilIncrement> incs;
+    {
+        prof::Scope s("job.parse_results");
+        incs = abq::readFil((dir / (job + ".fil")).string());
+    }
     if (incs.empty()) throw std::runtime_error("No results in " + job + ".fil");
     // Non-finite results: name the quantity (the branch adds the parameter); never difference NaNs silently.
     for (const auto& inc : incs) {
@@ -697,6 +830,8 @@ FrameFields AbaqusOracle::fieldsFrom(const abq::FilIncrement& inc) const {
 }
 
 std::vector<std::vector<double>> AbaqusOracle::runNominal(ResultStore& store, const ProgressFn& progress) {
+    prof::Scope total("phase.nominal");
+    prof::Activity actNominal("nominal");
     const fs::path dir = fs::path(cfg_.scratchDir) / "nominal";
     fs::create_directories(dir);
     if (progress) progress("Preparing nominal Abaqus job", 0.0);
@@ -754,6 +889,7 @@ std::vector<std::vector<double>> AbaqusOracle::runNominal(ResultStore& store, co
     }
     buildNumbering(abq::readFilModel((dir / "abss_nominal.fil").string()));
     if (emoInNominal) {
+        prof::Scope pe("nominal.parse_element_matrices");
         emo_ = abq::readEmo((dir / "abss_emo.mtx").string());
     } else {
         // Element matrices from the same model without its step temperatures (see above).
@@ -871,6 +1007,7 @@ std::vector<std::vector<double>> AbaqusOracle::runNominal(ResultStore& store, co
         }
         st << "*NODE FILE, FREQUENCY=1\nU\n*END STEP\n";
         writeText(cdir / "abss_dofcheck.inp", modelDataOf(*ed.deck, ed.root) + st.str());
+        prof::Activity actDof("nominal.dof_check");
         const auto chk = runJob(cdir, "abss_dofcheck", "", true, frames_[1].totalTime);
         for (const auto& [nd, v] : probe) {
             auto it = chk.U.find(nodeNumber_[static_cast<size_t>(nd.first)]);
@@ -1094,7 +1231,9 @@ CsrMatrix AbaqusOracle::tangent(int frame) {
         const size_t n = idx.size();
         for (size_t r = 0; r < n; ++r)
             for (size_t c = 0; c < n; ++c)
-                if (idx[r] >= 0 && idx[c] >= 0 && b.K[r * n + c] != 0.0) t.push_back({idx[r], idx[c], kScale * b.K[r * n + c]});
+                // exact zeros are kept as structural entries: the true tangent may be nonzero there (plasticity),
+                // and the column grouping of the engine's assembled tangent relies on a complete pattern
+                if (idx[r] >= 0 && idx[c] >= 0) t.push_back({idx[r], idx[c], kScale * b.K[r * n + c]});
     }
     // DOFs without element stiffness (reference nodes of couplings/rigid bodies; masters whose stiffness arrives only
     // through constraints) get the mean diagonal so the matrix stays a usable preconditioner. The tangent check then
@@ -1107,8 +1246,11 @@ CsrMatrix AbaqusOracle::tangent(int frame) {
     for (double d : diag)
         if (d > 0) mean += d, ++nz;
     mean = nz ? mean / nz : 1.0;
+    bool filled = false;
     for (size_t k = 0; k < diag.size(); ++k)
-        if (diag[k] == 0.0) t.push_back({static_cast<std::int32_t>(k), static_cast<std::int32_t>(k), mean});
+        if (diag[k] == 0.0) t.push_back({static_cast<std::int32_t>(k), static_cast<std::int32_t>(k), mean}), filled = true;
+    // The pattern covers every true coupling only when all residual couplings come from element matrices.
+    patternComplete_ = !filled && !hasConstraints_ && !hasContact_ && !deck_->usesUserElement();
     return CsrMatrix::fromTriplets(dofs_.size(), dofs_.size(), std::move(t));
 }
 
@@ -1150,7 +1292,13 @@ void AbaqusOracle::kinematics(int frame, const std::vector<double>& u, const std
 }
 
 std::unique_ptr<HistoryBranch> AbaqusOracle::openBranch(const std::vector<double>& delta) {
-    return std::make_unique<AbaqusBranch>(*this, delta, branchCounter_++);
+    auto b = std::make_unique<AbaqusBranch>(*this, delta, branchCounter_++);
+    if (cfg_.batchBranches) {
+        std::lock_guard<std::mutex> lk(groupMutex_);
+        if (!groups_.empty()) throw std::logic_error("Replicated branches: a branch was opened after the groups were formed");
+        openBranches_.push_back(b.get());
+    }
+    return b;
 }
 
 std::vector<std::vector<double>> AbaqusOracle::solvePerturbed(const std::vector<double>& delta, std::vector<FrameFields>* fields) {
@@ -1242,6 +1390,7 @@ AbaqusBranch::AbaqusBranch(AbaqusOracle& o, std::vector<double> delta, int id) :
 }
 
 AbaqusBranch::~AbaqusBranch() {
+    o_.forgetBranch(this);
     if (!o_.cfg_.keepJobFiles) {
         std::error_code ec;
         fs::remove_all(dir_, ec);
@@ -1277,6 +1426,8 @@ std::string AbaqusBranch::stepText(int frame, const std::vector<double>& u, bool
     os << loadText(st, releaseLines);
     if (commit) os << o_.fieldRequests();
     else os << "*NODE FILE, FREQUENCY=1\nU, RF\n";
+    // ABSS reads only the .fil file; without these Abaqus writes its default ODB output in every branch job.
+    if (o_.cfg_.suppressOdbOutput) os << "*OUTPUT, FIELD, FREQUENCY=0\n*OUTPUT, HISTORY, FREQUENCY=0\n";
     os << "*END STEP\n";
     return os.str();
 }
@@ -1379,6 +1530,7 @@ void AbaqusBranch::ensureDynamicState(int frame) {
         os << "*ELEMENT MATRIX OUTPUT, ELSET=ABSS_ALL, MASS=YES, OUTPUT FILE=USER DEFINED, FILE NAME=" << job << "m, FREQUENCY=1\n";
     os << "*NODE FILE, FREQUENCY=1\nU, RF\n*END STEP\n";
     writeText(dir_ / (job + ".inp"), os.str());
+    prof::Activity actA0("dynamic.initial_acceleration");
     const auto inc = o_.runJob(dir_, job, frame == 1 ? "" : lastCommitJob_, true, t0 + tiny);
     if (!massLoaded_) {
         mass_ = o_.assembleMass(abq::readEmo((dir_ / (job + "m.mtx")).string()));
@@ -1409,18 +1561,45 @@ std::vector<double> AbaqusBranch::inertia(int frame, const std::vector<double>& 
     return mass_.multiply(a);
 }
 
-abq::FilIncrement AbaqusBranch::runIncrement(int frame, const std::vector<double>& u, bool commit, const std::string& job) {
-    std::string text;
-    if (frame == 1) {
-        text = modelData_;
-        if (commit) text += "*RESTART, WRITE, FREQUENCY=1\n";
-    } else {
-        text = "*HEADING\nABSS history-branch increment\n*RESTART, READ, STEP=" + std::to_string(frame - 1) + ", INC=1, END STEP\n";
+abq::FilIncrement AbaqusBranch::runIncrement(int frame, const std::vector<double>& u, bool commit, const std::string& job,
+                                             const std::vector<double>* uNext, abq::FilIncrement* nextInc) {
+    {
+        prof::Scope gen("job.input_generation");
+        std::string text;
+        if (frame == 1) {
+            text = modelData_;
+            if (commit) text += "*RESTART, WRITE, FREQUENCY=1\n";
+        } else {
+            text = "*HEADING\nABSS history-branch increment\n*RESTART, READ, STEP=" + std::to_string(frame - 1) + ", INC=1, END STEP\n";
+        }
+        std::string st = stepText(frame, u, commit);
+        // A commit step always writes restart data explicitly: a fused job's probe step turned restart writing off,
+        // and whether that setting carries across the restart is not relied upon.
+        if (commit && frame > 1) st.insert(st.find("*BOUNDARY, OP=NEW"), "*RESTART, WRITE, FREQUENCY=1\n");
+        if (uNext) st += stepText(frame + 1, *uNext, false);
+        text += st;
+        writeText(dir_ / (job + ".inp"), text);
     }
-    text += stepText(frame, u, commit);
-    writeText(dir_ / (job + ".inp"), text);
     try {
-        return o_.runJob(dir_, job, frame == 1 ? "" : lastCommitJob_, true, o_.frames_.at(static_cast<size_t>(frame)).totalTime);
+        const double tEnd = o_.frames_.at(static_cast<size_t>(frame)).totalTime;
+        if (!uNext) return o_.runJob(dir_, job, frame == 1 ? "" : lastCommitJob_, true, tEnd);
+        std::vector<abq::FilIncrement> incs;
+        o_.runJob(dir_, job, frame == 1 ? "" : lastCommitJob_, false, 0.0, &incs);
+        // Exactly one increment in each of the two new steps, at the nominal times (no cutback, no subdivision).
+        const int probeStep = incs.back().step;
+        std::vector<const abq::FilIncrement*> c, p;
+        for (const auto& x : incs) {
+            if (x.step == probeStep) p.push_back(&x);
+            else if (x.step == probeStep - 1) c.push_back(&x);
+        }
+        const double tNext = o_.frames_.at(static_cast<size_t>(frame) + 1).totalTime;
+        auto near = [](double a, double b) { return std::abs(a - b) <= 1e-9 * std::max(1.0, std::abs(b)); };
+        if (c.size() != 1 || p.size() != 1 || !near(c[0]->totalTime, tEnd) || !near(p[0]->totalTime, tNext))
+            throw std::runtime_error("Oracle increments in job '" + job + "' were subdivided or mistimed (commit " +
+                                     std::to_string(c.size()) + ", probe " + std::to_string(p.size()) +
+                                     " increments); refusing to use them.");
+        *nextInc = *p[0];
+        return *c[0];
     } catch (const std::exception& e) {
         if (std::string(e.what()) == "Cancelled") throw;
         // Name the perturbation this branch carries, so a failure points at the parameter that caused it.
@@ -1435,12 +1614,15 @@ abq::FilIncrement AbaqusBranch::runIncrement(int frame, const std::vector<double
 
 std::vector<std::vector<double>> AbaqusBranch::residuals(int frame, const std::vector<std::vector<double>>& us) {
     if (frame != committed_ + 1) throw std::logic_error("Abaqus branch: probe out of sequence");
+    if (auto* g = o_.group(this)) return g->probe(frame, this, us);
     ensureDynamicState(frame);
     const bool dyn = o_.frames_.at(static_cast<size_t>(frame)).dynamic;
     std::vector<std::vector<double>> out(us.size());
     std::vector<std::future<void>> fut;
+    const std::string act = prof::activity();  // worker threads do not inherit the caller's activity
     for (size_t k = 0; k < us.size(); ++k)
-        fut.push_back(std::async(std::launch::async, [&, k] {
+        fut.push_back(std::async(std::launch::async, [&, k, act] {
+            prof::Activity a(act);
             const std::string job = "b" + std::to_string(id_) + "_p" + std::to_string(frame) + "_" + std::to_string(probeCounter_++);
             const auto inc = runIncrement(frame, us[k], false, job);
             auto rf = o_.dofVector(inc.RF);
@@ -1456,12 +1638,97 @@ std::vector<std::vector<double>> AbaqusBranch::residuals(int frame, const std::v
     return out;
 }
 
+bool AbaqusBranch::canFuseNextProbe(int frame) const {
+    const auto& fr = o_.frames_;
+    if (!o_.cfg_.fuseCommitProbe || frame != committed_ + 1 || static_cast<size_t>(frame) + 1 >= fr.size()) return false;
+    const auto& a = fr[static_cast<size_t>(frame)];
+    const auto& b = fr[static_cast<size_t>(frame) + 1];
+    // The probe step must not depend on this commit's results: kinematic state (dynamics), reactions of BCs that the
+    // next step releases, or the finite-rotation composition of NLGEOM rotations.
+    if (a.dynamic || b.dynamic) return false;
+    if (b.step != a.step && !o_.releasedByStep_.at(static_cast<size_t>(b.step)).empty()) return false;
+    if (b.nlgeom && !o_.rotNodes_.empty()) return false;
+    return true;
+}
+
+FrameFields AbaqusBranch::commitAndProbe(int frame, const std::vector<double>& u,
+                                         const std::vector<std::vector<double>>& uNext,
+                                         std::vector<std::vector<double>>& nextResiduals) {
+    if (!canFuseNextProbe(frame) || uNext.empty())
+        throw std::logic_error("Abaqus branch: commit and probe cannot share a job here");
+    if (o_.group(this)) throw std::logic_error("Replicated branches commit together (Oracle::runWave), not one by one");
+    // Job 0 is the commit (its restart data continue the branch). Each further probe needs its own job: a sibling
+    // replays the same commit step (writing no restart data) and then probes. Siblings run concurrently with job 0.
+    const std::string job = "b" + std::to_string(id_) + "_c" + std::to_string(frame);
+    auto written = bcValues(frame, u);
+    nextResiduals.assign(uNext.size(), {});
+    std::vector<abq::FilIncrement> siblingCommit(uNext.size());
+    std::vector<std::future<void>> fut;
+    const std::string act = prof::activity();
+    for (size_t k = 1; k < uNext.size(); ++k)
+        fut.push_back(std::async(std::launch::async, [&, k, act] {
+            prof::Activity a(act + "_sibling");
+            const std::string sj = job + "_s" + std::to_string(k);
+            abq::FilIncrement next;
+            siblingCommit[k] = runIncrement(frame, u, false, sj, &uNext[k], &next);
+            nextResiduals[k] = o_.dofVector(next.RF);
+            for (double& x : nextResiduals[k]) x = -x;
+            o_.cleanup(dir_, sj);
+        }));
+    abq::FilIncrement next;
+    std::exception_ptr err;
+    abq::FilIncrement inc;
+    try {
+        inc = runIncrement(frame, u, true, job, &uNext[0], &next);
+    } catch (...) {
+        err = std::current_exception();
+    }
+    for (auto& f : fut) {
+        try {
+            f.get();
+        } catch (...) {
+            if (!err) err = std::current_exception();
+        }
+    }
+    if (err) std::rethrow_exception(err);
+    nextResiduals[0] = o_.dofVector(next.RF);
+    for (double& x : nextResiduals[0]) x = -x;  // r = F_ext - F_int = -RF on every held DOF
+    // The siblings' replayed commits must reproduce job 0's committed state (deterministic Abaqus): checked, not assumed.
+    for (size_t k = 1; k < uNext.size(); ++k) {
+        double diff = 0, scale = 1e-300;
+        for (const auto* m : {&inc.U, &inc.RF})
+            for (const auto& [lab, v] : *m) {
+                const auto& other = (m == &inc.U ? siblingCommit[k].U : siblingCommit[k].RF);
+                auto it = other.find(lab);
+                if (it == other.end()) {
+                    diff = INFINITY;
+                    continue;
+                }
+                for (size_t c = 0; c < v.size() && c < it->second.size(); ++c) {
+                    diff = std::max(diff, std::abs(v[c] - it->second[c]));
+                    scale = std::max(scale, std::abs(v[c]));
+                }
+            }
+        if (!(diff <= 1e-10 * scale))
+            throw std::runtime_error("A replicated commit job did not reproduce the committed state (difference " +
+                                     std::to_string(diff / scale) + " relative); Abaqus results are not deterministic "
+                                     "here, so fused probes are unsafe. Rerun with fused probes disabled.");
+    }
+    return finishCommit(frame, inc, std::move(written), job, nullptr);
+}
+
 FrameFields AbaqusBranch::commit(int frame, const std::vector<double>& u, std::vector<double>* committedU) {
     if (frame != committed_ + 1) throw std::logic_error("Abaqus branch: commit out of sequence");
+    if (o_.group(this)) throw std::logic_error("Replicated branches commit together (Oracle::runWave), not one by one");
     ensureDynamicState(frame);
     const std::string job = "b" + std::to_string(id_) + "_c" + std::to_string(frame);
     auto written = bcValues(frame, u);  // what this commit job writes (rotation bookkeeping for the next restart)
     const auto inc = runIncrement(frame, u, true, job);
+    return finishCommit(frame, inc, std::move(written), job, committedU);
+}
+
+FrameFields AbaqusBranch::finishCommit(int frame, const abq::FilIncrement& inc, std::vector<double> written,
+                                       const std::string& job, std::vector<double>* committedU) {
     lastCommitB_ = std::move(written);
     lastResidual_ = o_.dofVector(inc.RF);
     for (double& x : lastResidual_) x = -x;
@@ -1498,6 +1765,312 @@ FrameFields AbaqusBranch::commit(int frame, const std::vector<double>& u, std::v
             if (d.dof <= o_.nU_ && i < f.values[1].size()) f.values[1][i] = 0.0;
         }
     return f;
+}
+
+// ---- replicated branches ----------------------------------------------------------------------------------------
+AbaqusOracle::~AbaqusOracle() = default;
+
+void AbaqusOracle::forgetBranch(const AbaqusBranch* b) {
+    std::lock_guard<std::mutex> lk(groupMutex_);
+    openBranches_.erase(std::remove(openBranches_.begin(), openBranches_.end(), b), openBranches_.end());
+    // The groups share restart chains with their members: keep them until the last grouped branch is gone.
+    if (auto it = groupOf_.find(b); it != groupOf_.end()) {
+        it->second->closed = true;  // a member is gone: the group may not run another job
+        groupOf_.erase(it);
+        if (groupOf_.empty()) groups_.clear();
+    }
+}
+
+bool AbaqusOracle::formGroups() {
+    if (!cfg_.batchBranches || batchRefused_) return false;
+    std::lock_guard<std::mutex> lk(groupMutex_);
+    if (!groups_.empty()) return true;
+    if (batchRefused_) return false;
+    std::string why;
+    if (assembly_) why = "part/instance decks are not supported.";
+    else if (dynamic_) why = "dynamic steps are not supported.";
+    else if (deck_->usesUserElement()) why = "user elements are not supported.";
+    else if (hasConstraints_ || hasContact_) why = "constraints and contact are not supported.";
+    else if (openBranches_.empty()) why = "no branches.";
+    if (why.empty()) {
+        try {
+            // One group per job slot. Group 0 holds the replay branch (opened first) and its replicas - alone when
+            // there are other groups, so that replay-only probes (tangent columns, GMRES products) carry no idle
+            // copies; perturbed branches are dealt round-robin over the other groups.
+            const size_t g = std::clamp<size_t>(static_cast<size_t>(cfg_.maxConcurrentJobs), 1, openBranches_.size());
+            std::vector<std::vector<AbaqusBranch*>> members(g);
+            members[0].push_back(openBranches_[0]);
+            for (size_t k = 1; k < openBranches_.size(); ++k)
+                members[g == 1 ? 0 : 1 + (k - 1) % (g - 1)].push_back(openBranches_[k]);
+            for (size_t q = 0; q < g; ++q) {
+                if (members[q].empty()) continue;
+                groups_.push_back(std::make_unique<ReplicaGroup>(*this, members[q], static_cast<int>(q)));
+                for (auto* b : members[q]) groupOf_[b] = groups_.back().get();
+            }
+        } catch (const std::exception& e) {
+            groups_.clear();
+            groupOf_.clear();
+            why = e.what();
+        }
+    }
+    if (!why.empty()) {
+        batchRefused_ = true;
+        log("Replicated branches not used: " + why + " Every branch runs as its own Abaqus job.");
+        return false;
+    }
+    log("Replicated branches: " + std::to_string(openBranches_.size()) + " history branches as disjoint model copies in " +
+        std::to_string(groups_.size()) + " Abaqus job(s) per wave.");
+    if (!usubDir_.empty())
+        log("Replicated branches with a user subroutine: model copies carry shifted element numbers (NOEL) and suffixed "
+            "material names (CMNAME). A subroutine whose result depends on those must be run without --batch.");
+    return true;
+}
+
+ReplicaGroup* AbaqusOracle::group(const AbaqusBranch* b) {
+    if (!formGroups()) return nullptr;
+    std::lock_guard<std::mutex> lk(groupMutex_);
+    auto it = groupOf_.find(b);
+    if (it == groupOf_.end()) throw std::logic_error("Replicated branches: branch is not in any group");
+    return it->second;
+}
+
+void AbaqusOracle::runWave(int frame, std::vector<WaveRequest>& wave, bool concurrent) {
+    if (!formGroups()) return Oracle::runWave(frame, wave, concurrent);
+    std::map<ReplicaGroup*, std::vector<WaveRequest*>> parts;
+    for (auto& w : wave) {
+        auto* b = dynamic_cast<AbaqusBranch*>(w.branch);
+        if (!b) throw std::logic_error("Replicated branches: foreign branch in a wave");
+        parts[group(b)].push_back(&w);
+    }
+    std::vector<std::future<void>> fut;
+    for (auto& [g, ws] : parts) fut.push_back(std::async(std::launch::async, [&, g = g, act = prof::activity()] {
+        prof::Activity a(act);
+        g->runWave(frame, parts.at(g));
+    }));
+    std::exception_ptr err;
+    for (auto& f : fut) {
+        try {
+            f.get();
+        } catch (...) {
+            if (!err) err = std::current_exception();
+        }
+    }
+    if (err) std::rethrow_exception(err);
+}
+
+ReplicaGroup::ReplicaGroup(AbaqusOracle& o, const std::vector<AbaqusBranch*>& members, int index) : o_(o) {
+    std::int64_t maxN = 0, maxE = 0;
+    for (const auto& k : o_.deck_->mesh().nodeKeys) maxN = std::max<std::int64_t>(maxN, k.label);
+    for (const auto& e : o_.deck_->mesh().elements) maxE = std::max<std::int64_t>(maxE, e.label);
+    num_ = abq::replicaNumbering(maxN, maxE);
+    for (auto* b : members) {
+        bool isBase = true;
+        for (double x : b->delta_) isBase = isBase && x == 0.0;
+        const int replicas = isBase ? AbaqusOracle::kReplayReplicas : 1;
+        for (int r = 0; r < replicas; ++r) {
+            copiesOf_[b].push_back(static_cast<int>(copies_.size()));
+            copies_.push_back({b, r});
+        }
+    }
+    const auto n = static_cast<std::int64_t>(copies_.size());
+    if (n * num_.nodeOffset > std::numeric_limits<std::int32_t>::max() || n * num_.elemOffset > std::numeric_limits<std::int32_t>::max())
+        throw std::runtime_error("the model is too large to hold " + std::to_string(n) + " copies within Abaqus's label range.");
+    for (size_t c = 0; c < copies_.size(); ++c) modelData_ += abq::replicateModelData(copies_[c].b->modelData_, static_cast<int>(c), num_);
+    zeros_.assign(static_cast<size_t>(o_.dofs_.size()), 0.0);
+    // Dry run of the step data of every step (first increment of each), so unsupported loading is refused here and
+    // the run falls back to one job per branch instead of failing later.
+    for (size_t f = 1; f < o_.frames_.size(); ++f)
+        if (f == 1 || o_.frames_[f].step != o_.frames_[f - 1].step)
+            (void)abq::replicateStepData(copies_[0].b->stepText(static_cast<int>(f), zeros_, true), 1, num_);
+    dir_ = fs::path(o_.cfg_.scratchDir) / ("replicas_" + std::to_string(index));
+    fs::create_directories(dir_);
+}
+
+const std::vector<double>& ReplicaGroup::hold(const AbaqusBranch* b) const {
+    // Copies without a state of their own in a probe job stay at their last committed state (or the initial state).
+    return b->committed_ == 0 || b->lastCommitU_.empty() ? zeros_ : b->lastCommitU_;
+}
+
+std::string ReplicaGroup::header(int frame, bool commitWritesRestart) const {
+    if (frame == 1) return modelData_ + (commitWritesRestart ? "*RESTART, WRITE, FREQUENCY=1\n" : "");
+    return "*HEADING\nABSS replicated history branches\n*RESTART, READ, STEP=" + std::to_string(frame - 1) + ", INC=1, END STEP\n";
+}
+
+std::string ReplicaGroup::step(int frame, const std::vector<const std::vector<double>*>& copyU, bool commit) const {
+    std::vector<std::string> per(copies_.size());
+    for (size_t c = 0; c < copies_.size(); ++c)
+        per[c] = abq::replicateStepData(copies_[c].b->stepText(frame, *copyU[c], commit), static_cast<int>(c), num_);
+    std::string s = abq::mergeCopySteps(per);
+    if (commit && frame > 1) s.insert(s.find("*BOUNDARY, OP=NEW"), "*RESTART, WRITE, FREQUENCY=1\n");
+    return s;
+}
+
+void ReplicaGroup::checkReplicas(const abq::FilIncrement& inc, const AbaqusBranch* b, const std::string& job) const {
+    const auto& cs = copiesOf_.at(b);
+    if (cs.size() < 2) return;
+    const auto ref = abq::extractCopy(inc, cs[0], num_);
+    for (size_t r = 1; r < cs.size(); ++r) {
+        const auto other = abq::extractCopy(inc, cs[r], num_);
+        double diff = 0, scale = 1e-300;
+        for (const auto* m : {&ref.U, &ref.RF})
+            for (const auto& [lab, v] : *m) {
+                const auto& om = m == &ref.U ? other.U : other.RF;
+                auto it = om.find(lab);
+                if (it == om.end()) {
+                    diff = INFINITY;
+                    continue;
+                }
+                for (size_t c = 0; c < v.size() && c < it->second.size(); ++c) {
+                    diff = std::max(diff, std::abs(v[c] - it->second[c]));
+                    scale = std::max(scale, std::abs(v[c]));
+                }
+            }
+        if (!(diff <= 1e-10 * scale))
+            throw std::runtime_error("Replicated job '" + job + "': replicas of one branch committed different states (" +
+                                     std::to_string(diff / scale) + " relative). Rerun without --batch.");
+    }
+}
+
+std::map<const AbaqusBranch*, std::vector<std::vector<double>>> ReplicaGroup::probeJobs(int frame, const Request& req) {
+    if (frame != committed_ + 1) throw std::logic_error("Replicated branches: probe out of sequence");
+    if (closed) throw std::logic_error("Replicated branches: a branch of this group was closed");
+    std::map<const AbaqusBranch*, std::vector<std::vector<double>>> out;
+    size_t jobs = 0;
+    for (const auto& [b, us] : req) {
+        const size_t r = copiesOf_.at(b).size();
+        jobs = std::max(jobs, (us->size() + r - 1) / r);
+        out[b].resize(us->size());
+    }
+    const double tEnd = o_.frames_.at(static_cast<size_t>(frame)).totalTime;
+    const std::string act = prof::activity();
+    // Result slots resolved before the job threads start (no map lookups while they write).
+    std::vector<std::vector<std::vector<double>>*> slot(copies_.size(), nullptr);
+    for (size_t c = 0; c < copies_.size(); ++c)
+        if (auto it = out.find(copies_[c].b); it != out.end()) slot[c] = &it->second;
+    auto one = [&, act](size_t j) {
+        prof::Activity a(act);
+        std::vector<const std::vector<double>*> cu(copies_.size());
+        std::vector<std::pair<size_t, size_t>> used;  // (copy, probe index)
+        for (size_t c = 0; c < copies_.size(); ++c) {
+            const auto* b = copies_[c].b;
+            const auto it = req.find(b);
+            const size_t idx = j * copiesOf_.at(b).size() + static_cast<size_t>(copies_[c].replica);
+            if (it != req.end() && idx < it->second->size()) {
+                cu[c] = &(*it->second)[idx];
+                used.emplace_back(c, idx);
+            } else {
+                cu[c] = &hold(b);
+            }
+        }
+        const std::string job = "g_p" + std::to_string(frame) + "_" + std::to_string(counter_++);
+        {
+            prof::Scope gen("job.input_generation");
+            writeText(dir_ / (job + ".inp"), header(frame, false) + step(frame, cu, false));
+        }
+        const auto inc = o_.runJob(dir_, job, frame == 1 ? "" : lastCommitJob_, true, tEnd);
+        for (const auto& [c, idx] : used) {
+            auto rf = o_.dofVector(abq::extractCopy(inc, static_cast<int>(c), num_).RF);
+            for (double& x : rf) x = -x;  // r = F_ext - F_int = -RF on every held DOF
+            (*slot[c])[idx] = std::move(rf);
+        }
+        o_.cleanup(dir_, job);
+    };
+    std::vector<std::future<void>> fut;
+    for (size_t j = 0; j < jobs; ++j) fut.push_back(std::async(std::launch::async, one, j));
+    std::exception_ptr err;
+    for (auto& f : fut) {
+        try {
+            f.get();
+        } catch (...) {
+            if (!err) err = std::current_exception();
+        }
+    }
+    if (err) std::rethrow_exception(err);
+    return out;
+}
+
+std::vector<std::vector<double>> ReplicaGroup::probe(int frame, AbaqusBranch* b, const std::vector<std::vector<double>>& us) {
+    prof::Activity act("batch." + (prof::activity().empty() ? std::string("probe") : prof::activity()));
+    auto out = probeJobs(frame, Request{{b, &us}});
+    return std::move(out[b]);
+}
+
+void ReplicaGroup::runWave(int frame, const std::vector<WaveRequest*>& wave) {
+    if (wave.empty()) return;
+    if (closed) throw std::logic_error("Replicated branches: a branch of this group was closed");
+    const bool commit = wave[0]->commit;
+    std::map<const AbaqusBranch*, WaveRequest*> byBranch;
+    for (auto* w : wave) {
+        auto* b = dynamic_cast<AbaqusBranch*>(w->branch);
+        if (!b || !contains(b) || w->commit != commit || !byBranch.emplace(b, w).second)
+            throw std::logic_error("Replicated branches: malformed wave");
+    }
+    if (!commit) {
+        Request req;
+        for (auto& [b, w] : byBranch)
+            if (!w->probes.empty()) req[b] = &w->probes;
+        prof::Activity act(wave.size() == 1 ? "batch." + wave[0]->activity : std::string("batch.probe_wave"));
+        auto out = probeJobs(frame, req);
+        for (auto& [b, w] : byBranch)
+            if (!w->probes.empty()) w->residuals = std::move(out[b]);
+        return;
+    }
+    // Commit wave: every copy commits (one restart chain); the next increment's probes ride along when all can.
+    if (frame != committed_ + 1) throw std::logic_error("Replicated branches: commit out of sequence");
+    if (byBranch.size() != copiesOf_.size()) throw std::logic_error("Replicated branches: a commit wave must commit every branch");
+    bool fuse = true;
+    for (auto& [b, w] : byBranch) fuse = fuse && !w->nextProbes.empty() && const_cast<AbaqusBranch*>(b)->canFuseNextProbe(frame);
+    std::vector<const std::vector<double>*> cu(copies_.size()), nu(copies_.size());
+    for (size_t c = 0; c < copies_.size(); ++c) {
+        const auto* w = byBranch.at(copies_[c].b);
+        cu[c] = &w->commitU;
+        const auto r = static_cast<size_t>(copies_[c].replica);
+        nu[c] = fuse && r < w->nextProbes.size() ? &w->nextProbes[r] : &w->commitU;
+    }
+    std::map<const AbaqusBranch*, std::vector<double>> written;
+    for (auto& [b, w] : byBranch) written[b] = b->bcValues(frame, w->commitU);
+    const std::string job = "g_c" + std::to_string(frame);
+    prof::Activity act(fuse ? "batch.commit_fused" : "batch.commit");
+    {
+        prof::Scope gen("job.input_generation");
+        std::string text = header(frame, true) + step(frame, cu, true);
+        if (fuse) text += step(frame + 1, nu, false);
+        writeText(dir_ / (job + ".inp"), text);
+    }
+    const double tEnd = o_.frames_.at(static_cast<size_t>(frame)).totalTime;
+    abq::FilIncrement cInc, pInc;
+    if (!fuse) {
+        cInc = o_.runJob(dir_, job, frame == 1 ? "" : lastCommitJob_, true, tEnd);
+    } else {
+        std::vector<abq::FilIncrement> incs;
+        o_.runJob(dir_, job, frame == 1 ? "" : lastCommitJob_, false, 0.0, &incs);
+        const int probeStep = incs.back().step;
+        std::vector<const abq::FilIncrement*> c, p;
+        for (const auto& x : incs) {
+            if (x.step == probeStep) p.push_back(&x);
+            else if (x.step == probeStep - 1) c.push_back(&x);
+        }
+        const double tNext = o_.frames_.at(static_cast<size_t>(frame) + 1).totalTime;
+        auto near = [](double a, double b) { return std::abs(a - b) <= 1e-9 * std::max(1.0, std::abs(b)); };
+        if (c.size() != 1 || p.size() != 1 || !near(c[0]->totalTime, tEnd) || !near(p[0]->totalTime, tNext))
+            throw std::runtime_error("Replicated job '" + job + "' increments were subdivided or mistimed; refusing to use them.");
+        cInc = *c[0];
+        pInc = *p[0];
+    }
+    for (auto& [b, w] : byBranch) {
+        const auto& cs = copiesOf_.at(b);
+        checkReplicas(cInc, b, job);
+        w->fields = const_cast<AbaqusBranch*>(b)->finishCommit(frame, abq::extractCopy(cInc, cs[0], num_), std::move(written[b]), job, nullptr);
+        w->nextResiduals.clear();
+        if (fuse)
+            for (size_t r = 0; r < w->nextProbes.size() && r < cs.size(); ++r) {
+                auto rf = o_.dofVector(abq::extractCopy(pInc, cs[r], num_).RF);
+                for (double& x : rf) x = -x;
+                w->nextResiduals.push_back(std::move(rf));
+            }
+    }
+    lastCommitJob_ = job;
+    committed_ = frame;
 }
 
 }  // namespace

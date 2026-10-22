@@ -1,0 +1,74 @@
+[
+  {
+    "derivative": "d/dM01: sigma_y(eps_p=0)",
+    "field": "U",
+    "frames_missing": 0,
+    "max_abs_error": 1.1909065521468352e-11,
+    "parameter_ids": [
+      "mat:M01:plastic:sigma_y:1"
+    ],
+    "ref_max_abs": 0.000710563895438554,
+    "scaled_error": 1.67600205947956e-08,
+    "values_compared": 3672
+  },
+  {
+    "derivative": "d/dM01: sigma_y(eps_p=0)",
+    "field": "RF",
+    "frames_missing": 0,
+    "max_abs_error": 5.651963874697685e-08,
+    "parameter_ids": [
+      "mat:M01:plastic:sigma_y:1"
+    ],
+    "ref_max_abs": 5.752821905189194,
+    "scaled_error": 9.824680770318072e-09,
+    "values_compared": 3672
+  },
+  {
+    "derivative": "d/dM01: sigma_y(eps_p=0)",
+    "field": "S",
+    "frames_missing": 0,
+    "max_abs_error": 7.948753460995661e-09,
+    "parameter_ids": [
+      "mat:M01:plastic:sigma_y:1"
+    ],
+    "ref_max_abs": 0.42245469152840087,
+    "scaled_error": 1.881563542882629e-08,
+    "values_compared": 24576
+  },
+  {
+    "derivative": "d/dM01: sigma_y(eps_p=0)",
+    "field": "E",
+    "frames_missing": 0,
+    "max_abs_error": 1.3665457654354896e-13,
+    "parameter_ids": [
+      "mat:M01:plastic:sigma_y:1"
+    ],
+    "ref_max_abs": 2.4211411000729655e-05,
+    "scaled_error": 5.6442219141804924e-09,
+    "values_compared": 24576
+  },
+  {
+    "derivative": "d/dM01: sigma_y(eps_p=0)",
+    "field": "PEEQ",
+    "frames_missing": 0,
+    "max_abs_error": 1.0391687510491465e-13,
+    "parameter_ids": [
+      "mat:M01:plastic:sigma_y:1"
+    ],
+    "ref_max_abs": 3.066517668393054e-05,
+    "scaled_error": 3.388758400970511e-09,
+    "values_compared": 4096
+  },
+  {
+    "derivative": "d/dM01: sigma_y(eps_p=0)",
+    "field": "S_Mises",
+    "frames_missing": 0,
+    "max_abs_error": 5.191623131395318e-09,
+    "parameter_ids": [
+      "mat:M01:plastic:sigma_y:1"
+    ],
+    "ref_max_abs": 0.6903708546960843,
+    "scaled_error": 7.520049689352513e-09,
+    "values_compared": 4096
+  }
+]

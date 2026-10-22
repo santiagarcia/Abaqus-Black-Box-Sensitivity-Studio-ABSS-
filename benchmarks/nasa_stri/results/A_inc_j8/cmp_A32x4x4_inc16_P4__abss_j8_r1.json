@@ -1,0 +1,290 @@
+[
+  {
+    "derivative": "d/dM01: E",
+    "field": "U",
+    "frames_missing": 0,
+    "max_abs_error": 5.32857520812205e-15,
+    "parameter_ids": [
+      "mat:M01:elastic:E"
+    ],
+    "ref_max_abs": 6.577358106607534e-06,
+    "scaled_error": 8.101391351596059e-10,
+    "values_compared": 39600
+  },
+  {
+    "derivative": "d/dM01: E",
+    "field": "RF",
+    "frames_missing": 0,
+    "max_abs_error": 4.086635789493577e-12,
+    "parameter_ids": [
+      "mat:M01:elastic:E"
+    ],
+    "ref_max_abs": 0.00020881013645634994,
+    "scaled_error": 1.9571060384551088e-08,
+    "values_compared": 39600
+  },
+  {
+    "derivative": "d/dM01: E",
+    "field": "S",
+    "frames_missing": 0,
+    "max_abs_error": 3.531789939868548e-11,
+    "parameter_ids": [
+      "mat:M01:elastic:E"
+    ],
+    "ref_max_abs": 0.0003429701837269761,
+    "scaled_error": 1.0297658827042689e-07,
+    "values_compared": 393216
+  },
+  {
+    "derivative": "d/dM01: E",
+    "field": "E",
+    "frames_missing": 0,
+    "max_abs_error": 3.041955473709706e-16,
+    "parameter_ids": [
+      "mat:M01:elastic:E"
+    ],
+    "ref_max_abs": 4.989274213391959e-08,
+    "scaled_error": 6.096989950050535e-09,
+    "values_compared": 393216
+  },
+  {
+    "derivative": "d/dM01: E",
+    "field": "PEEQ",
+    "frames_missing": 0,
+    "max_abs_error": 0.0,
+    "parameter_ids": [
+      "mat:M01:elastic:E"
+    ],
+    "ref_max_abs": 0.0,
+    "scaled_error": 0.0,
+    "values_compared": 65536
+  },
+  {
+    "derivative": "d/dM01: E",
+    "field": "S_Mises",
+    "frames_missing": 0,
+    "max_abs_error": 1.4143955847803876e-11,
+    "parameter_ids": [
+      "mat:M01:elastic:E"
+    ],
+    "ref_max_abs": 0.0003951889956965715,
+    "scaled_error": 3.579035854192582e-08,
+    "values_compared": 65536
+  },
+  {
+    "derivative": "d/dM02: E",
+    "field": "U",
+    "frames_missing": 0,
+    "max_abs_error": 2.5417668119451058e-14,
+    "parameter_ids": [
+      "mat:M02:elastic:E"
+    ],
+    "ref_max_abs": 5.501236616023419e-06,
+    "scaled_error": 4.62035536617661e-09,
+    "values_compared": 39600
+  },
+  {
+    "derivative": "d/dM02: E",
+    "field": "RF",
+    "frames_missing": 0,
+    "max_abs_error": 1.3517155968210785e-11,
+    "parameter_ids": [
+      "mat:M02:elastic:E"
+    ],
+    "ref_max_abs": 0.00019479506306652183,
+    "scaled_error": 6.939167633624638e-08,
+    "values_compared": 39600
+  },
+  {
+    "derivative": "d/dM02: E",
+    "field": "S",
+    "frames_missing": 0,
+    "max_abs_error": 2.8238682333860803e-11,
+    "parameter_ids": [
+      "mat:M02:elastic:E"
+    ],
+    "ref_max_abs": 0.0003484712080430441,
+    "scaled_error": 8.10359125290279e-08,
+    "values_compared": 393216
+  },
+  {
+    "derivative": "d/dM02: E",
+    "field": "E",
+    "frames_missing": 0,
+    "max_abs_error": 2.4413684756940017e-16,
+    "parameter_ids": [
+      "mat:M02:elastic:E"
+    ],
+    "ref_max_abs": 4.317135696716226e-08,
+    "scaled_error": 5.655065411891031e-09,
+    "values_compared": 393216
+  },
+  {
+    "derivative": "d/dM02: E",
+    "field": "PEEQ",
+    "frames_missing": 0,
+    "max_abs_error": 0.0,
+    "parameter_ids": [
+      "mat:M02:elastic:E"
+    ],
+    "ref_max_abs": 0.0,
+    "scaled_error": 0.0,
+    "values_compared": 65536
+  },
+  {
+    "derivative": "d/dM02: E",
+    "field": "S_Mises",
+    "frames_missing": 0,
+    "max_abs_error": 1.3030223921695656e-11,
+    "parameter_ids": [
+      "mat:M02:elastic:E"
+    ],
+    "ref_max_abs": 0.0004228114418367568,
+    "scaled_error": 3.081804944797708e-08,
+    "values_compared": 65536
+  },
+  {
+    "derivative": "d/dM03: E",
+    "field": "U",
+    "frames_missing": 0,
+    "max_abs_error": 5.1993141488519105e-15,
+    "parameter_ids": [
+      "mat:M03:elastic:E"
+    ],
+    "ref_max_abs": 4.369998491515759e-06,
+    "scaled_error": 1.1897748154710458e-09,
+    "values_compared": 39600
+  },
+  {
+    "derivative": "d/dM03: E",
+    "field": "RF",
+    "frames_missing": 0,
+    "max_abs_error": 3.762492962681494e-12,
+    "parameter_ids": [
+      "mat:M03:elastic:E"
+    ],
+    "ref_max_abs": 3.3055499997658444e-05,
+    "scaled_error": 1.138235078261717e-07,
+    "values_compared": 39600
+  },
+  {
+    "derivative": "d/dM03: E",
+    "field": "S",
+    "frames_missing": 0,
+    "max_abs_error": 3.17249647032028e-11,
+    "parameter_ids": [
+      "mat:M03:elastic:E"
+    ],
+    "ref_max_abs": 0.00029666325044441777,
+    "scaled_error": 1.0693931471349103e-07,
+    "values_compared": 393216
+  },
+  {
+    "derivative": "d/dM03: E",
+    "field": "E",
+    "frames_missing": 0,
+    "max_abs_error": 2.5752786379297246e-16,
+    "parameter_ids": [
+      "mat:M03:elastic:E"
+    ],
+    "ref_max_abs": 3.656588598100266e-08,
+    "scaled_error": 7.042844905406306e-09,
+    "values_compared": 393216
+  },
+  {
+    "derivative": "d/dM03: E",
+    "field": "PEEQ",
+    "frames_missing": 0,
+    "max_abs_error": 0.0,
+    "parameter_ids": [
+      "mat:M03:elastic:E"
+    ],
+    "ref_max_abs": 0.0,
+    "scaled_error": 0.0,
+    "values_compared": 65536
+  },
+  {
+    "derivative": "d/dM03: E",
+    "field": "S_Mises",
+    "frames_missing": 0,
+    "max_abs_error": 1.466269807096131e-11,
+    "parameter_ids": [
+      "mat:M03:elastic:E"
+    ],
+    "ref_max_abs": 0.00037164641626930006,
+    "scaled_error": 3.945335520291017e-08,
+    "values_compared": 65536
+  },
+  {
+    "derivative": "d/dM04: E",
+    "field": "U",
+    "frames_missing": 0,
+    "max_abs_error": 5.061770107574225e-14,
+    "parameter_ids": [
+      "mat:M04:elastic:E"
+    ],
+    "ref_max_abs": 3.4082345332642205e-06,
+    "scaled_error": 1.4851589754670841e-08,
+    "values_compared": 39600
+  },
+  {
+    "derivative": "d/dM04: E",
+    "field": "RF",
+    "frames_missing": 0,
+    "max_abs_error": 2.2554144097122278e-11,
+    "parameter_ids": [
+      "mat:M04:elastic:E"
+    ],
+    "ref_max_abs": 4.242885278671338e-06,
+    "scaled_error": 5.315756287472642e-06,
+    "values_compared": 39600
+  },
+  {
+    "derivative": "d/dM04: E",
+    "field": "S",
+    "frames_missing": 0,
+    "max_abs_error": 2.8054405770270944e-11,
+    "parameter_ids": [
+      "mat:M04:elastic:E"
+    ],
+    "ref_max_abs": 0.00025428469626653794,
+    "scaled_error": 1.1032675651414224e-07,
+    "values_compared": 393216
+  },
+  {
+    "derivative": "d/dM04: E",
+    "field": "E",
+    "frames_missing": 0,
+    "max_abs_error": 2.6345706779488506e-16,
+    "parameter_ids": [
+      "mat:M04:elastic:E"
+    ],
+    "ref_max_abs": 3.084492170317074e-08,
+    "scaled_error": 8.541343379963992e-09,
+    "values_compared": 393216
+  },
+  {
+    "derivative": "d/dM04: E",
+    "field": "PEEQ",
+    "frames_missing": 0,
+    "max_abs_error": 0.0,
+    "parameter_ids": [
+      "mat:M04:elastic:E"
+    ],
+    "ref_max_abs": 0.0,
+    "scaled_error": 0.0,
+    "values_compared": 65536
+  },
+  {
+    "derivative": "d/dM04: E",
+    "field": "S_Mises",
+    "frames_missing": 0,
+    "max_abs_error": 1.6991813719657793e-11,
+    "parameter_ids": [
+      "mat:M04:elastic:E"
+    ],
+    "ref_max_abs": 0.0003209706082856201,
+    "scaled_error": 5.293884636482788e-08,
+    "values_compared": 65536
+  }
+]
