@@ -1,0 +1,3 @@
+﻿all runs: 128 runs, 6065 jobs | driver+licence 6.3 | input processing 3.2 | Abaqus/Standard 10.1 | wrap-up 1.3 | total 20.9 s per job
+<= 2,400 free DOFs: 76 runs, 3304 jobs | driver+licence 6.1 | input processing 3.1 | Abaqus/Standard 5.0 | wrap-up 1.4 | total 15.6 s per job
+>= 48,672 free DOFs: 12 runs, 420 jobs | driver+licence 7.2 | input processing 4.5 | Abaqus/Standard 51.2 | wrap-up 1.4 | total 64.3 s per job
